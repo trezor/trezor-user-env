@@ -3,8 +3,6 @@
 set -e
 mkdir -p firmware/repo suite/repo
 
-
-
 if [ -f firmware/repo/README.md ]; then
   echo "Firmware repo seems to be already present"
 else
