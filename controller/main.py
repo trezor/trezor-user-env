@@ -18,7 +18,7 @@ def cleanup():
 atexit.register(cleanup)
 
 PORT = 9001
-DEFAULT_TREZORD_VERSION = "2.0.30"
+DEFAULT_TREZORD_VERSION = "2.0.27"
 DEFAULT_TREZOR_VERSION = "2.3.1"
 
 # todo: add env variable DEFAULT_TREZOR_VERSION which could be url leading to firmware build that

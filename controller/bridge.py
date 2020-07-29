@@ -37,7 +37,7 @@ def start(version):
         # - check if trezord process is already running and kill it if so
 
         # normalize path to be relative to this folder, not pwd
-        path = os.path.join(os.path.dirname(__file__), "./bin")
+        path = os.path.join(os.path.dirname(__file__), "../trezord-go/bin")
 
         command = path + "/trezord-go-v" + version + " -ed 21324:21325 -u=false"
 
