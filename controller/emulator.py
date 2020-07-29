@@ -13,16 +13,13 @@ from trezorlib.transport.udp import UdpTransport
 
 import bridge
 
-# buttons positions on screen, might be useful later
-# import common.buttons
-
 proc = None
 
 # when communicating with device via bridge/debuglink, this sleep is required otherwise there
 # may appear weird race conditions in communications. when not going through bridge but webusb
 # there is no need for it, but we can skip bridge only when doing initial setup before test.
 SLEEP = 0.501
-# SLEEP = 1
+
 
 
 def get_bridge_device():
@@ -66,15 +63,8 @@ def start(version, wipe):
     if proc is not None:
         stop()
 
-    # These are min firmware versions supported by current version of trezorlib
-    # https://github.com/trezor/trezor-firmware/blob/master/python/src/trezorlib/__init__.py
-    # MINIMUM_FIRMWARE_VERSION = {
-    #     "1": (1, 8, 0),
-    #     "T": (2, 1, 0),
-    # }
-
     # normalize path to be relative to this folder, not pwd
-    path = os.path.join(os.path.dirname(__file__), "bin")
+    path = os.path.join(os.path.dirname(__file__), "../firmware/bin")
 
     command = ""
     if version[0] == "2":
@@ -82,7 +72,7 @@ def start(version, wipe):
         if wipe and os.path.exists(PROFILE):
             os.remove(PROFILE)
 
-        command = path + "/trezor-emu-core-v" + version + " -O0 -X heapsize=20M -m main"
+        command = path + "/trezor-emu-regular-v" + version + " -O0 -X heapsize=20M -m main"
     else:
         PROFILE = os.path.join(os.path.dirname(__file__), "emulator.img")
         if wipe and os.path.exists(PROFILE):
