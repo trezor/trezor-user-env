@@ -1,3 +1,4 @@
 suite/repo
 firmware/repo
 trezord-go/repo
+controller/__pycache__
