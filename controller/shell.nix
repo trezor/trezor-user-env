@@ -5,6 +5,8 @@ let
   MyPython = python3.withPackages(ps: [
     ps.termcolor
     ps.trezor
+    ps.black
+    ps.isort
   ]);
 in
   stdenv.mkDerivation {

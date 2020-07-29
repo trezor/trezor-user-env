@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-import os
-import time
-import signal
 import http.client
+import os
+import signal
+import time
+from subprocess import PIPE, Popen
 
-from subprocess import Popen, PIPE
 from trezorlib.transport.bridge import BridgeTransport
 
 proc = None
@@ -35,17 +35,13 @@ def start(version):
         # findProcess()
         # TODO:
         # - check if trezord process is already running and kill it if so
-        
+
         # normalize path to be relative to this folder, not pwd
-        path = os.path.join(os.path.dirname(__file__), './bin')
+        path = os.path.join(os.path.dirname(__file__), "./bin")
 
         command = path + "/trezord-go-v" + version + " -ed 21324:21325 -u=false"
 
-        proc = Popen(
-            command,
-            shell=True,
-            preexec_fn=os.setsid
-        )
+        proc = Popen(command, shell=True, preexec_fn=os.setsid)
         # TODO: - add else condition and check if trezord is running and if i own this process (trezord pid is the same with proc pid)
 
 

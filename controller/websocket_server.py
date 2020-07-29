@@ -1,13 +1,13 @@
 # Author: Johan Hanssen Seferidis
 # License: MIT
 
-import sys
+import errno
+import logging
 import struct
+import sys
 from base64 import b64encode
 from hashlib import sha1
-import logging
 from socket import error as SocketError
-import errno
 
 if sys.version_info[0] < 3:
     from SocketServer import ThreadingMixIn, TCPServer, StreamRequestHandler
@@ -17,7 +17,7 @@ else:
 logger = logging.getLogger(__name__)
 logging.basicConfig()
 
-'''
+"""
 +-+-+-+-+-------+-+-------------+-------------------------------+
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
@@ -31,14 +31,14 @@ logging.basicConfig()
 + - - - - - - - - - - - - - - - +-------------------------------+
 |                     Payload Data continued ...                |
 +---------------------------------------------------------------+
-'''
+"""
 
 FIN = 0x80
-OPCODE = 0x0f
+OPCODE = 0x0F
 MASKED = 0x80
-PAYLOAD_LEN = 0x7f
-PAYLOAD_LEN_EXT16 = 0x7e
-PAYLOAD_LEN_EXT64 = 0x7f
+PAYLOAD_LEN = 0x7F
+PAYLOAD_LEN_EXT16 = 0x7E
+PAYLOAD_LEN_EXT64 = 0x7F
 
 OPCODE_CONTINUATION = 0x0
 OPCODE_TEXT = 0x1
@@ -50,8 +50,8 @@ OPCODE_PONG = 0xA
 
 # -------------------------------- API ---------------------------------
 
-class API():
 
+class API:
     def run_forever(self):
         try:
             logger.info("Listening on port %d for clients.." % self.port)
@@ -90,6 +90,7 @@ class API():
 
 # ------------------------- Implementation -----------------------------
 
+
 class WebsocketServer(ThreadingMixIn, TCPServer, API):
     """
         A websocket server waiting for clients to connect.
@@ -118,7 +119,7 @@ class WebsocketServer(ThreadingMixIn, TCPServer, API):
     clients = []
     id_counter = 0
 
-    def __init__(self, port, host='0.0.0.0', loglevel=logging.WARNING):
+    def __init__(self, port, host="0.0.0.0", loglevel=logging.WARNING):
         logger.setLevel(loglevel)
         TCPServer.__init__(self, (host, port), WebSocketHandler)
         self.port = self.socket.getsockname()[1]
@@ -135,9 +136,9 @@ class WebsocketServer(ThreadingMixIn, TCPServer, API):
     def _new_client_(self, handler):
         self.id_counter += 1
         client = {
-            'id': self.id_counter,
-            'handler': handler,
-            'address': handler.client_address
+            "id": self.id_counter,
+            "handler": handler,
+            "address": handler.client_address,
         }
         self.clients.append(client)
         self.new_client(client, self)
@@ -149,7 +150,7 @@ class WebsocketServer(ThreadingMixIn, TCPServer, API):
             self.clients.remove(client)
 
     def _unicast_(self, to_client, msg):
-        to_client['handler'].send_message(msg)
+        to_client["handler"].send_message(msg)
 
     def _multicast_(self, msg):
         for client in self.clients:
@@ -157,12 +158,11 @@ class WebsocketServer(ThreadingMixIn, TCPServer, API):
 
     def handler_to_client(self, handler):
         for client in self.clients:
-            if client['handler'] == handler:
+            if client["handler"] == handler:
                 return client
 
 
 class WebSocketHandler(StreamRequestHandler):
-
     def __init__(self, socket, addr, server):
         self.server = server
         StreamRequestHandler.__init__(self, socket, addr, server)
@@ -242,7 +242,7 @@ class WebSocketHandler(StreamRequestHandler):
         for message_byte in self.read_bytes(payload_length):
             message_byte ^= masks[len(message_bytes) % 4]
             message_bytes.append(message_byte)
-        opcode_handler(self, message_bytes.decode('utf8'))
+        opcode_handler(self, message_bytes.decode("utf8"))
 
     def send_message(self, message):
         self.send_text(message)
@@ -261,16 +261,19 @@ class WebSocketHandler(StreamRequestHandler):
             # this is slower but ensures we have UTF-8
             message = try_decode_UTF8(message)
             if not message:
-                logger.warning(
-                    "Can\'t send message, message is not valid UTF-8")
+                logger.warning("Can't send message, message is not valid UTF-8")
                 return False
-        elif sys.version_info < (3, 0) and (isinstance(message, str) or isinstance(message, unicode)):
+        elif sys.version_info < (3, 0) and (
+            isinstance(message, str) or isinstance(message, unicode)
+        ):
             pass
         elif isinstance(message, str):
             pass
         else:
             logger.warning(
-                'Can\'t send message, message has to be a string or bytes. Given type is %s' % type(message))
+                "Can't send message, message has to be a string or bytes. Given type is %s"
+                % type(message)
+            )
             return False
 
         header = bytearray()
@@ -295,8 +298,7 @@ class WebSocketHandler(StreamRequestHandler):
             header.extend(struct.pack(">Q", payload_length))
 
         else:
-            raise Exception(
-                "Message is too big. Consider breaking it into chunks.")
+            raise Exception("Message is too big. Consider breaking it into chunks.")
             return
 
         self.request.send(header + payload)
@@ -305,13 +307,13 @@ class WebSocketHandler(StreamRequestHandler):
         headers = {}
         # first line should be HTTP GET
         http_get = self.rfile.readline().decode().strip()
-        assert http_get.upper().startswith('GET')
+        assert http_get.upper().startswith("GET")
         # remaining should be headers
         while True:
             header = self.rfile.readline().decode().strip()
             if not header:
                 break
-            head, value = header.split(':', 1)
+            head, value = header.split(":", 1)
             headers[head.lower().strip()] = value.strip()
         return headers
 
@@ -319,13 +321,13 @@ class WebSocketHandler(StreamRequestHandler):
         headers = self.read_http_headers()
 
         try:
-            assert headers['upgrade'].lower() == 'websocket'
+            assert headers["upgrade"].lower() == "websocket"
         except AssertionError:
             self.keep_alive = False
             return
 
         try:
-            key = headers['sec-websocket-key']
+            key = headers["sec-websocket-key"]
         except KeyError:
             logger.warning("Client tried to connect but was missing a key")
             self.keep_alive = False
@@ -338,19 +340,20 @@ class WebSocketHandler(StreamRequestHandler):
 
     @classmethod
     def make_handshake_response(cls, key):
-        return \
-            'HTTP/1.1 101 Switching Protocols\r\n'\
-            'Upgrade: websocket\r\n'              \
-            'Connection: Upgrade\r\n'             \
-            'Sec-WebSocket-Accept: %s\r\n'        \
-            '\r\n' % cls.calculate_response_key(key)
+        return (
+            "HTTP/1.1 101 Switching Protocols\r\n"
+            "Upgrade: websocket\r\n"
+            "Connection: Upgrade\r\n"
+            "Sec-WebSocket-Accept: %s\r\n"
+            "\r\n" % cls.calculate_response_key(key)
+        )
 
     @classmethod
     def calculate_response_key(cls, key):
-        GUID = '258EAFA5-E914-47DA-95CA-C5AB0DC85B11'
+        GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
         hash = sha1(key.encode() + GUID.encode())
         response_key = b64encode(hash.digest()).strip()
-        return response_key.decode('ASCII')
+        return response_key.decode("ASCII")
 
     def finish(self):
         self.server._client_left_(self)
@@ -358,19 +361,19 @@ class WebSocketHandler(StreamRequestHandler):
 
 def encode_to_UTF8(data):
     try:
-        return data.encode('UTF-8')
+        return data.encode("UTF-8")
     except UnicodeEncodeError as e:
         logger.error("Could not encode data to UTF-8 -- %s" % e)
         return False
     except Exception as e:
-        raise(e)
+        raise (e)
         return False
 
 
 def try_decode_UTF8(data):
     try:
-        return data.decode('utf-8')
+        return data.decode("utf-8")
     except UnicodeDecodeError:
         return False
     except Exception as e:
-        raise(e)
+        raise (e)

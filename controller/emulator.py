@@ -1,16 +1,15 @@
-import sys
 import os
 import signal
+import sys
 import time
 from subprocess import Popen
 
-from trezorlib import device, debuglink, log
-from trezorlib.debuglink import DebugLink, TrezorClientDebugLink
+from trezorlib import debuglink, device, log
 from trezorlib.client import TrezorClient
-from trezorlib.device import wipe, reset, backup
-
-from trezorlib.transport.udp import UdpTransport
+from trezorlib.debuglink import DebugLink, TrezorClientDebugLink
+from trezorlib.device import backup, reset, wipe
 from trezorlib.transport.bridge import BridgeTransport
+from trezorlib.transport.udp import UdpTransport
 
 import bridge
 
@@ -20,10 +19,11 @@ import bridge
 proc = None
 
 # when communicating with device via bridge/debuglink, this sleep is required otherwise there
-# may appear weird race conditions in communications. when not going through bridge but webusb 
-# there is no need for it, but we can skip bridge only when doing initial setup before test. 
+# may appear weird race conditions in communications. when not going through bridge but webusb
+# there is no need for it, but we can skip bridge only when doing initial setup before test.
 SLEEP = 0.501
 # SLEEP = 1
+
 
 def get_bridge_device():
     devices = BridgeTransport.enumerate()
@@ -48,15 +48,15 @@ def wait_for_bridge_device():
 
 
 def wait_for_udp_device():
-	d = UdpTransport()
-	d.wait_until_ready(timeout=8)
-	return d
+    d = UdpTransport()
+    d.wait_until_ready(timeout=8)
+    return d
 
 
 def get_device():
-    if (bridge.is_running()):
+    if bridge.is_running():
         return wait_for_bridge_device()
-    
+
     return wait_for_udp_device()
 
 
@@ -66,7 +66,7 @@ def start(version, wipe):
     if proc is not None:
         stop()
 
-    # These are min firmware versions supported by current version of trezorlib 
+    # These are min firmware versions supported by current version of trezorlib
     # https://github.com/trezor/trezor-firmware/blob/master/python/src/trezorlib/__init__.py
     # MINIMUM_FIRMWARE_VERSION = {
     #     "1": (1, 8, 0),
@@ -74,22 +74,22 @@ def start(version, wipe):
     # }
 
     # normalize path to be relative to this folder, not pwd
-    path = os.path.join(os.path.dirname(__file__), 'bin')
+    path = os.path.join(os.path.dirname(__file__), "bin")
 
-    command=""
+    command = ""
     if version[0] == "2":
         PROFILE = "/var/tmp/trezor.flash"
         if wipe and os.path.exists(PROFILE):
             os.remove(PROFILE)
-    
+
         command = path + "/trezor-emu-core-v" + version + " -O0 -X heapsize=20M -m main"
     else:
-        PROFILE = os.path.join(os.path.dirname(__file__), 'emulator.img')
+        PROFILE = os.path.join(os.path.dirname(__file__), "emulator.img")
         if wipe and os.path.exists(PROFILE):
             os.remove(PROFILE)
 
         # todo: currently we have only 1 legacy firmware. to make it work with debuglink,
-        # custom build is necessary as described here 
+        # custom build is necessary as described here
         # https://github.com/trezor/trezor-firmware/blob/master/docs/legacy/index.md
         command = path + "/trezor-emu-legacy-v" + version + " -O0"
 
@@ -103,11 +103,7 @@ def start(version, wipe):
         # - run T1 emulator
         # - run T1 & T2 emulator at once
         # - run two T2/T1 emulators
-        proc = Popen(
-            command,
-            shell=True,
-            preexec_fn=os.setsid
-        )
+        proc = Popen(command, shell=True, preexec_fn=os.setsid)
         print("the commandline is {}".format(proc.args))
 
 
@@ -130,7 +126,7 @@ def setup_device(mnemonic, pin, passphrase_protection, label, needs_backup=None)
         pin,
         passphrase_protection,
         label,
-        needs_backup=bool(needs_backup)
+        needs_backup=bool(needs_backup),
     )
     client.close()
 
@@ -141,6 +137,7 @@ def wipe_device():
     time.sleep(SLEEP)
     wipe(client)
     client.close()
+
 
 def reset_device():
     client = TrezorClientDebugLink(get_device())
@@ -157,6 +154,7 @@ def decision():
     client.press_yes()
     client.close()
 
+
 # enter recovery word or pin
 # enter pin not possible for T2, it is locked, for T1 it is possible
 # change pin possible, use input(word=pin-string)
@@ -168,17 +166,17 @@ def input(value):
     client.close()
 
 
-def swipe(direction): 
+def swipe(direction):
     client = DebugLink(get_device().find_debug())
     client.open()
     time.sleep(SLEEP)
-    if direction == 'up':
+    if direction == "up":
         client.swipe_up()
-    elif direction == 'right':
+    elif direction == "right":
         client.swipe_right()
-    elif direction == 'down':
+    elif direction == "down":
         client.swipe_down()
-    elif direction == 'left':
+    elif direction == "left":
         client.swipe_left()
     client.close()
 
@@ -189,12 +187,12 @@ def read_and_confirm_mnemonic():
     time.sleep(SLEEP)
     client.press_yes()
     time.sleep(SLEEP)
-    
+
     # it appears that doing read_mnemonic_secret also skips otherwise necessary "swiping"
     mnem = client.read_mnemonic_secret().decode("utf-8")
     mnemonic = mnem.split()
     time.sleep(SLEEP)
-    
+
     index = client.read_reset_word_pos()
     client.input(mnemonic[index])
     time.sleep(SLEEP)
@@ -225,7 +223,6 @@ def apply_settings(passphrase_always_on_device=None):
     client.open()
     time.sleep(SLEEP)
     device.apply_settings(
-        client,
-        passphrase_always_on_device=bool(passphrase_always_on_device),
+        client, passphrase_always_on_device=bool(passphrase_always_on_device),
     )
     client.close()
