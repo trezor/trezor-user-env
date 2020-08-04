@@ -13,5 +13,7 @@ in
     name = "trezor-user-env-controller";
     buildInputs = [
       MyPython
+      SDL2
+      SDL2_image
     ];
   }
