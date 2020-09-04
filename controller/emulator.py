@@ -72,7 +72,7 @@ def start(version, wipe):
         if wipe and os.path.exists(PROFILE):
             os.remove(PROFILE)
 
-        command = path + "/trezor-emu-regular-v" + version + " -O0 -X heapsize=20M -m main"
+        command = path + "/trezor-emu-core-v" + version + " -O0 -X heapsize=20M -m main"
     else:
         PROFILE = os.path.join(os.path.dirname(__file__), "emulator.img")
         if wipe and os.path.exists(PROFILE):

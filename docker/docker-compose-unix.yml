@@ -1,0 +1,12 @@
+version: '2'
+services:
+  trezor-user-env-nix:
+    container_name: trezor-user-env-nix
+    build:
+      context: ..
+      dockerfile: ./docker/Dockerfile
+    network_mode: "host"
+    ports:
+      - "9001:9001"
+    environment:
+      - DISPLAY=:0
