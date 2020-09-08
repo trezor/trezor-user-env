@@ -17,7 +17,7 @@ You need:
 ### Run it
 
 - Make sure your VPN is on.
-- `xhost +`  TODO: is this needed?
+- `xhost +` TODO: are there any security implications of this?
 - Run `docker-compose -f ./docker/docker-compose-mac.yml up --build`.
 - Open `controller/index.html`: `xdg-open controller/index.html`.
 
@@ -32,7 +32,7 @@ You need:
 
 Download these as you are used to. We recommend using nix or brew, but that's your fight.
 
-TODO: Xquartz setting
+In Xquartz settings go to Preferences > Security and enable "Allow connections from network clients". TODO: are there any security implications of this?
 
 ### Run it
 
