@@ -9,7 +9,6 @@ wget -e robots=off --no-verbose --no-clobber --no-parent --cut-dirs=2 --no-host-
 
 chmod u+x trezor-emu-*
 
-# are we in Nix(OS)?
 nix-shell -p autoPatchelfHook SDL2 SDL2_image --run "autoPatchelf trezor-emu-*"
 
 # no need for Mac builds
