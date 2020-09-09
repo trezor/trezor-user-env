@@ -2,4 +2,9 @@ suite/repo
 firmware/repo
 trezord-go/repo
 controller/__pycache__
-firmware/bin/emulators/*
+firmware/bin/*
+!firmware/bin/download.sh
+suite/bin/*
+!suite/bin/download.sh
+!trezord-go/bin/download.sh
+emulator.img

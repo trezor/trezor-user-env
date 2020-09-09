@@ -7,6 +7,7 @@ from termcolor import colored
 
 import bridge
 import emulator
+import suite
 from websocket_server import WebsocketServer
 
 
@@ -55,6 +56,10 @@ def message_received(client, server, message):
     try:
         if cmdType == "ping":
             server.send_message(client, "pong")
+        elif cmdType == "suite-start":
+            version = cmd.get("version")
+            suite.start(version)
+            response = {"success": True}
         elif cmdType == "emulator-start":
             version = cmd.get("version") or DEFAULT_TREZOR_VERSION
             wipe = cmd.get("wipe") or False

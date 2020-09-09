@@ -29,6 +29,7 @@ RUN nix-shell "controller/shell.nix" --run "trezorctl --version"
 
 RUN nix-shell --run "/bin/sh firmware/bin/download.sh"
 RUN nix-shell --run "/bin/sh trezord-go/bin/download.sh"
+RUN nix-shell --run "/bin/sh suite/bin/download.sh"
 
 RUN rm -rf /var/tmp/trezor.flash
 

@@ -46,6 +46,13 @@
             log.innerHTML = escaped + "<br>" + log.innerHTML;
         }
 
+        function suiteStart(version) {
+            _send({
+                type: 'suite-start',
+                version,
+            });
+        }
+
         function emulatorStart(version) {
             _send({
                 type: 'emulator-start',
@@ -162,7 +169,6 @@
         <div>Status: <span id="bridge-status">unknown</span></div>
         <div>You may also check bridge status page on http://0.0.0.0:21325/status/</div>
     </div>
-
     <div>
         <h3>Emulator start</h3>
         <button onclick="emulatorStart('2.3.1'); return false;">Start 2.3.1</button>
@@ -177,9 +183,16 @@
         <button onclick="emulatorStop(); return false;">Stop</button>
         <button onclick="emulatorWipe(); return false;">Wipe</button>
         <button onclick="emulatorResetDevice(); return false;">Reset</button>
-
     </div>
-    
+    <div>
+        <h3>Suite</h3>
+        <button onclick="suiteStart('20.7.1'); return false;">Start 20.7.1</button>
+        <button onclick="suiteStart('20.8.1'); return false;">Start 20.8.1</button>
+        <br>
+        <br>
+        <i>Note: the "five clicks to enable Bridge in debug mode" was introduced in 20.9.1.</i>
+    </div>
+
     <h3>Server</h3>
     <form onsubmit="onSubmit(); return false;">
         <textarea id="input" rows="3"></textarea>

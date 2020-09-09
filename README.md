@@ -14,9 +14,19 @@ developers to use this tool.
 
 ## How to
 
+There are two ways to run this project:
+
+1. Natively if you are using NixOS.
+2. Using Docker for all other platforms. The Docker image is based on NixOS and basically copies (1).
+
 ### Nix OS
 
-TODO
+- Enter `nix-shell`.
+- Download projects:
+  - `firmware/bin/download.sh`
+  - `trezord-go/bin/download.sh`
+  - `suite/bin/download.sh`
+- Run the controller `nix-shell controller/shell.nix --run 'python controller/main.py'`. Note that it has its own `shell.nix`!
 
 ### Other Linux distributions
 
