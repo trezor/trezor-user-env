@@ -1,4 +1,4 @@
-# the last successful build of nixos-unstable - 2020-07-01
+# TODO pin for 2020-09 stable when relased
 with import <nixpkgs> {};
 
 let
