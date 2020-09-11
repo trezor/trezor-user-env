@@ -21,7 +21,6 @@ proc = None
 SLEEP = 0.501
 
 
-
 def get_bridge_device():
     devices = BridgeTransport.enumerate()
     for d in devices:
@@ -37,7 +36,7 @@ def wait_for_bridge_device():
         try:
             device = get_bridge_device()
             return device
-        except:
+        except RuntimeError:
             elapsed = time.monotonic() - start
             if elapsed >= timeout:
                 raise RuntimeError("timed out waiting for bridge device.")
@@ -66,7 +65,6 @@ def start(version, wipe):
     # normalize path to be relative to this folder, not pwd
     path = os.path.join(os.path.dirname(__file__), "../firmware/bin")
 
-    command = ""
     if version[0] == "2":
         PROFILE = "/var/tmp/trezor.flash"
         if wipe and os.path.exists(PROFILE):
@@ -78,12 +76,7 @@ def start(version, wipe):
         if wipe and os.path.exists(PROFILE):
             os.remove(PROFILE)
 
-        # todo: currently we have only 1 legacy firmware. to make it work with debuglink,
-        # custom build is necessary as described here
-        # https://github.com/trezor/trezor-firmware/blob/master/docs/legacy/index.md
         command = path + "/trezor-emu-legacy-v" + version + " -O0"
-
-        # todo: add more versions
 
     if proc is None:
         # TODO:
