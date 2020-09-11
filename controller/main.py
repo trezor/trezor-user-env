@@ -114,9 +114,9 @@ def message_received(client, server, message):
             bridge.stop()
             os._exit(1)
         else:
-            server.send_message(
-                client, json.dumps({"success": False, "error": "unknown command"})
-            )
+            response = {"success": False, "error": "unknown command"}
+            server.send_message(client, json.dumps(response))
+            print("Client(%d) response: %s" % (client["id"], str(response)))
             return
         print("Client(%d) response: %s" % (client["id"], str(response)))
         if response is not None:
