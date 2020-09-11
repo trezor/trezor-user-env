@@ -216,3 +216,11 @@ def apply_settings(passphrase_always_on_device=None):
         client, passphrase_always_on_device=bool(passphrase_always_on_device),
     )
     client.close()
+
+
+def allow_unsafe():
+    client = TrezorClientDebugLink(get_device())
+    client.open()
+    time.sleep(SLEEP)
+    device.apply_settings(client, safety_checks=1)  # TODO
+    client.close()

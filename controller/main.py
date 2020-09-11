@@ -86,6 +86,9 @@ def message_received(client, server, message):
         elif cmdType == "emulator-read-and-confirm-mnemonic":
             emulator.read_and_confirm_mnemonic()
             response = {"success": True}
+        elif cmdType == "emulator-allow-unsafe-paths":
+            emulator.allow_unsafe()
+            response = {"success": True}
         elif cmdType == "select-num-of-words":
             emulator.select_num_of_words(cmd["num"])
             response = {"success": True}
