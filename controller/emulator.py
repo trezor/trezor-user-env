@@ -130,11 +130,19 @@ def reset_device():
     client.close()
 
 
-def decision():
+def press_yes():
     client = DebugLink(get_device().find_debug())
     client.open()
     time.sleep(SLEEP)
     client.press_yes()
+    client.close()
+
+
+def press_no():
+    client = DebugLink(get_device().find_debug())
+    client.open()
+    time.sleep(SLEEP)
+    client.press_no()
     client.close()
 
 
