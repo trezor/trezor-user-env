@@ -4,13 +4,14 @@ This environment is meant to support Trezor development - both Firmware
 and Suite and other related projects. Its main goals are:
 
 - Provide an easy websocket server that is capable of:
- - Launching/stopping different versions of the firmware emulator.
- - Launching/stopping trezord-go (Bridge).
- - Send simple debug commands to the emulator.
-- Provide a HTML page that communicates with the server. This allows 
-developers to easy perform the actions above.
+  - Launching/stopping different versions of the firmware emulator.
+  - Launching/stopping trezord-go (Bridge).
+  - Launching Suite.
+  - Send simple debug commands to the emulator.
+- Enable full integration testing of Suite, firmware emulator and Bridge using the websocket server.
+- Provide a HTML page that communicates with the server. This allows the developers to perform the actions above.
 - To be Nix-native but also offer Docker image to allow non-NixOS 
-developers to use this tool.
+developers to use it.
 
 ## How to
 
@@ -22,7 +23,7 @@ There are two ways to run this project:
 ### Nix OS
 
 - Enter `nix-shell`.
-- Download projects:
+- Download projects (you need SatoshiLabs VPN):
   - `firmware/bin/download.sh`
   - `trezord-go/bin/download.sh`
   - `suite/bin/download.sh`
