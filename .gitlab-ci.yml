@@ -1,0 +1,20 @@
+variables:
+  # No need for TLS because everything runs on the same machine
+  DOCKER_TLS_CERTDIR: ""
+
+environment:
+  image: docker
+  only:
+    - schedules  # nightly build
+    - /^run\//
+  variables:
+    CONTAINER_NAME: "$CI_REGISTRY/satoshilabs/trezor/trezor-user-env/trezor-user-env.nix"
+  services:
+    - docker:dind
+  before_script:
+    - docker login $CI_REGISTRY -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD
+  script:
+    - docker pull $CONTAINER_NAME:latest || true
+    - docker build --tag $CONTAINER_NAME:$CI_COMMIT_SHA --tag $CONTAINER_NAME:latest -f docker/Dockerfile .
+    - docker push $CONTAINER_NAME:$CI_COMMIT_SHA
+    - docker push $CONTAINER_NAME:latest
