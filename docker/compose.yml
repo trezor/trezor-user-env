@@ -1,7 +1,7 @@
 version: '3'
 services:
   trezor-user-env-unix:
-    container_name: trezor-user-env-nix
+    container_name: trezor-user-env.unix
     build:
       context: ..
       dockerfile: ./docker/Dockerfile
@@ -12,7 +12,7 @@ services:
       - DISPLAY=:0
 
   trezor-user-env-mac:
-    container_name: trezor-user-env-nix
+    container_name: trezor-user-env.mac
     build:
       context: ..
       dockerfile: ./docker/Dockerfile

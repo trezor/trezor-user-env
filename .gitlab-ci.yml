@@ -8,7 +8,7 @@ environment:
     - schedules  # nightly build
     - /^run\//
   variables:
-    CONTAINER_NAME: "$CI_REGISTRY/satoshilabs/trezor/trezor-user-env/trezor-user-env.nix"
+    CONTAINER_NAME: "$CI_REGISTRY/satoshilabs/trezor/trezor-user-env/trezor-user-env"
   services:
     - docker:dind
   before_script:
