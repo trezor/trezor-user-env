@@ -17,8 +17,7 @@ You need:
 
 - Make sure your VPN is on.
 - `xhost +`
-- Run `docker-compose -f ./docker/compose.yml up --remove-orphans --build trezor-user-env-unix`.
-
+- Run `docker-compose -f ./docker/compose.yml pull trezor-user-env-unix && docker-compose -f ./docker/compose.yml up trezor-user-env-unix`.
 - Open `controller/index.html`: `xdg-open controller/index.html`.
 
 ## MacOS
@@ -39,5 +38,5 @@ In Xquartz settings go to Preferences > Security and enable "Allow connections f
 - Run xQuartz and leave it running on the background. Wait till it is launched.
 - Add yourself to the X access control list: `xhost +127.0.0.1`
 - Make sure your VPN is on.
-- Run `docker-compose -f ./docker/compose.yml up --remove-orphans --build trezor-user-env-mac`.
+- Run `docker-compose -f ./docker/compose.yml pull trezor-user-env-mac && docker-compose -f ./docker/compose.yml up trezor-user-env-mac`.
 - Open `controller/index.html`: `open controller/index.html`.

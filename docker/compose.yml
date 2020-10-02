@@ -2,9 +2,7 @@ version: '3'
 services:
   trezor-user-env-unix:
     container_name: trezor-user-env.unix
-    build:
-      context: ..
-      dockerfile: ./docker/Dockerfile
+    image: registry.gitlab.com/satoshilabs/trezor/trezor-user-env/trezor-user-env
     network_mode: "host"
     ports:
       - "9001:9001"
@@ -13,9 +11,7 @@ services:
 
   trezor-user-env-mac:
     container_name: trezor-user-env.mac
-    build:
-      context: ..
-      dockerfile: ./docker/Dockerfile
+    image: registry.gitlab.com/satoshilabs/trezor/trezor-user-env/trezor-user-env
     ports:
       - "9001:9001"
     environment:
