@@ -87,9 +87,14 @@
             })
         }
 
-        function emulatorDecision() {
+        function emulatorYes() {
             _send({
-                type: 'emulator-decision'
+                type: 'emulator-press-yes'
+            });
+        }
+        function emulatorNo() {
+            _send({
+                type: 'emulator-press-no'
             });
         }
 
@@ -234,7 +239,11 @@
                 <td>Initialize the device with random seed. No backup. Also called reset/onboarding.</td>
             </tr>
             <tr>
-                <td><button onclick="emulatorDecision(); return false;">Decision</button></td>
+                <td><button onclick="emulatorYes(); return false;">Confirm</button></td>
+                <td>?</td>
+            </tr>
+            <tr>
+                <td><button onclick="emulatorNo(); return false;">Decline</button></td>
                 <td>?</td>
             </tr>
             <tr>
