@@ -8,7 +8,7 @@ LEGACY_LATEST_BUILD="https://gitlab.com/satoshilabs/trezor/trezor-firmware/-/job
 cd "$(dirname "$0")"
 
 # download all released emulators
-wget -e robots=off --no-verbose --no-clobber --no-parent --cut-dirs=2 --no-host-directories --recursive --reject "index.html*" $SITE
+wget -e robots=off --no-verbose --no-clobber --no-parent --cut-dirs=2 --no-host-directories --recursive $SITE
 
 # download emulator from master
 mkdir tmp
