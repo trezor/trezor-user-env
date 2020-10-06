@@ -74,7 +74,7 @@ def message_received(client, server, message):
                 cmd["pin"],
                 cmd["passphrase_protection"],
                 cmd["label"],
-                cmd["needs_backup"],
+                cmd.get("needs_backup"),
             )
             response = {"success": True}
         elif cmdType == "emulator-decision":
@@ -126,7 +126,7 @@ def message_received(client, server, message):
             server.send_message(
                 client, json.dumps(dict(response, id=cmdId, success=True))
             )
-    except Exception as e:
+    except RuntimeError as e:
         print("Client(%d) response: %s" % (client["id"], str(e)))
         server.send_message(
             client, json.dumps({"id": cmdId, "success": False, "error": str(e)})
