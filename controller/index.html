@@ -27,12 +27,12 @@
 
     <section>
         <h3>Emulator</h3>
+        <div class="explain-note">Use left and right arrow keys to emulate the Trezor One buttons. Mouse clicks for Trezor T.</div><br>
         <div>
             <h4>Trezor One</h4>
             <select id="t1-select"></select>
             <button onclick="emulatorStart('t1-select');">Start</button>
             <br />
-            <div class="explain-note">Use left and right arrow keys to emulate the Trezor One buttons.</div>
         </div>
         <div>
             <h4>Trezor T</h4>
@@ -41,13 +41,14 @@
         </div>
         <hr />
         <h3>Emulator commands</h3>
+        <div class="explain-note">These commands are auto-confirmed using the emulator's debug link.</div><br>
         <div>
             <div>Status: <span id="emulator-status">unknown</span></div>
-            <button onclick="emulatorSetup();">Setup</button>
+            <button onclick="emulatorWipe();">Wipe</button>
+            <button onclick="emulatorSetup();">Setup (all seed)</button>
+            <button onclick="emulatorResetDevice();">Reset</button>
             <button onclick="emulatorDecision();">Decision</button>
             <button onclick="emulatorStop();">Stop</button>
-            <button onclick="emulatorWipe();">Wipe</button>
-            <button onclick="emulatorResetDevice();">Reset</button>
         </div>
     </section>
     
