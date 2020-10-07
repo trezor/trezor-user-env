@@ -1,13 +1,11 @@
 import os
 import signal
-import sys
 import time
 from subprocess import Popen
 
-from trezorlib import debuglink, device, log
-from trezorlib.client import TrezorClient
+from trezorlib import debuglink, device
 from trezorlib.debuglink import DebugLink, TrezorClientDebugLink
-from trezorlib.device import backup, reset, wipe
+from trezorlib.device import reset, wipe
 from trezorlib.transport.bridge import BridgeTransport
 from trezorlib.transport.udp import UdpTransport
 

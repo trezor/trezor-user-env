@@ -1,7 +1,7 @@
 import atexit
 import json
 import os
-import sys
+import binaries
 
 from termcolor import colored
 
@@ -19,18 +19,20 @@ def cleanup():
 atexit.register(cleanup)
 
 PORT = 9001
-DEFAULT_TREZORD_VERSION = "2.0.27"
-DEFAULT_TREZOR_VERSION = "2.3.1"
-
-# todo: add env variable DEFAULT_TREZOR_VERSION which could be url leading to firmware build that
-# should be downloaded and integration-tested
-# print(os.environ.get('DEFAULT_TREZOR_VERSION'))
 
 print("starting websocket server on port: " + str(PORT))
 
+
 # Called for every client connecting (after handshake)
 def new_client(client, server):
-    welcome = json.dumps({"type": "client", "id": client["id"]})
+    intro = {
+        "type": "client",
+        "id": client["id"],
+        "firmwares": binaries.FIRMWARES,
+        "suites": binaries.SUITES,
+        "bridges": binaries.BRIDGES,
+    }
+    welcome = json.dumps(intro)
     server.send_message_to_all(welcome)
 
 
@@ -61,7 +63,7 @@ def message_received(client, server, message):
             suite.start(version)
             response = {"success": True}
         elif cmdType == "emulator-start":
-            version = cmd.get("version") or DEFAULT_TREZOR_VERSION
+            version = cmd.get("version") or binaries.FIRMWARES["TT"][0]
             wipe = cmd.get("wipe") or False
             emulator.start(version, wipe)
             response = {"success": True}
@@ -106,7 +108,7 @@ def message_received(client, server, message):
             print(resp)
             response = {"success": True}
         elif cmdType == "bridge-start":
-            version = cmd.get("version") or DEFAULT_TREZORD_VERSION
+            version = cmd.get("version") or binaries.BRIDGES[0]
             bridge.start(version)
             response = {"success": True}
         elif cmdType == "bridge-stop":
@@ -133,6 +135,7 @@ def message_received(client, server, message):
         )
 
 
+binaries.explore()
 server = WebsocketServer(PORT)
 server.set_fn_new_client(new_client)
 server.set_fn_client_left(client_left)
