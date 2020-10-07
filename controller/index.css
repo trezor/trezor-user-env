@@ -1,0 +1,59 @@
+* {
+    margin: 0;
+    padding: 0;
+}
+
+html, body {
+    width: 100%;
+    height: 100%;
+    background: #f4f4f4;
+}
+
+button, select, input[type=submit] {
+    padding: 2px;
+    cursor: pointer;
+    min-width: 170px;
+    margin: 4px 4px 4px 0px;
+    padding: 4px 12px;
+    font-weight: 500;
+}
+
+textarea {
+    width: 100%;
+    min-height: 62px;
+}
+
+h3 {
+    margin-bottom: 10px;
+}
+
+hr {
+    margin: 10px 0px;
+}
+
+#ws-status {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+#ws-status div {
+    background-color: white;
+    padding: 20px;
+}
+
+section {
+    padding: 24px;
+    margin: 32px;
+    border-radius: 6px;
+    background-color: white;
+}
+
+.explain-note {
+    font-size: 13px;
+    font-style: italic;
+}
