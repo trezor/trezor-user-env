@@ -11,6 +11,7 @@ cd "$(dirname "$0")"
 wget -e robots=off --no-verbose --no-clobber --no-parent --cut-dirs=2 --no-host-directories --recursive --reject "index.html*" $SITE
 
 # download emulator from master
+rm -rf tmp
 mkdir tmp
 cd tmp
 
@@ -23,7 +24,7 @@ unzip -q trezor-emu-legacy-master.zip
 mv legacy/firmware/trezor.elf ../trezor-emu-legacy-v1-master
 
 cd ..
-rm -r tmp
+rm -rf tmp
 
 # mark as executable and patch for Nix
 chmod u+x trezor-emu-*
