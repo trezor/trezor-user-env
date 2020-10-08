@@ -1,0 +1,8 @@
+[book]
+title = "Trezor User Env"
+description = "Documentation of Trezor User Env."
+src = "."
+
+[build]
+build-dir = "mdbook"
+create-missing = false
