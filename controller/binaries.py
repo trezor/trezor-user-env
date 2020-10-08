@@ -30,7 +30,7 @@ def explore_firmwares():
 
 def sort_firmwares(version):
     if "master" in version:
-        return 9, 9, 9
+        return 0, 0, 0
     return tuple(int(n) for n in version.split("."))
 
 
