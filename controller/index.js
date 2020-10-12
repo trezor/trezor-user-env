@@ -15,62 +15,24 @@ function output(str) {
     log.innerHTML = `${escaped}<br>${log.innerHTML}`;
 }
 
-const sortVersion = arr => {
-    return arr
-        .map(a => a.replace(/\d+/g, n => +n + 100000))
-        .sort()
-        .map(a => a.replace(/\d+/g, n => +n - 100000))
-        .reverse();
-};
-
 const createOption = (select, value) => {
     const option = document.createElement("option");
     option.text = value;
     option.value = value;
-    select.appendChild(option);
+    select.add(option);
 }
 
-const populateEmulatorSelect = (data) => {
+const clearOptions = select => {
+    while(select.options.length) select.remove(0);
+}
+
+const populateEmulatorSelect = firmwares => {
     const t1Select = document.getElementById('t1-select');
     const t2Select = document.getElementById('t2-select');
-    const t1Options = sortVersion([
-        '1.6.2',
-        '1.6.3',
-        '1.7.0',
-        '1.7.1',
-        '1.7.2',
-        '1.7.3',
-        '1.8.0',
-        '1.8.1',
-        '1.8.2',
-        '1.8.3',
-        '1.9.0',
-        '1.9.1',
-        '1.9.2',
-        '1.9.3',
-        '1-master',
-    ]).forEach(version => createOption(t1Select, version));
-
-    const t2Options = sortVersion([
-        '2.0.8',
-        '2.0.9',
-        '2.0.10',
-        '2.1.0',
-        '2.1.1',
-        '2.1.2',
-        '2.1.3',
-        '2.1.4',
-        '2.1.5',
-        '2.1.6',
-        '2.1.7',
-        '2.1.8',
-        '2.2.0',
-        '2.3.0',
-        '2.3.1',
-        '2.3.2',
-        '2.3.3',
-        '2-master',
-    ]).forEach(version => createOption(t2Select, version));
+    clearOptions(t1Select);
+    clearOptions(t2Select);
+    firmwares["T1"].forEach(version => createOption(t1Select, version));
+    firmwares["TT"].forEach(version => createOption(t2Select, version));
 }
 
 
@@ -81,7 +43,7 @@ const handleMessage = event => {
     const data = JSON.parse(event.data);
 
     if (data.type === 'client') {
-        populateEmulatorSelect(data.emulators);
+        populateEmulatorSelect(data.firmwares);
     }
 };
 
@@ -176,9 +138,10 @@ function emulatorStop() {
     });
 }
 
-function bridgeStart() {
+function bridgeStart(version) {
     _send({
         type: 'bridge-start',
+        version,
     });
 }
 
