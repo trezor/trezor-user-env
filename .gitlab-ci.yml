@@ -6,6 +6,7 @@ environment:
   image: docker
   only:
     - schedules  # nightly build
+    - master
     - /^run\//
   variables:
     CONTAINER_NAME: "$CI_REGISTRY/satoshilabs/trezor/trezor-user-env/trezor-user-env"
