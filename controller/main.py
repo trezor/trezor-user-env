@@ -8,6 +8,7 @@ from termcolor import colored
 import bridge
 import emulator
 import suite
+import proxy
 from websocket_server import WebsocketServer
 
 
@@ -134,7 +135,7 @@ def message_received(client, server, message):
             client, json.dumps({"id": cmdId, "success": False, "error": str(e)})
         )
 
-
+proxy.start()
 binaries.explore()
 server = WebsocketServer(PORT)
 server.set_fn_new_client(new_client)
