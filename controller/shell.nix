@@ -7,9 +7,29 @@ with import
 { };
 
 let
+  trezorWithoutUdev = ps: ps.trezor.overrideAttrs (oldAttrs: {
+    propagatedBuildInputs = with ps; [
+      attrs
+      click
+      construct
+      ecdsa
+      hidapi
+      libusb1
+      mnemonic
+      pillow
+      protobuf
+      pyblake2
+      requests
+      rlp
+      shamir-mnemonic
+      typing-extensions
+    ];
+  });
   MyPython = python3.withPackages(ps: [
     ps.termcolor
-    ps.trezor
+    # can be replaced with ps.trezor when https://github.com/NixOS/nixpkgs/pull/101847
+    # makes it to nixpkgs imported above:
+    (if stdenv.isLinux then ps.trezor else trezorWithoutUdev ps)
     ps.black
     ps.isort
   ]);
