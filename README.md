@@ -50,7 +50,7 @@ You need:
 1. Run in terminal: `xhost +`
 2. Download the latest docker build: `docker-compose -f ./docker/compose.yml pull trezor-user-env-unix`
 3. Run it: `docker-compose -f ./docker/compose.yml up trezor-user-env-unix`
-4. Open `controller/index.html`: `xdg-open controller/index.html`
+4. Open http://localhost:21326.
 
 For a future use you can omit the second step and run `up` (the third step) directly. However, you will not have the latest master builds then!
 
@@ -73,7 +73,7 @@ Download these as you are used to. We recommend using `nix` or `brew`, but that'
 3. Open a new terminal window (not in XQuartz) and add yourself to the X access control list: `xhost +127.0.0.1` (you will probably need to logout/login after XQuartz installation to have `xhost` command available)
 4. Download the latest docker build: `docker-compose -f ./docker/compose.yml pull trezor-user-env-mac`
 5. Run it: `docker-compose -f ./docker/compose.yml up trezor-user-env-mac`
-6. Open `controller/index.html`: `open controller/index.html`
+6. Open http://localhost:21326.
 
 For a future use you can omit the fourth step and run `up` (the fifth step) directly. However, you will not have the latest master builds then!
 

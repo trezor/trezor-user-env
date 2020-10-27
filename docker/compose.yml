@@ -6,6 +6,7 @@ services:
     network_mode: "host"
     ports:
       - "9001:9001"
+      - "21326:21326"
     environment:
       - DISPLAY=:0
 
@@ -14,5 +15,7 @@ services:
     image: registry.gitlab.com/satoshilabs/trezor/trezor-user-env/trezor-user-env
     ports:
       - "9001:9001"
+      - "21326:21326"
+      - "127.0.0.1:21325:21326" # macos needs proxy to override the "origin" of the trezord request
     environment:
       - DISPLAY=docker.for.mac.host.internal:0
