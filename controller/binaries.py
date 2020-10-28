@@ -1,5 +1,6 @@
 import glob
 from pathlib import Path
+from termcolor import colored
 
 ROOT_DIR = Path(__file__).parent.parent.resolve()
 FIRMWARES = {
@@ -10,20 +11,39 @@ SUITES = []
 BRIDGES = []
 
 
-def explore():
-    explore_firmwares()
+def explore(args):
+    explore_firmwares(args)
     explore_suites()
     explore_bridges()
 
 
-def explore_firmwares():
-    for fw in glob.glob("firmware/bin/*"):
+def explore_firmwares(args):
+    scan_glob = "firmware/bin/*"
+    if args.verbosity > 0:
+        print("Scanning {}".format(colored(scan_glob, "yellow")))
+    for fw in glob.glob(scan_glob):
         if "trezor-emu-core" in fw:
             version = fw.replace("firmware/bin/trezor-emu-core-v", "")
             FIRMWARES["TT"].append(version)
+            if args.verbosity > 0:
+                print(
+                    "  found {} => {}".format(
+                        colored(fw, "yellow"), colored(version, "magenta")
+                    )
+                )
         elif "trezor-emu-legacy" in fw:
             version = fw.replace("firmware/bin/trezor-emu-legacy-v", "")
             FIRMWARES["T1"].append(version)
+            if args.verbosity > 0:
+                print(
+                    "  found {} => {}".format(
+                        colored(fw, "yellow"), colored(version, "magenta")
+                    )
+                )
+        else:
+            if args.verbosity > 0:
+                print("  skipping {}".format(colored(fw, "yellow")))
+
     for model in FIRMWARES.values():
         model.sort(key=sort_firmwares, reverse=True)
 
