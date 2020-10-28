@@ -103,7 +103,11 @@ class ThreadingServer(ThreadingMixIn, HTTPServer):
 
 def start():
     httpd = ThreadingServer(("0.0.0.0", 21326), Handler)
-    threading.Thread(target=httpd.serve_forever).start()
+    httpd.daemon_threads = True
+    thread = threading.Thread(target=httpd.serve_forever)
+    thread.daemon = True
+    thread.start()
+    return thread
 
 
 if __name__ == "__main__":
