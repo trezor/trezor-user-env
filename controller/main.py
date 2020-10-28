@@ -2,6 +2,7 @@ import atexit
 import json
 import os
 import binaries
+import argparse
 
 from termcolor import colored
 
@@ -20,8 +21,6 @@ def cleanup():
 atexit.register(cleanup)
 
 PORT = 9001
-
-print("starting websocket server on port: " + str(PORT))
 
 
 # Called for every client connecting (after handshake)
@@ -136,11 +135,36 @@ def message_received(client, server, message):
         )
 
 
-proxy.start()
-binaries.explore()
-server = WebsocketServer(PORT)
-server.set_fn_new_client(new_client)
-server.set_fn_client_left(client_left)
-server.set_fn_message_received(message_received)
-print("websocket server running ")
-server.run_forever()
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-v", "--verbosity", action="count", default=0)
+    parser.add_argument("--work-dir")
+    parser.add_argument("--disable-proxy", action="store_true")
+    args = parser.parse_args()
+
+    effective_work_dir = args.work_dir
+
+    if effective_work_dir is None and "TREZOR_USER_ENV_WORK_DIR" in os.environ:
+        effective_work_dir = os.environ["TREZOR_USER_ENV_WORK_DIR"]
+
+    if effective_work_dir is None:
+        effective_work_dir = "."
+
+    effective_work_dir = os.path.abspath(os.path.expanduser(effective_work_dir))
+
+    os.chdir(effective_work_dir)
+    print("Working from {}".format(colored(os.getcwd(), "yellow")))
+
+    binaries.explore(args)
+
+    if not args.disable_proxy:
+        print("Enabling proxy")
+        proxy.start()
+
+    print("Starting websocket server on port: {}".format(colored(str(PORT), "cyan")))
+    server = WebsocketServer(PORT)
+    server.set_fn_new_client(new_client)
+    server.set_fn_client_left(client_left)
+    server.set_fn_message_received(message_received)
+    print("Websocket server running... CTRL+C to exit")
+    server.run_forever()
