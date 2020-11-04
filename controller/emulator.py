@@ -18,6 +18,9 @@ proc = None
 # there is no need for it, but we can skip bridge only when doing initial setup before test.
 SLEEP = 0.501
 
+# makes Trezor One emulator larger
+TREZOR_ONE_OLED_SCALE = 2
+
 
 def get_bridge_device():
     devices = BridgeTransport.enumerate()
@@ -68,13 +71,17 @@ def start(version, wipe):
         if wipe and os.path.exists(PROFILE):
             os.remove(PROFILE)
 
-        command = path + "/trezor-emu-core-v" + version + " -O0 -X heapsize=20M -m main"
+        command = "{path}/trezor-emu-core-v{version} -O0 -X heapsize=20M -m main".format(
+            path=path, version=version
+        )
     else:
         PROFILE = os.path.join(os.path.dirname(__file__), "emulator.img")
         if wipe and os.path.exists(PROFILE):
             os.remove(PROFILE)
 
-        command = path + "/trezor-emu-legacy-v" + version + " -O0"
+        command = "TREZOR_OLED_SCALE={scale} {path}/trezor-emu-legacy-v{version} -O0".format(
+            scale=TREZOR_ONE_OLED_SCALE, path=path, version=version
+        )
 
     if proc is None:
         # TODO:
