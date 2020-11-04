@@ -18,6 +18,8 @@ HEADERS = {
     "Host": TREZORD_HOST,
     "Origin": "https://user-env.trezor.io",
 }
+PROXY_IP = "0.0.0.0"
+PROXY_PORT = 21326
 
 
 # POST request headers override
@@ -102,7 +104,7 @@ class ThreadingServer(ThreadingMixIn, HTTPServer):
 
 
 def start():
-    httpd = ThreadingServer(("0.0.0.0", 21326), Handler)
+    httpd = ThreadingServer((PROXY_IP, PROXY_PORT), Handler)
     httpd.daemon_threads = True
     thread = threading.Thread(target=httpd.serve_forever)
     thread.daemon = True

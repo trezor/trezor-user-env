@@ -158,8 +158,9 @@ if __name__ == "__main__":
     binaries.explore(args)
 
     if not args.disable_proxy:
-        print("Enabling proxy")
+        print("Starting proxy")
         proxy.start()
+        print("Controller with proxy running at: http://{}:{}".format(proxy.PROXY_IP, proxy.PROXY_PORT))
 
     print("Starting websocket server on port: {}".format(colored(str(PORT), "cyan")))
     server = WebsocketServer(PORT)
