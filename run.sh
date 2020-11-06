@@ -1,5 +1,7 @@
 #!/usr/bin/env sh
 
-nix-shell controller/shell.nix --run 'python --version'
-nix-shell controller/shell.nix --run 'trezorctl --version'
-nix-shell controller/shell.nix --run 'python controller/main.py'
+DIR=$(dirname "$0")
+
+nix-shell "$DIR/controller/shell.nix" --run "python --version"
+nix-shell "$DIR/controller/shell.nix" --run "trezorctl --version"
+nix-shell "$DIR/controller/shell.nix" --run "python $DIR/controller/main.py &"
