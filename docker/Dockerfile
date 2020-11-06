@@ -22,15 +22,12 @@ WORKDIR ./trezor-user-env
 RUN ls /
 RUN ls /trezor-user-env
 
-RUN nix-shell "controller/shell.nix" --run "python --version"
-RUN nix-shell "controller/shell.nix" --run "trezorctl --version"
-
-# TODO: entrypoint for nix-shell?
-
 RUN nix-shell --run "./firmware/bin/download.sh"
 RUN nix-shell --run "./trezord-go/bin/download.sh"
 RUN nix-shell --run "./suite/bin/download.sh"
 
 RUN rm -rf /var/tmp/trezor.flash
 
-CMD nix-shell controller/shell.nix --run 'python controller/main.py'
+RUN nix-shell controller/shell.nix --run "echo deps pre-installed"
+
+CMD nix-shell controller/shell.nix --run './run.sh'
