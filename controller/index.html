@@ -45,7 +45,8 @@
         <div>
             <div>Status: <span id="emulator-status">unknown</span></div>
             <button onclick="emulatorWipe();">Wipe</button>
-            <button onclick="emulatorSetup();">Setup (all seed)</button>
+            <input id="seed-input" type="text" placeholder="default seed: all all" />
+            <button onclick="emulatorSetup();">Load seed</button>
             <button onclick="emulatorResetDevice();">Reset</button>
             <button onclick="emulatorDecision();">Decision</button>
             <button onclick="emulatorStop();">Stop</button>

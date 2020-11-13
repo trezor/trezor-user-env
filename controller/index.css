@@ -18,6 +18,14 @@ button, select, input[type=submit] {
     font-weight: 500;
 }
 
+input[type=text] {
+    padding: 2px;
+    min-width: 170px;
+    margin: 4px 4px 4px 0px;
+    padding: 4px 12px;
+    font-weight: 500;
+}
+
 textarea {
     width: 100%;
     min-height: 62px;

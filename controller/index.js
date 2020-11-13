@@ -117,9 +117,10 @@ function emulatorResetDevice() {
 }
 
 function emulatorSetup() {
+    const input = document.getElementById('seed-input');
     _send({
         type: 'emulator-setup',
-        mnemonic: 'all all all all all all all all all all all all',
+        mnemonic: input.value || 'all all all all all all all all all all all all',
         pin: '',
         passphrase_protection: false,
         label: 'Hello!',
