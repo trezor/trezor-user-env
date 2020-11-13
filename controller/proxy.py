@@ -67,17 +67,18 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_POST(self, body=True):
         try:
-            # print("POST: Path: {}".format(self.path))
-            # print("POST: Headers: {}".format(self.headers))
+            # print("POST Path: {}".format(self.path))
+            # print("POST Headers: {}".format(self.headers))
             url = "http://{}{}".format(TREZORD_HOST, self.path)
-            content_len = int(self.headers.get("content-length", 0))
+            data_len = int(self.headers.get("content-length", 0))
+            data = self.rfile.read(data_len)
+            headers = merge_headers(dict(self.headers))
+            # print("POST Modified headers: {}".format(headers))
+            # print("POST Data: {}".format(data))
 
-            data = self.rfile.read(content_len)
-
-            resp = requests.post(
-                url, data=data, headers=merge_headers(dict(self.headers)), verify=False
-            )
-            # print("Resp: Headers: {}".format(resp.headers))
+            resp = requests.post(url, data=data, headers=headers)
+            # print("POST Resp Headers: {}".format(resp.headers))
+            # print("POST Resp Data: {}".format(resp.content))
 
             self.send_response(resp.status_code)
             self.send_resp_headers(resp)
@@ -88,12 +89,13 @@ class Handler(BaseHTTPRequestHandler):
             self.send_error(404, "Error trying to proxy: %s Error: %s" % (self.path, e))
 
     def send_resp_headers(self, resp):
+        # response Access-Control header needs to be exact with original request from the caller
+        self.send_header("Access-Control-Allow-Origin", self.headers.get("Access-Control-Allow-Origin", "*"))
+
+        # remove Access-Control and Transfer-Encoding headers from the original trezord response
         h = dict(resp.headers)
-        access = resp.headers.get("Access-Control-Allow-Origin", None)
-        if access is not None:
-            h.pop("Access-Control-Allow-Origin", None)
-            # Response header override otherwise it points to docker container local ip
-            self.send_header("Access-Control-Allow-Origin", "*")
+        h.pop("Transfer-Encoding", "chunked") # this header returns empty response to the caller (trezor-link)
+        h.pop("Access-Control-Allow-Origin", None)
         for key, value in h.items():
             self.send_header(key, value)
         self.end_headers()
