@@ -134,14 +134,19 @@ def reset_device():
     reset(client, skip_backup=True, pin_protection=False)
     client.close()
 
-
-def decision():
+def press_yes():
     client = DebugLink(get_device().find_debug())
     client.open()
     time.sleep(SLEEP)
     client.press_yes()
     client.close()
 
+def press_no():
+    client = DebugLink(get_device().find_debug())
+    client.open()
+    time.sleep(SLEEP)
+    client.press_no()
+    client.close()
 
 # enter recovery word or pin
 # enter pin not possible for T2, it is locked, for T1 it is possible
