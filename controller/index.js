@@ -127,6 +127,12 @@ function emulatorSetup() {
     });
 }
 
+function emulatorReadAndConfirmMnemonic() {
+    _send({
+        type: 'emulator-read-and-confirm-mnemonic',
+    });
+}
+
 function emulatorPressYes() {
     _send({
         type: 'emulator-press-yes',
