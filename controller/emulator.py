@@ -178,12 +178,24 @@ def read_and_confirm_mnemonic():
     client = DebugLink(get_device().find_debug())
     client.open()
     time.sleep(SLEEP)
+    
     client.press_yes()
     time.sleep(SLEEP)
-
-    # it appears that doing read_mnemonic_secret also skips otherwise necessary "swiping"
-    mnem = client.read_mnemonic_secret().decode("utf-8")
+    
+    mnem = client.state().mnemonic_secret.decode("utf-8")
     mnemonic = mnem.split()
+    time.sleep(SLEEP)
+
+    client.swipe_up()
+    time.sleep(SLEEP)
+
+    client.swipe_up()
+    time.sleep(SLEEP)
+
+    client.swipe_up()
+    time.sleep(SLEEP)
+
+    client.press_yes()
     time.sleep(SLEEP)
 
     index = client.read_reset_word_pos()
