@@ -90,11 +90,16 @@ class Handler(BaseHTTPRequestHandler):
 
     def send_resp_headers(self, resp):
         # response Access-Control header needs to be exact with original request from the caller
-        self.send_header("Access-Control-Allow-Origin", self.headers.get("Access-Control-Allow-Origin", "*"))
+        self.send_header(
+            "Access-Control-Allow-Origin",
+            self.headers.get("Access-Control-Allow-Origin", "*"),
+        )
 
         # remove Access-Control and Transfer-Encoding headers from the original trezord response
         h = dict(resp.headers)
-        h.pop("Transfer-Encoding", "chunked") # this header returns empty response to the caller (trezor-link)
+        h.pop(
+            "Transfer-Encoding", "chunked"
+        )  # this header returns empty response to the caller (trezor-link)
         h.pop("Access-Control-Allow-Origin", None)
         for key, value in h.items():
             self.send_header(key, value)

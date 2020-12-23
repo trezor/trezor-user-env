@@ -84,7 +84,7 @@ def message_received(client, server, message):
             response = {"success": True}
         elif cmdType == "emulator-press-no":
             emulator.press_no()
-            response = {"success": True}    
+            response = {"success": True}
         elif cmdType == "emulator-input":
             emulator.input(cmd["value"])
             response = {"success": True}
