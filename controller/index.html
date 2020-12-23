@@ -65,11 +65,9 @@
 
     <section>
         <h3>Server</h3>
-        <form onsubmit="onSubmit();">
-            <textarea id="input" rows="3"></textarea>
-            <br />
-            <input type="submit" value="Send JSON">
-        </form>
+        <textarea id="raw-input" rows="3"></textarea>
+        <br />
+        <button onclick="onSubmit();">Send JSON</button>
         <hr />
         <button onclick="exit();">Exit server</button>
         <button onclick="onCloseClick();">Close websocket</button>
