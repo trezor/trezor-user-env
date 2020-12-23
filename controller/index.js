@@ -78,7 +78,7 @@ function _send(json) {
 }
 
 function onSubmit() {
-    const input = document.getElementById('input');
+    const input = document.getElementById('raw-input');
     _send(JSON.parse(input.value));
     output(`send: ${input.value}`);
     input.value = '';
