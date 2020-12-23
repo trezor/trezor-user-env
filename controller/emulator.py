@@ -235,6 +235,9 @@ def apply_settings(passphrase_always_on_device=None):
 
 def allow_unsafe():
     client = TrezorClientDebugLink(get_device())
+    # ignore for Legacy firmware, there is no such setting
+    if client.features.major_version == 1:
+        return
     client.open()
     time.sleep(SLEEP)
     device.apply_settings(client, safety_checks=1)  # TODO
