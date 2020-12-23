@@ -2,6 +2,7 @@ import os
 import signal
 import time
 from subprocess import Popen
+from pathlib import Path
 
 from trezorlib import debuglink, device
 from trezorlib.debuglink import DebugLink, TrezorClientDebugLink
@@ -12,6 +13,8 @@ from trezorlib.transport.udp import UdpTransport
 import bridge
 
 proc = None
+
+ROOT_DIR = Path(__file__).parent.parent.resolve()
 
 # when communicating with device via bridge/debuglink, this sleep is required otherwise there
 # may appear weird race conditions in communications. when not going through bridge but webusb
@@ -63,21 +66,20 @@ def start(version, wipe):
     if proc is not None:
         stop()
 
-    # normalize path to be relative to this folder, not pwd
-    path = os.path.join(os.path.dirname(__file__), "../firmware/bin")
+    path = ROOT_DIR / "firmware/bin"
 
     if version[0] == "2":
-        PROFILE = "/var/tmp/trezor.flash"
-        if wipe and os.path.exists(PROFILE):
-            os.remove(PROFILE)
+        profile = "/var/tmp/trezor.flash"
+        if wipe and os.path.exists(profile):
+            os.remove(profile)
 
         command = "{path}/trezor-emu-core-v{version} -O0 -X heapsize=20M -m main".format(
             path=path, version=version
         )
     else:
-        PROFILE = os.path.join(os.path.dirname(__file__), "emulator.img")
-        if wipe and os.path.exists(PROFILE):
-            os.remove(PROFILE)
+        profile = ROOT_DIR / "emulator.img"
+        if wipe and os.path.exists(profile):
+            os.remove(profile)
 
         command = "TREZOR_OLED_SCALE={scale} {path}/trezor-emu-legacy-v{version} -O0".format(
             scale=TREZOR_ONE_OLED_SCALE, path=path, version=version
@@ -134,6 +136,7 @@ def reset_device():
     reset(client, skip_backup=True, pin_protection=False)
     client.close()
 
+
 def press_yes():
     client = DebugLink(get_device().find_debug())
     client.open()
@@ -141,12 +144,14 @@ def press_yes():
     client.press_yes()
     client.close()
 
+
 def press_no():
     client = DebugLink(get_device().find_debug())
     client.open()
     time.sleep(SLEEP)
     client.press_no()
     client.close()
+
 
 # enter recovery word or pin
 # enter pin not possible for T2, it is locked, for T1 it is possible
@@ -178,10 +183,10 @@ def read_and_confirm_mnemonic():
     client = DebugLink(get_device().find_debug())
     client.open()
     time.sleep(SLEEP)
-    
+
     client.press_yes()
     time.sleep(SLEEP)
-    
+
     mnem = client.state().mnemonic_secret.decode("utf-8")
     mnemonic = mnem.split()
     time.sleep(SLEEP)
