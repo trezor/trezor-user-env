@@ -7,9 +7,10 @@ import argparse
 from termcolor import colored
 
 import bridge
+import bridge_proxy
+import controller
 import emulator
 import suite
-import proxy
 from websocket_server import WebsocketServer
 
 
@@ -21,6 +22,7 @@ def cleanup():
 atexit.register(cleanup)
 
 PORT = 9001
+BRIDGE_PROXY = False
 
 
 # Called for every client connecting (after handshake)
@@ -113,9 +115,13 @@ def message_received(client, server, message):
         elif cmdType == "bridge-start":
             version = cmd.get("version") or binaries.BRIDGES[0]
             bridge.start(version)
+            if BRIDGE_PROXY:
+                bridge_proxy.start()
             response = {"success": True}
         elif cmdType == "bridge-stop":
             bridge.stop()
+            if BRIDGE_PROXY:
+                bridge_proxy.stop()
             response = {"success": True}
         elif cmdType == "exit":
             emulator.stop()
@@ -142,7 +148,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-v", "--verbosity", action="count", default=0)
     parser.add_argument("--work-dir")
-    parser.add_argument("--disable-proxy", action="store_true")
+    parser.add_argument("--disable-bridge-proxy", action="store_true")
     args = parser.parse_args()
 
     effective_work_dir = args.work_dir
@@ -159,15 +165,15 @@ if __name__ == "__main__":
     print("Working from {}".format(colored(os.getcwd(), "yellow")))
 
     binaries.explore(args)
+    controller.start()
 
-    if not args.disable_proxy:
-        print("Starting proxy")
-        proxy.start()
+    if args.disable_bridge_proxy:
         print(
-            "Controller with proxy running at: http://{}:{}".format(
-                proxy.PROXY_IP, proxy.PROXY_PORT
-            )
+            "Bridge proxy disabled."
+            "Communication with Bridge needs to be done directly."
         )
+    else:
+        BRIDGE_PROXY = True
 
     print("Starting websocket server on port: {}".format(colored(str(PORT), "cyan")))
     server = WebsocketServer(PORT)
