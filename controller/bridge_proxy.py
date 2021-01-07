@@ -13,14 +13,18 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 from socketserver import ThreadingMixIn
 
 import requests
+from termcolor import colored
+import sys
 
 TREZORD_HOST = "0.0.0.0:21325"
 HEADERS = {
     "Host": TREZORD_HOST,
     "Origin": "https://user-env.trezor.io",
 }
-PROXY_IP = "0.0.0.0"
-PROXY_PORT = 21326
+IP = "0.0.0.0"
+PORT = 21326
+SERVER = None
+LOG_COLOR = "green"
 
 
 # POST request headers override
@@ -47,21 +51,6 @@ class Handler(BaseHTTPRequestHandler):
                 self.send_response(resp.status_code)
                 self.send_resp_headers(resp)
                 self.wfile.write(resp.content)
-            else:
-                # serve controller.html
-                # TODO: use os.path to build req_path properly (like in trezord)
-                if self.path == "/":
-                    req_path = "./index.html"
-                else:
-                    req_path = os.curdir + os.sep + self.path
-
-                f = open(os.path.join("./controller", req_path), "rb")
-
-                self.send_response(200)
-                self.send_header("Content-type", "text/html")
-                self.end_headers()
-                self.wfile.write(f.read())
-                f.close()
             return
         except Exception as e:
             self.send_error(404, "Error trying to proxy: %s Error: %s" % (self.path, e))
@@ -106,19 +95,40 @@ class Handler(BaseHTTPRequestHandler):
             self.send_header(key, value)
         self.end_headers()
 
+    def log_message(self, format, *args):
+        """Adds color to make the log clearer."""
+        sys.stderr.write(
+            colored(
+                "BRIDGE PROXY: %s - - [%s] %s\n"
+                % (self.address_string(), self.log_date_time_string(), format % args),
+                LOG_COLOR,
+            )
+        )
+
 
 class ThreadingServer(ThreadingMixIn, HTTPServer):
     pass
 
 
 def start():
-    httpd = ThreadingServer((PROXY_IP, PROXY_PORT), Handler)
-    httpd.daemon_threads = True
-    thread = threading.Thread(target=httpd.serve_forever)
+    print(
+        colored(
+            "BRIDGE PROXY: Starting at {}:{}. All requests will be forwarded to Bridge.".format(
+                IP, PORT
+            ),
+            LOG_COLOR,
+        )
+    )
+    global SERVER
+    assert SERVER is None
+    SERVER = ThreadingServer((IP, PORT), Handler)
+    SERVER.daemon_threads = True
+    thread = threading.Thread(target=SERVER.serve_forever)
     thread.daemon = True
     thread.start()
-    return thread
 
 
-if __name__ == "__main__":
-    start()
+def stop():
+    print(colored("BRIDGE PROXY: Stopping."), LOG_COLOR)
+    assert isinstance(SERVER, ThreadingServer)
+    SERVER.shutdown()
