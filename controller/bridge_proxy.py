@@ -127,6 +127,6 @@ def start():
 
 
 def stop():
-    print(colored("BRIDGE PROXY: Stopping."), LOG_COLOR)
+    print(colored("BRIDGE PROXY: Stopping", LOG_COLOR))
     assert isinstance(SERVER, ThreadingServer)
     SERVER.shutdown()

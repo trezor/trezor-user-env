@@ -32,6 +32,7 @@ let
     (if stdenv.isLinux then ps.trezor else trezorWithoutUdev ps)
     ps.black
     ps.isort
+    ps.websockets
   ]);
 in
   stdenv.mkDerivation {
