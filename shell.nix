@@ -16,6 +16,7 @@ let
     ps.isort
     ps.mypy
     ps.flake8
+    ps.websockets
   ]);
 in
   stdenv.mkDerivation {
