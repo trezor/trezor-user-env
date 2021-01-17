@@ -95,7 +95,7 @@ class Handler(BaseHTTPRequestHandler):
 
     def log_message(self, format, *args):
         """Adds color to make the log clearer."""
-        sys.stderr.write(
+        sys.stdout.write(
             colored(
                 "BRIDGE PROXY: %s - - [%s] %s\n"
                 % (self.address_string(), self.log_date_time_string(), format % args),

@@ -19,6 +19,8 @@ def cleanup():
     bridge.stop()
 
 
+print("A")
+
 atexit.register(cleanup)
 
 PORT = 9001
@@ -145,6 +147,7 @@ def message_received(client, server, message):
 
 
 if __name__ == "__main__":
+    print("B")
     parser = argparse.ArgumentParser()
     parser.add_argument("-v", "--verbosity", action="count", default=0)
     parser.add_argument("--work-dir")
