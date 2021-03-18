@@ -62,6 +62,7 @@ def explore_suites():
 
 def explore_bridges():
     # TODO automate
+    BRIDGES.append("2.0.31")
     BRIDGES.append("2.0.27")
     BRIDGES.append("2.0.26")
     BRIDGES.append("2.0.19")
