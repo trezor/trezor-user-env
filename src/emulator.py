@@ -264,6 +264,86 @@ def read_and_confirm_mnemonic() -> None:
     client.close()
 
 
+def read_and_confirm_mnemonic_shamir():
+    client = DebugLink(get_device().find_debug())
+    client.open()
+    time.sleep(SLEEP)
+
+    client.press_yes()
+
+    # one group
+
+    client.swipe_left()
+    time.sleep(SLEEP)
+
+    client.swipe_left()
+    time.sleep(SLEEP)
+
+    client.swipe_left()
+    time.sleep(SLEEP)
+
+    client.swipe_left()
+    time.sleep(SLEEP)
+
+    client.press_yes()
+    time.sleep(SLEEP)
+
+    # one share
+
+    client.press_yes()
+    time.sleep(SLEEP)
+
+    # set the treshold for one
+
+    client.press_yes()
+    time.sleep(SLEEP)
+    client.press_yes()
+    time.sleep(SLEEP)
+    client.press_yes()
+    time.sleep(SLEEP)
+
+    client.press_yes()
+    time.sleep(SLEEP)
+
+    mnem = client.state().mnemonic_secret.decode("utf-8")
+    mnemonic = mnem.split()
+    time.sleep(SLEEP)
+
+    client.swipe_up()
+    time.sleep(SLEEP)
+
+    client.swipe_up()
+    time.sleep(SLEEP)
+
+    client.swipe_up()
+    time.sleep(SLEEP)
+
+    client.swipe_up()
+    time.sleep(SLEEP)
+
+    client.swipe_up()
+    time.sleep(SLEEP)
+
+    client.press_yes()
+    time.sleep(SLEEP)
+
+    index = client.read_reset_word_pos()
+    client.input(mnemonic[index])
+    time.sleep(SLEEP)
+
+    index = client.read_reset_word_pos()
+    client.input(mnemonic[index])
+    time.sleep(SLEEP)
+
+    index = client.read_reset_word_pos()
+    client.input(mnemonic[index])
+    time.sleep(SLEEP)
+
+    client.press_yes()
+    client.press_yes()
+    client.close()
+
+
 def select_num_of_words(num_of_words: int = 12) -> None:
     client = DebugLink(get_device().find_debug())
     client.open()
