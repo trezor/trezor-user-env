@@ -11,7 +11,7 @@ This environment is meant to support Trezor development - both Firmware and Suit
 - To be Nix-native but also offer Docker image to allow non-NixOS 
 developers to use it.
 
-## How to
+## How to run
 
 _You can also run trezor-user-env "natively" if you are on NixOS but we mainly support the Docker way as described here._
 
@@ -59,3 +59,17 @@ For a future use you can omit the second step and run `up` (the third step) dire
 ### Windows
 
 Currently not supported, but should work using docker as well.
+
+## How to develop
+
+In case you need to modify something in trezor-user-env you have two options.
+
+### Natively in NixOS
+
+If you are using NixOS you can do the changes locally and then run the controller yourself. Run it via `nix-shell controller/shell.nix --run 'python controller/main.py'`. Make sure you have run `{firmware,suite,trezord-go}/bin/download.sh` beforehand otherwise you'll have old binaries.
+
+This is suitable for smaller changes or things you can check via the HTML dashboard easily. However, if you are adding some functionality to trezor-user-env mainly because of Suite end-to-end tests, it is probably better to go the CI way (below). Otherwise you would need to run the whole Suite test suite locally.
+
+### Let CI do it
+
+The simpler but less flexible way is to let the [CI](https://gitlab.com/satoshilabs/trezor/trezor-user-env/pipelines) build it. You can create a branch, commit your changes and then push them. The CI will build it for you and tag the appropriate docker image as `test`. You can then modify all scripts/commands and use `registry.gitlab.com/satoshilabs/trezor/trezor-user-env/trezor-user-env:test` instead of `registry.gitlab.com/satoshilabs/trezor/trezor-user-env/trezor-user-env` which defaults to the `latest` tag which equals trezor-user-env's master. Suite's docker-compose files in the `docker` subdirectory are the place where you want to change this.
