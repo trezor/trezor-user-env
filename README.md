@@ -15,6 +15,8 @@ developers to use it.
 
 _You can also run trezor-user-env "natively" if you are on NixOS but we mainly support the Docker way as described here._
 
+In case you have installed Trezor Bridge previously there will be a port conflict, please make sure it is not running. Either uninstall it completely or stop the service.
+
 ### Linux
 
 #### Prerequisites
