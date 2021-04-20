@@ -320,6 +320,13 @@ class WebSocketHandler(StreamRequestHandler):
     def handshake(self):
         headers = self.read_http_headers()
 
+        # allow closed requests and respond with OK status
+        # useful for health check using curl
+        if "connection" in headers and headers["connection"] == "close":
+            self.keep_alive = False
+            self.request.send(("HTTP/1.1 200 OK\r\n").encode())
+            return
+
         try:
             assert headers["upgrade"].lower() == "websocket"
         except AssertionError:
@@ -356,7 +363,8 @@ class WebSocketHandler(StreamRequestHandler):
         return response_key.decode("ASCII")
 
     def finish(self):
-        self.server._client_left_(self)
+        if self.valid_client:
+            self.server._client_left_(self)
 
 
 def encode_to_UTF8(data):
