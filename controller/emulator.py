@@ -4,17 +4,17 @@ import time
 from subprocess import Popen
 from pathlib import Path
 
-from trezorlib import debuglink, device
-from trezorlib.debuglink import DebugLink, TrezorClientDebugLink
-from trezorlib.device import reset, wipe
-from trezorlib.transport.bridge import BridgeTransport
-from trezorlib.transport.udp import UdpTransport
+from trezorlib import debuglink, device  # type: ignore
+from trezorlib.debuglink import DebugLink, TrezorClientDebugLink  # type: ignore
+from trezorlib.device import reset, wipe  # type: ignore
+from trezorlib.transport.bridge import BridgeTransport  # type: ignore
+from trezorlib.transport.udp import UdpTransport  # type: ignore
 
 import bridge
 
 proc = None
 
-ROOT_DIR = Path(__file__).parent.parent.resolve()
+ROOT_DIR = str(Path(__file__).parent.parent.resolve())
 
 # when communicating with device via bridge/debuglink, this sleep is required otherwise there
 # may appear weird race conditions in communications. when not going through bridge but webusb
@@ -25,7 +25,7 @@ SLEEP = 0.501
 TREZOR_ONE_OLED_SCALE = 2
 
 
-def get_bridge_device():
+def get_bridge_device() -> device:
     devices = BridgeTransport.enumerate()
     for d in devices:
         d.find_debug()
@@ -33,7 +33,7 @@ def get_bridge_device():
     raise RuntimeError("No debuggable bridge device found")
 
 
-def wait_for_bridge_device():
+def wait_for_bridge_device() -> device:
     start = time.monotonic()
     timeout = 15
     while True:
@@ -47,26 +47,26 @@ def wait_for_bridge_device():
             time.sleep(0.5)
 
 
-def wait_for_udp_device():
+def wait_for_udp_device() -> device:
     d = UdpTransport()
     d.wait_until_ready(timeout=8)
     return d
 
 
-def get_device():
+def get_device() -> device:
     if bridge.is_running():
         return wait_for_bridge_device()
 
     return wait_for_udp_device()
 
 
-def start(version, wipe):
+def start(version: str, wipe: bool) -> None:
     global proc
 
     if proc is not None:
         stop()
 
-    path = ROOT_DIR / "firmware/bin"
+    path = os.path.join(ROOT_DIR, "firmware/bin")
 
     if version[0] == "2":
         profile = "/var/tmp/trezor.flash"
@@ -77,7 +77,7 @@ def start(version, wipe):
             path=path, version=version
         )
     else:
-        profile = ROOT_DIR / "emulator.img"
+        profile = os.path.join(ROOT_DIR, "emulator.img")
         if wipe and os.path.exists(profile):
             os.remove(profile)
 
@@ -94,17 +94,23 @@ def start(version, wipe):
         # - run T1 & T2 emulator at once
         # - run two T2/T1 emulators
         proc = Popen(command, shell=True, preexec_fn=os.setsid)
-        print("the commandline is {}".format(proc.args))
+        print("the commandline is {}".format(str(proc.args)))
 
 
-def stop():
+def stop() -> None:
     global proc
     if proc is not None:
         os.killpg(os.getpgid(proc.pid), signal.SIGTERM)
         proc = None
 
 
-def setup_device(mnemonic, pin, passphrase_protection, label, needs_backup=None):
+def setup_device(
+    mnemonic: str,
+    pin: str,
+    passphrase_protection: bool,
+    label: str,
+    needs_backup: bool = False
+) -> None:
     # TODO:
     # - check if device is acquired otherwise throws "wrong previous session" from bridge
     client = TrezorClientDebugLink(get_device())
@@ -116,12 +122,12 @@ def setup_device(mnemonic, pin, passphrase_protection, label, needs_backup=None)
         pin,
         passphrase_protection,
         label,
-        needs_backup=bool(needs_backup),
+        needs_backup=needs_backup,
     )
     client.close()
 
 
-def wipe_device():
+def wipe_device() -> None:
     client = TrezorClientDebugLink(get_device())
     client.open()
     time.sleep(SLEEP)
@@ -129,7 +135,7 @@ def wipe_device():
     client.close()
 
 
-def reset_device():
+def reset_device() -> None:
     client = TrezorClientDebugLink(get_device())
     client.open()
     time.sleep(SLEEP)
@@ -137,7 +143,7 @@ def reset_device():
     client.close()
 
 
-def press_yes():
+def press_yes() -> None:
     client = DebugLink(get_device().find_debug())
     client.open()
     time.sleep(SLEEP)
@@ -145,7 +151,7 @@ def press_yes():
     client.close()
 
 
-def press_no():
+def press_no() -> None:
     client = DebugLink(get_device().find_debug())
     client.open()
     time.sleep(SLEEP)
@@ -156,7 +162,7 @@ def press_no():
 # enter recovery word or pin
 # enter pin not possible for T2, it is locked, for T1 it is possible
 # change pin possible, use input(word=pin-string)
-def input(value):
+def input(value: str) -> None:
     client = DebugLink(get_device().find_debug())
     client.open()
     time.sleep(SLEEP)
@@ -164,7 +170,7 @@ def input(value):
     client.close()
 
 
-def swipe(direction):
+def swipe(direction: str) -> None:
     client = DebugLink(get_device().find_debug())
     client.open()
     time.sleep(SLEEP)
@@ -179,7 +185,7 @@ def swipe(direction):
     client.close()
 
 
-def read_and_confirm_mnemonic():
+def read_and_confirm_mnemonic() -> None:
     client = DebugLink(get_device().find_debug())
     client.open()
     time.sleep(SLEEP)
@@ -220,7 +226,7 @@ def read_and_confirm_mnemonic():
     client.close()
 
 
-def select_num_of_words(num_of_words=12):
+def select_num_of_words(num_of_words: int = 12) -> None:
     client = DebugLink(get_device().find_debug())
     client.open()
     time.sleep(SLEEP)
@@ -228,17 +234,17 @@ def select_num_of_words(num_of_words=12):
     client.close()
 
 
-def apply_settings(passphrase_always_on_device=None):
+def apply_settings(passphrase_always_on_device: bool = False) -> None:
     client = TrezorClientDebugLink(get_device())
     client.open()
     time.sleep(SLEEP)
     device.apply_settings(
-        client, passphrase_always_on_device=bool(passphrase_always_on_device),
+        client, passphrase_always_on_device=passphrase_always_on_device,
     )
     client.close()
 
 
-def allow_unsafe():
+def allow_unsafe() -> None:
     client = TrezorClientDebugLink(get_device())
     # ignore for Legacy firmware, there is no such setting
     if client.features.major_version == 1:

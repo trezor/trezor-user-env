@@ -1,9 +1,9 @@
 import glob
-from pathlib import Path
 from termcolor import colored
 
-ROOT_DIR = Path(__file__).parent.parent.resolve()
-FIRMWARES = {
+from typing import Dict, Any
+
+FIRMWARES: Dict[str, list] = {
     "T1": [],
     "TT": [],
 }
@@ -11,13 +11,13 @@ SUITES = []
 BRIDGES = []
 
 
-def explore(args):
+def explore(args: Any) -> None:
     explore_firmwares(args)
     explore_suites()
     explore_bridges()
 
 
-def explore_firmwares(args):
+def explore_firmwares(args: Any) -> None:
     scan_glob = "firmware/bin/*"
     if args.verbosity > 0:
         print("Scanning {}".format(colored(scan_glob, "yellow")))
@@ -48,19 +48,19 @@ def explore_firmwares(args):
         model.sort(key=sort_firmwares, reverse=True)
 
 
-def sort_firmwares(version):
+def sort_firmwares(version: str) -> tuple:
     if "master" in version:
         return 0, 0, 0
     return tuple(int(n) for n in version.split("."))
 
 
-def explore_suites():
+def explore_suites() -> None:
     # TODO automate
     SUITES.append("20.8.1")
     SUITES.append("20.7.1")
 
 
-def explore_bridges():
+def explore_bridges() -> None:
     # TODO automate
     BRIDGES.append("2.0.31")
     BRIDGES.append("2.0.27")

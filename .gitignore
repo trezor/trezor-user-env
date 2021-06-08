@@ -10,3 +10,4 @@ suite/bin/*
 !suite/bin/download.sh
 !trezord-go/bin/download.sh
 emulator.img
+.mypy_cache

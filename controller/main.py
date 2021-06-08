@@ -1,11 +1,13 @@
 import atexit
 import json
 import os
-import binaries
 import argparse
 
 from termcolor import colored
 
+from typing import Dict, Any
+
+import binaries
 import bridge
 import emulator
 import suite
@@ -13,7 +15,7 @@ import proxy
 from websocket_server import WebsocketServer
 
 
-def cleanup():
+def cleanup() -> None:
     emulator.stop()
     bridge.stop()
 
@@ -24,7 +26,7 @@ PORT = 9001
 
 
 # Called for every client connecting (after handshake)
-def new_client(client, server):
+def new_client(client, server) -> None:
     intro = {
         "type": "client",
         "id": client["id"],
@@ -37,104 +39,103 @@ def new_client(client, server):
 
 
 # Called for every client disconnecting
-def client_left(client, server):
-    print(colored("Client(%d) disconnected" % client["id"], "blue"))
+def client_left(client, server) -> None:
+    print(colored("Client({}) disconnected".format(client["id"]), "blue"))
 
 
 # Called when a client sends a message
-def message_received(client, server, message):
-    print("Client(%d) request: %s" % (client["id"], message))
+def message_received(client, server, message: str) -> None:
+    print("Client({}) request: {}".format(client["id"], message))
     try:
         cmd = json.loads(message)
-        cmdId = cmd["id"]
-        cmdType = cmd["type"]
+        cmd_id = cmd["id"]
+        cmd_type = cmd["type"]
     except:
         server.send_message(
             client, json.dumps({"success": False, "error": "Invalid json message"})
         )
         return
 
-    response = None
+    response: Dict[str, Any] = {}
     try:
-        if cmdType == "ping":
+        if cmd_type == "ping":
             server.send_message(client, "pong")
-        elif cmdType == "suite-start":
+        elif cmd_type == "suite-start":
             version = cmd.get("version")
             suite.start(version)
             response = {"success": True}
-        elif cmdType == "emulator-start":
+        elif cmd_type == "emulator-start":
             version = cmd.get("version") or binaries.FIRMWARES["TT"][0]
             wipe = cmd.get("wipe") or False
             emulator.start(version, wipe)
             response = {"success": True}
-        elif cmdType == "emulator-stop":
+        elif cmd_type == "emulator-stop":
             emulator.stop()
             response = {"success": True}
-        elif cmdType == "emulator-setup":
+        elif cmd_type == "emulator-setup":
             emulator.setup_device(
                 cmd["mnemonic"],
                 cmd["pin"],
                 cmd["passphrase_protection"],
                 cmd["label"],
-                cmd.get("needs_backup"),
+                cmd.get("needs_backup") or False,
             )
             response = {"success": True}
-        elif cmdType == "emulator-press-yes":
+        elif cmd_type == "emulator-press-yes":
             emulator.press_yes()
             response = {"success": True}
-        elif cmdType == "emulator-press-no":
+        elif cmd_type == "emulator-press-no":
             emulator.press_no()
             response = {"success": True}
-        elif cmdType == "emulator-input":
+        elif cmd_type == "emulator-input":
             emulator.input(cmd["value"])
             response = {"success": True}
-        elif cmdType == "emulator-read-and-confirm-mnemonic":
+        elif cmd_type == "emulator-read-and-confirm-mnemonic":
             emulator.read_and_confirm_mnemonic()
             response = {"success": True}
-        elif cmdType == "emulator-allow-unsafe-paths":
+        elif cmd_type == "emulator-allow-unsafe-paths":
             emulator.allow_unsafe()
             response = {"success": True}
-        elif cmdType == "select-num-of-words":
+        elif cmd_type == "select-num-of-words":
             emulator.select_num_of_words(cmd["num"])
             response = {"success": True}
-        elif cmdType == "emulator-swipe":
+        elif cmd_type == "emulator-swipe":
             emulator.swipe(cmd["direction"])
             response = {"success": True}
-        elif cmdType == "emulator-wipe":
+        elif cmd_type == "emulator-wipe":
             emulator.wipe_device()
             response = {"success": True}
-        elif cmdType == "emulator-apply-settings":
+        elif cmd_type == "emulator-apply-settings":
             emulator.apply_settings(cmd["passphrase_always_on_device"],)
             response = {"success": True}
-        elif cmdType == "emulator-reset-device":
-            resp = emulator.reset_device()
-            print(resp)
+        elif cmd_type == "emulator-reset-device":
+            emulator.reset_device()
             response = {"success": True}
-        elif cmdType == "bridge-start":
+        elif cmd_type == "bridge-start":
             version = cmd.get("version") or binaries.BRIDGES[0]
             bridge.start(version)
             response = {"success": True}
-        elif cmdType == "bridge-stop":
+        elif cmd_type == "bridge-stop":
             bridge.stop()
             response = {"success": True}
-        elif cmdType == "exit":
+        elif cmd_type == "exit":
             emulator.stop()
             bridge.stop()
             os._exit(1)
         else:
             response = {"success": False, "error": "unknown command"}
             server.send_message(client, json.dumps(response))
-            print("Client(%d) response: %s" % (client["id"], str(response)))
+            print("Client({}) response: {}".format(client["id"], str(response)))
             return
-        print("Client(%d) response: %s" % (client["id"], str(response)))
-        if response is not None:
+        print("Client({}) response: {}".format(client["id"], str(response)))
+        if response:
             server.send_message(
-                client, json.dumps(dict(response, id=cmdId, success=True))
+                client, json.dumps(dict(response, id=cmd_id, success=True))
             )
     except RuntimeError as e:
-        print("Client(%d) response: %s" % (client["id"], str(e)))
+        print("Client({}) response: {}".format(client["id"], str(e)))
         server.send_message(
-            client, json.dumps({"id": cmdId, "success": False, "error": str(e)})
+            client, json.dumps({"id": cmd_id, "success": False, "error": str(e)})
         )
 
 

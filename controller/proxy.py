@@ -24,17 +24,17 @@ PROXY_PORT = 21326
 
 # POST request headers override
 # origin is set to the actual machine that made the call not localhost
-def merge_headers(original):
+def merge_headers(original: dict) -> dict:
     headers = original.copy()
     headers.update(HEADERS)
     return headers
 
 
 class Handler(BaseHTTPRequestHandler):
-    def do_HEAD(self):
-        self.do_GET(body=False)
+    def do_HEAD(self) -> None:
+        self.do_GET()
 
-    def do_GET(self, body=True):
+    def do_GET(self) -> None:
         try:
             # print("GET: Headers: {}".format(self.headers))
             if self.path == "/status/":
@@ -63,9 +63,9 @@ class Handler(BaseHTTPRequestHandler):
                 f.close()
             return
         except Exception as e:
-            self.send_error(404, "Error trying to proxy: %s Error: %s" % (self.path, e))
+            self.send_error(404, "Error trying to proxy: {} Error: {}".format(self.path, e))
 
-    def do_POST(self, body=True):
+    def do_POST(self, body: bool = True) -> None:
         try:
             # print("POST Path: {}".format(self.path))
             # print("POST Headers: {}".format(self.headers))
@@ -86,9 +86,9 @@ class Handler(BaseHTTPRequestHandler):
                 self.wfile.write(resp.content)
             return
         except Exception as e:
-            self.send_error(404, "Error trying to proxy: %s Error: %s" % (self.path, e))
+            self.send_error(404, "Error trying to proxy: {} Error: {}".format(self.path, e))
 
-    def send_resp_headers(self, resp):
+    def send_resp_headers(self, resp) -> None:
         # response Access-Control header needs to be exact with original request from the caller
         self.send_header(
             "Access-Control-Allow-Origin",
@@ -110,7 +110,7 @@ class ThreadingServer(ThreadingMixIn, HTTPServer):
     pass
 
 
-def start():
+def start() -> threading.Thread:
     httpd = ThreadingServer((PROXY_IP, PROXY_PORT), Handler)
     httpd.daemon_threads = True
     thread = threading.Thread(target=httpd.serve_forever)

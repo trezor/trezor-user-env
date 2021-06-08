@@ -9,6 +9,8 @@ from base64 import b64encode
 from hashlib import sha1
 from socket import error as SocketError
 
+from typing import List, Callable, Any
+
 if sys.version_info[0] < 3:
     from SocketServer import ThreadingMixIn, TCPServer, StreamRequestHandler
 else:
@@ -52,40 +54,40 @@ OPCODE_PONG = 0xA
 
 
 class API:
-    def run_forever(self):
+    def run_forever(self) -> None:
         try:
-            logger.info("Listening on port %d for clients.." % self.port)
-            self.serve_forever()
+            logger.info("Listening on port {} for clients..".format(self.port))  # type: ignore
+            self.serve_forever()  # type: ignore
         except KeyboardInterrupt:
-            self.server_close()
+            self.server_close()  # type: ignore
             logger.info("Server terminated.")
         except Exception as e:
             logger.error(str(e), exc_info=True)
             exit(1)
 
-    def new_client(self, client, server):
+    def new_client(self, client, server) -> None:
         pass
 
-    def client_left(self, client, server):
+    def client_left(self, client, server) -> None:
         pass
 
-    def message_received(self, client, server, message):
+    def message_received(self, client, server, message: str) -> None:
         pass
 
-    def set_fn_new_client(self, fn):
-        self.new_client = fn
+    def set_fn_new_client(self, fn: Callable) -> None:
+        self.new_client = fn  # type: ignore
 
-    def set_fn_client_left(self, fn):
-        self.client_left = fn
+    def set_fn_client_left(self, fn: Callable) -> None:
+        self.client_left = fn  # type: ignore
 
-    def set_fn_message_received(self, fn):
-        self.message_received = fn
+    def set_fn_message_received(self, fn: Callable) -> None:
+        self.message_received = fn  # type: ignore
 
-    def send_message(self, client, msg):
-        self._unicast_(client, msg)
+    def send_message(self, client, msg: str) -> None:
+        self._unicast_(client, msg)  # type: ignore
 
-    def send_message_to_all(self, msg):
-        self._multicast_(msg)
+    def send_message_to_all(self, msg: str) -> None:
+        self._multicast_(msg)  # type: ignore
 
 
 # ------------------------- Implementation -----------------------------
@@ -116,24 +118,29 @@ class WebsocketServer(ThreadingMixIn, TCPServer, API):
     allow_reuse_address = True
     daemon_threads = True  # comment to keep threads alive until finished
 
-    clients = []
+    clients: List[dict] = []
     id_counter = 0
 
-    def __init__(self, port, host="0.0.0.0", loglevel=logging.WARNING):
+    def __init__(
+        self,
+        port: int,
+        host: str = "0.0.0.0",
+        loglevel=logging.WARNING
+    ) -> None:
         logger.setLevel(loglevel)
         TCPServer.__init__(self, (host, port), WebSocketHandler)
         self.port = self.socket.getsockname()[1]
 
-    def _message_received_(self, handler, msg):
+    def _message_received_(self, handler, msg: str) -> None:
         self.message_received(self.handler_to_client(handler), self, msg)
 
-    def _ping_received_(self, handler, msg):
+    def _ping_received_(self, handler, msg: str) -> None:
         handler.send_pong(msg)
 
-    def _pong_received_(self, handler, msg):
+    def _pong_received_(self, handler, msg: str) -> None:
         pass
 
-    def _new_client_(self, handler):
+    def _new_client_(self, handler) -> None:
         self.id_counter += 1
         client = {
             "id": self.id_counter,
@@ -143,16 +150,16 @@ class WebsocketServer(ThreadingMixIn, TCPServer, API):
         self.clients.append(client)
         self.new_client(client, self)
 
-    def _client_left_(self, handler):
+    def _client_left_(self, handler) -> None:
         client = self.handler_to_client(handler)
         self.client_left(client, self)
         if client in self.clients:
             self.clients.remove(client)
 
-    def _unicast_(self, to_client, msg):
+    def _unicast_(self, to_client: dict, msg: str) -> None:
         to_client["handler"].send_message(msg)
 
-    def _multicast_(self, msg):
+    def _multicast_(self, msg: str) -> None:
         for client in self.clients:
             self._unicast_(client, msg)
 
@@ -163,17 +170,17 @@ class WebsocketServer(ThreadingMixIn, TCPServer, API):
 
 
 class WebSocketHandler(StreamRequestHandler):
-    def __init__(self, socket, addr, server):
+    def __init__(self, socket, addr, server) -> None:
         self.server = server
         StreamRequestHandler.__init__(self, socket, addr, server)
 
-    def setup(self):
+    def setup(self) -> None:
         StreamRequestHandler.setup(self)
         self.keep_alive = True
         self.handshake_done = False
         self.valid_client = False
 
-    def handle(self):
+    def handle(self) -> None:
         logger.info("handle")
         while self.keep_alive:
             if not self.handshake_done:
@@ -181,7 +188,7 @@ class WebSocketHandler(StreamRequestHandler):
             elif self.valid_client:
                 self.read_next_message()
 
-    def read_bytes(self, num):
+    def read_bytes(self, num: int) -> bytes:
         # python3 gives ordinal of byte directly
         bytes = self.rfile.read(num)
         if sys.version_info[0] < 3:
@@ -189,31 +196,30 @@ class WebSocketHandler(StreamRequestHandler):
         else:
             return bytes
 
-    def read_next_message(self):
+    def read_next_message(self) -> None:
         try:
             b1, b2 = self.read_bytes(2)
         except SocketError as e:  # to be replaced with ConnectionResetError for py3
             if e.errno == errno.ECONNRESET:
                 logger.info("Client closed connection.")
                 print("Error: {}".format(e))
-                self.keep_alive = 0
+                self.keep_alive = False
                 return
             b1, b2 = 0, 0
-        except ValueError as e:
+        except ValueError:
             b1, b2 = 0, 0
 
-        fin = b1 & FIN
         opcode = b1 & OPCODE
         masked = b2 & MASKED
         payload_length = b2 & PAYLOAD_LEN
 
         if opcode == OPCODE_CLOSE_CONN:
             logger.info("Client asked to close connection.")
-            self.keep_alive = 0
+            self.keep_alive = False
             return
         if not masked:
             logger.warn("Client must always be masked.")
-            self.keep_alive = 0
+            self.keep_alive = False
             return
         if opcode == OPCODE_CONTINUATION:
             logger.warn("Continuation frames are not supported.")
@@ -222,14 +228,14 @@ class WebSocketHandler(StreamRequestHandler):
             logger.warn("Binary frames are not supported.")
             return
         elif opcode == OPCODE_TEXT:
-            opcode_handler = self.server._message_received_
+            opcode_handler = self.server._message_received_  # type: ignore
         elif opcode == OPCODE_PING:
-            opcode_handler = self.server._ping_received_
+            opcode_handler = self.server._ping_received_  # type: ignore
         elif opcode == OPCODE_PONG:
-            opcode_handler = self.server._pong_received_
+            opcode_handler = self.server._pong_received_  # type: ignore
         else:
-            logger.warn("Unknown opcode %#x." % opcode)
-            self.keep_alive = 0
+            logger.warn("Unknown opcode 0x{:x}.".format(opcode))
+            self.keep_alive = False
             return
 
         if payload_length == 126:
@@ -244,13 +250,13 @@ class WebSocketHandler(StreamRequestHandler):
             message_bytes.append(message_byte)
         opcode_handler(self, message_bytes.decode("utf8"))
 
-    def send_message(self, message):
+    def send_message(self, message: str) -> None:
         self.send_text(message)
 
-    def send_pong(self, message):
+    def send_pong(self, message: str) -> None:
         self.send_text(message, OPCODE_PONG)
 
-    def send_text(self, message, opcode=OPCODE_TEXT):
+    def send_text(self, message: Any, opcode=OPCODE_TEXT) -> bool:
         """
         Important: Fragmented(=continuation) messages are not supported since
         their usage cases are limited - when we don't know the payload length.
@@ -271,8 +277,8 @@ class WebSocketHandler(StreamRequestHandler):
             pass
         else:
             logger.warning(
-                "Can't send message, message has to be a string or bytes. Given type is %s"
-                % type(message)
+                "Can't send message, message has to be a string or bytes. Given type is {}"
+                .format(type(message))
             )
             return False
 
@@ -299,11 +305,12 @@ class WebSocketHandler(StreamRequestHandler):
 
         else:
             raise Exception("Message is too big. Consider breaking it into chunks.")
-            return
+            return False
 
         self.request.send(header + payload)
+        return True
 
-    def read_http_headers(self):
+    def read_http_headers(self) -> dict:
         headers = {}
         # first line should be HTTP GET
         http_get = self.rfile.readline().decode().strip()
@@ -317,7 +324,7 @@ class WebSocketHandler(StreamRequestHandler):
             headers[head.lower().strip()] = value.strip()
         return headers
 
-    def handshake(self):
+    def handshake(self) -> None:
         headers = self.read_http_headers()
 
         # allow closed requests and respond with OK status
@@ -343,45 +350,44 @@ class WebSocketHandler(StreamRequestHandler):
         response = self.make_handshake_response(key)
         self.handshake_done = self.request.send(response.encode())
         self.valid_client = True
-        self.server._new_client_(self)
+        self.server._new_client_(self)  # type: ignore
 
     @classmethod
-    def make_handshake_response(cls, key):
+    def make_handshake_response(cls, key: str) -> str:
         return (
             "HTTP/1.1 101 Switching Protocols\r\n"
             "Upgrade: websocket\r\n"
             "Connection: Upgrade\r\n"
-            "Sec-WebSocket-Accept: %s\r\n"
-            "\r\n" % cls.calculate_response_key(key)
+            "Sec-WebSocket-Accept: {}\r\n"
+            "\r\n".format(cls.calculate_response_key(key))
         )
 
     @classmethod
-    def calculate_response_key(cls, key):
+    def calculate_response_key(cls, key: str) -> str:
         GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
         hash = sha1(key.encode() + GUID.encode())
         response_key = b64encode(hash.digest()).strip()
         return response_key.decode("ASCII")
 
-    def finish(self):
+    def finish(self) -> None:
         if self.valid_client:
-            self.server._client_left_(self)
+            self.server._client_left_(self)  # type: ignore
 
 
-def encode_to_UTF8(data):
+def encode_to_UTF8(data: str) -> bytes:
     try:
         return data.encode("UTF-8")
     except UnicodeEncodeError as e:
-        logger.error("Could not encode data to UTF-8 -- %s" % e)
-        return False
+        logger.error("Could not encode data to UTF-8 -- {}".format(e))
+        return b""
     except Exception as e:
         raise (e)
-        return False
 
 
-def try_decode_UTF8(data):
+def try_decode_UTF8(data: bytes) -> str:
     try:
         return data.decode("utf-8")
     except UnicodeDecodeError:
-        return False
+        return ""
     except Exception as e:
         raise (e)
