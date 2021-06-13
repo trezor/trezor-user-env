@@ -63,7 +63,9 @@ class Handler(BaseHTTPRequestHandler):
                 f.close()
             return
         except Exception as e:
-            self.send_error(404, "Error trying to proxy: {} Error: {}".format(self.path, e))
+            self.send_error(
+                404, "Error trying to proxy: {} Error: {}".format(self.path, e)
+            )
 
     def do_POST(self, body: bool = True) -> None:
         try:
@@ -86,7 +88,9 @@ class Handler(BaseHTTPRequestHandler):
                 self.wfile.write(resp.content)
             return
         except Exception as e:
-            self.send_error(404, "Error trying to proxy: {} Error: {}".format(self.path, e))
+            self.send_error(
+                404, "Error trying to proxy: {} Error: {}".format(self.path, e)
+            )
 
     def send_resp_headers(self, resp) -> None:
         # response Access-Control header needs to be exact with original request from the caller

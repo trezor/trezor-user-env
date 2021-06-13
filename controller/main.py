@@ -106,7 +106,9 @@ def message_received(client, server, message: str) -> None:
             emulator.wipe_device()
             response = {"success": True}
         elif cmd_type == "emulator-apply-settings":
-            emulator.apply_settings(cmd["passphrase_always_on_device"],)
+            emulator.apply_settings(
+                cmd["passphrase_always_on_device"],
+            )
             response = {"success": True}
         elif cmd_type == "emulator-reset-device":
             emulator.reset_device()

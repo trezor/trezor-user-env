@@ -122,10 +122,7 @@ class WebsocketServer(ThreadingMixIn, TCPServer, API):
     id_counter = 0
 
     def __init__(
-        self,
-        port: int,
-        host: str = "0.0.0.0",
-        loglevel=logging.WARNING
+        self, port: int, host: str = "0.0.0.0", loglevel=logging.WARNING
     ) -> None:
         logger.setLevel(loglevel)
         TCPServer.__init__(self, (host, port), WebSocketHandler)
@@ -277,8 +274,9 @@ class WebSocketHandler(StreamRequestHandler):
             pass
         else:
             logger.warning(
-                "Can't send message, message has to be a string or bytes. Given type is {}"
-                .format(type(message))
+                "Can't send message, message has to be a string or bytes. Given type is {}".format(
+                    type(message)
+                )
             )
             return False
 

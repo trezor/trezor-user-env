@@ -73,16 +73,20 @@ def start(version: str, wipe: bool) -> None:
         if wipe and os.path.exists(profile):
             os.remove(profile)
 
-        command = "{path}/trezor-emu-core-v{version} -O0 -X heapsize=20M -m main".format(
-            path=path, version=version
+        command = (
+            "{path}/trezor-emu-core-v{version} -O0 -X heapsize=20M -m main".format(
+                path=path, version=version
+            )
         )
     else:
         profile = os.path.join(ROOT_DIR, "emulator.img")
         if wipe and os.path.exists(profile):
             os.remove(profile)
 
-        command = "TREZOR_OLED_SCALE={scale} {path}/trezor-emu-legacy-v{version} -O0".format(
-            scale=TREZOR_ONE_OLED_SCALE, path=path, version=version
+        command = (
+            "TREZOR_OLED_SCALE={scale} {path}/trezor-emu-legacy-v{version} -O0".format(
+                scale=TREZOR_ONE_OLED_SCALE, path=path, version=version
+            )
         )
 
     if proc is None:
@@ -109,7 +113,7 @@ def setup_device(
     pin: str,
     passphrase_protection: bool,
     label: str,
-    needs_backup: bool = False
+    needs_backup: bool = False,
 ) -> None:
     # TODO:
     # - check if device is acquired otherwise throws "wrong previous session" from bridge
@@ -239,7 +243,8 @@ def apply_settings(passphrase_always_on_device: bool = False) -> None:
     client.open()
     time.sleep(SLEEP)
     device.apply_settings(
-        client, passphrase_always_on_device=passphrase_always_on_device,
+        client,
+        passphrase_always_on_device=passphrase_always_on_device,
     )
     client.close()
 
