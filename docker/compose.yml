@@ -4,9 +4,6 @@ services:
     container_name: trezor-user-env.unix
     image: registry.gitlab.com/satoshilabs/trezor/trezor-user-env/trezor-user-env
     network_mode: "host"
-    ports:
-      - "9001:9001"
-      - "21326:21326"
     environment:
       - DISPLAY=:0
 
