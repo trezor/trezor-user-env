@@ -1,5 +1,6 @@
 import json
 import binaries
+from typing import Dict, Any
 
 from termcolor import colored
 
@@ -7,7 +8,7 @@ import bridge
 import bridge_proxy
 import emulator
 import suite
-import websockets
+import websockets  # type: ignore
 import asyncio
 
 IP = "0.0.0.0"
@@ -17,7 +18,7 @@ BRIDGE_PROXY = False
 
 
 # Welcome new clients with info
-async def welcome(websocket):
+async def welcome(websocket) -> None:
     intro = {
         "type": "client",
         "id": "TODO",
@@ -29,11 +30,11 @@ async def welcome(websocket):
     log("Welcome: " + json.dumps(intro))
 
 
-async def handler(websocket, path):
+async def handler(websocket, path) -> None:
     await welcome(websocket)
 
     while True:
-        response = None
+        response: Dict[str, Any] = {}
 
         try:
             request = await websocket.recv()
@@ -78,7 +79,7 @@ async def handler(websocket, path):
                     request["pin"],
                     request["passphrase_protection"],
                     request["label"],
-                    request.get("needs_backup"),
+                    request.get("needs_backup") or False,
                 )
                 response = {"success": True}
             elif command == "emulator-press-yes":
@@ -106,7 +107,9 @@ async def handler(websocket, path):
                 emulator.wipe_device()
                 response = {"success": True}
             elif command == "emulator-apply-settings":
-                emulator.apply_settings(request["passphrase_always_on_device"],)
+                emulator.apply_settings(
+                    request["passphrase_always_on_device"],
+                )
                 response = {"success": True}
             elif command == "emulator-reset-device":
                 emulator.reset_device()
@@ -133,7 +136,7 @@ async def handler(websocket, path):
                 log("Response: " + json.dumps(response))
                 continue
 
-            if response is not None:
+            if response:
                 log("Response: " + json.dumps(response))
                 await websocket.send(json.dumps(response))
 
@@ -147,12 +150,12 @@ async def handler(websocket, path):
 
 
 # TODO: use logging
-def log(content):
+def log(content: str) -> None:
     print(colored("CONTROLLER: " + content, LOG_COLOR))
 
 
-def start():
-    log("Starting at {}:{}".format(IP, PORT))
+def start() -> None:
+    log(f"Starting at {IP}:{PORT}")
 
     server = websockets.serve(handler, IP, PORT)
 

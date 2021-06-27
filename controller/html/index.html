@@ -22,7 +22,12 @@
         </div>
         <div>
             <div>Status: <span id="bridge-status">unknown</span></div>
-            <div class="explain-note">You may also check bridge status page on http://0.0.0.0:21325/status/</div>
+            <div class="explain-note">
+                You may also check bridge status page on
+                <a href="http://0.0.0.0:21325/status/" target="_blank">
+                    http://0.0.0.0:21325/status/
+                </a>
+            </div>
         </div>
     </section>
 
@@ -55,15 +60,6 @@
         </div>
     </section>
     
-    <section>
-        <h3>Suite</h3>
-        <button onclick="suiteStart('20.7.1');">Start 20.7.1</button>
-        <button onclick="suiteStart('20.8.1');">Start 20.8.1</button>
-        <br>
-        <br>
-        <div class="explain-note">Note: the "five clicks to enable Bridge in debug mode" was introduced in 20.9.1.</div>
-    </section>
-
     <section>
         <h3>Server</h3>
         <textarea id="raw-input" rows="3"></textarea>

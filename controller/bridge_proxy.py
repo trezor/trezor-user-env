@@ -29,56 +29,46 @@ LOG_COLOR = "green"
 
 # POST request headers override
 # origin is set to the actual machine that made the call not localhost
-def merge_headers(original):
+def merge_headers(original: dict) -> dict:
     headers = original.copy()
     headers.update(HEADERS)
     return headers
 
 
 class Handler(BaseHTTPRequestHandler):
-    def do_HEAD(self):
-        self.do_GET(body=False)
+    def do_HEAD(self) -> None:
+        self.do_GET()
 
-    def do_GET(self, body=True):
+    def do_GET(self) -> None:
         try:
-            # print("GET: Headers: {}".format(self.headers))
             if self.path == "/status/":
                 # read trezord status page
-                url = "http://{}{}".format(TREZORD_HOST, self.path)
+                url = f"http://{TREZORD_HOST}{self.path}"
                 resp = requests.get(url)
-                # print("   Resp: Headers: {}".format(resp.headers))
 
                 self.send_response(resp.status_code)
                 self.send_resp_headers(resp)
                 self.wfile.write(resp.content)
-            return
         except Exception as e:
-            self.send_error(404, "Error trying to proxy: %s Error: %s" % (self.path, e))
+            self.send_error(404, f"Error trying to proxy: {self.path} Error: {e}")
 
-    def do_POST(self, body=True):
+    def do_POST(self, body: bool = True) -> None:
         try:
-            # print("POST Path: {}".format(self.path))
-            # print("POST Headers: {}".format(self.headers))
-            url = "http://{}{}".format(TREZORD_HOST, self.path)
+            url = f"http://{TREZORD_HOST}{self.path}"
             data_len = int(self.headers.get("content-length", 0))
             data = self.rfile.read(data_len)
             headers = merge_headers(dict(self.headers))
-            # print("POST Modified headers: {}".format(headers))
-            # print("POST Data: {}".format(data))
 
             resp = requests.post(url, data=data, headers=headers)
-            # print("POST Resp Headers: {}".format(resp.headers))
-            # print("POST Resp Data: {}".format(resp.content))
 
             self.send_response(resp.status_code)
             self.send_resp_headers(resp)
             if body:
                 self.wfile.write(resp.content)
-            return
         except Exception as e:
-            self.send_error(404, "Error trying to proxy: %s Error: %s" % (self.path, e))
+            self.send_error(404, f"Error trying to proxy: {self.path} Error: {e}")
 
-    def send_resp_headers(self, resp):
+    def send_resp_headers(self, resp) -> None:
         # response Access-Control header needs to be exact with original request from the caller
         self.send_header(
             "Access-Control-Allow-Origin",
@@ -95,7 +85,7 @@ class Handler(BaseHTTPRequestHandler):
             self.send_header(key, value)
         self.end_headers()
 
-    def log_message(self, format, *args):
+    def log_message(self, format, *args) -> None:
         """Adds color to make the log clearer."""
         sys.stderr.write(
             colored(
@@ -110,12 +100,10 @@ class ThreadingServer(ThreadingMixIn, HTTPServer):
     pass
 
 
-def start():
+def start() -> None:
     print(
         colored(
-            "BRIDGE PROXY: Starting at {}:{}. All requests will be forwarded to Bridge.".format(
-                IP, PORT
-            ),
+            f"BRIDGE PROXY: Starting at {IP}:{PORT}. All requests will be forwarded to Bridge.",
             LOG_COLOR,
         )
     )
@@ -128,7 +116,7 @@ def start():
     thread.start()
 
 
-def stop():
+def stop() -> None:
     print(colored("BRIDGE PROXY: Stopping", LOG_COLOR))
     assert isinstance(SERVER, ThreadingServer)
     SERVER.shutdown()

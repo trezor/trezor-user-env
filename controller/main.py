@@ -1,8 +1,9 @@
 import argparse
 import atexit
 import os
-
 import binaries
+import argparse
+
 import bridge
 import dashboard
 import emulator
@@ -18,7 +19,6 @@ def cleanup():
 
 atexit.register(cleanup)
 
-BRIDGE_PROXY = False
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -38,14 +38,14 @@ if __name__ == "__main__":
     effective_work_dir = os.path.abspath(os.path.expanduser(effective_work_dir))
 
     os.chdir(effective_work_dir)
-    print("Working from {}".format(os.getcwd()))
+    print(f"Working from {os.getcwd()}")
 
     binaries.explore(args)
     dashboard.start()
 
     if args.disable_bridge_proxy:
         print(
-            "Bridge proxy disabled."
+            "Bridge proxy disabled. "
             "Communication with Bridge needs to be done directly."
         )
     else:
