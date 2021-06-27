@@ -1,16 +1,11 @@
 #!/usr/bin/env python3
-import http.client
 import os
-import signal
-import time
-from subprocess import PIPE, Popen
-
-from trezorlib.transport.bridge import BridgeTransport
+from subprocess import Popen
 
 proc = None
 
 
-def start(version):
+def start(version: str) -> None:
     # normalize path to be relative to this folder, not pwd
     path = os.path.join(os.path.dirname(__file__), "../suite/bin")
     command = (

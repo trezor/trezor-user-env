@@ -18,10 +18,11 @@ COLOR = "yellow"
 
 
 class Dashboard(SimpleHTTPRequestHandler):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, directory=str(HTML), **kwargs)
+    def __init__(self, *args, **kwargs) -> None:
+        kwargs["directory"] = str(HTML)
+        super().__init__(*args, **kwargs)
 
-    def log_message(self, format, *args):
+    def log_message(self, format, *args) -> None:
         """Adds color to make the log clearer."""
         sys.stderr.write(
             colored(
@@ -36,12 +37,8 @@ class ThreadingServer(ThreadingMixIn, HTTPServer):
     pass
 
 
-def start():
-    print(
-        colored(
-            "DASHBOARD: Starting Dashboard at: http://{}:{}".format(IP, PORT), COLOR
-        )
-    )
+def start() -> None:
+    print(colored(f"DASHBOARD: Starting Dashboard at: http://{IP}:{PORT}", COLOR))
     server = ThreadingServer((IP, PORT), Dashboard)
     server.daemon_threads = True
     thread = threading.Thread(target=server.serve_forever)

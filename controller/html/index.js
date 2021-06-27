@@ -179,7 +179,7 @@ function getBridgeStatus() {
     });
 }
 
-function writeBridgeStatus(str) {
+function writeBridgeStatus() {
     const el = document.getElementById('bridge-status');
     if (bridge) {
         el.innerHTML = 'running';
