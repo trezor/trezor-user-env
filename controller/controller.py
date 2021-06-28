@@ -14,7 +14,7 @@ import asyncio
 IP = "0.0.0.0"
 PORT = 9001
 LOG_COLOR = "blue"
-BRIDGE_PROXY = False
+BRIDGE_PROXY = False  # is being set in controller.py (when not disabled, will be True)
 
 
 # Welcome new clients with info
@@ -50,29 +50,32 @@ async def handler(websocket, path) -> None:
             request = json.loads(request)
             command = request["type"]
         except KeyError:
-            error = "Command 'type' missing"
+            error = "Key 'type' must be present in JSON"
             await websocket.send(json.dumps({"success": False, "error": error}))
             continue
         except json.decoder.JSONDecodeError:
-            error = "Invalid json message"
+            error = "Invalid JSON message"
             await websocket.send(json.dumps({"success": False, "error": error}))
             continue
 
+        # Saving the ID, if there, to match requests and responses for the client
+        request_id = request.get("id", "unknown")
+
         try:
             if command == "ping":
-                await websocket.send("pong")
+                response = {"response": "pong"}
             elif command == "suite-start":
                 version = request.get("version")
                 suite.start(version)
-                response = {"success": True}
+                response = {"response": f"Suite {version} started"}
             elif command == "emulator-start":
                 version = request.get("version") or binaries.FIRMWARES["TT"][0]
                 wipe = request.get("wipe") or False
                 emulator.start(version, wipe)
-                response = {"success": True}
+                response = {"response": f"Emulator version {version} started"}
             elif command == "emulator-stop":
                 emulator.stop()
-                response = {"success": True}
+                response = {"response": "Emulator stopped"}
             elif command == "emulator-setup":
                 emulator.setup_device(
                     request["mnemonic"],
@@ -81,62 +84,70 @@ async def handler(websocket, path) -> None:
                     request["label"],
                     request.get("needs_backup") or False,
                 )
-                response = {"success": True}
+                response = {"response": f"Emulator set up - {request}"}
             elif command == "emulator-press-yes":
                 emulator.press_yes()
-                response = {"success": True}
+                response = {"response": "Pressed YES"}
             elif command == "emulator-press-no":
                 emulator.press_no()
-                response = {"success": True}
+                response = {"response": "Pressed NO"}
             elif command == "emulator-input":
-                emulator.input(request["value"])
-                response = {"success": True}
+                value = request["value"]
+                emulator.input(value)
+                response = {"response": f"Input into emulator: {value}"}
             elif command == "emulator-read-and-confirm-mnemonic":
                 emulator.read_and_confirm_mnemonic()
-                response = {"success": True}
+                response = {"response": "Read and confirm mnemonic"}
             elif command == "emulator-allow-unsafe-paths":
                 emulator.allow_unsafe()
-                response = {"success": True}
+                response = {"response": "Allowed unsafe path"}
             elif command == "select-num-of-words":
-                emulator.select_num_of_words(request["num"])
-                response = {"success": True}
+                num = request["num"]
+                emulator.select_num_of_words(num)
+                response = {"response": f"Selected {num} words"}
             elif command == "emulator-swipe":
-                emulator.swipe(request["direction"])
-                response = {"success": True}
+                direction = request["direction"]
+                emulator.swipe(direction)
+                response = {"response": f"Swiped {direction}"}
             elif command == "emulator-wipe":
                 emulator.wipe_device()
-                response = {"success": True}
+                response = {"response": "Device wiped"}
             elif command == "emulator-apply-settings":
                 emulator.apply_settings(
                     request["passphrase_always_on_device"],
                 )
-                response = {"success": True}
+                response = {"response": f"Applied setting on emulator {request}"}
             elif command == "emulator-reset-device":
                 emulator.reset_device()
-                response = {"success": True}
+                response = {"response": "Device reset"}
             elif command == "bridge-start":
                 version = request.get("version") or binaries.BRIDGES[0]
                 bridge.start(version)
+                response_text = f"Bridge version {version} started"
                 if BRIDGE_PROXY:
                     bridge_proxy.start()
-                response = {"success": True}
+                    response_text = response_text + " with bridge proxy"
+                response = {"response": response_text}
             elif command == "bridge-stop":
                 bridge.stop()
+                response_text = "Stopping bridge"
                 if BRIDGE_PROXY:
                     bridge_proxy.stop()
-                response = {"success": True}
+                    response_text = response_text + " + stopping bridge proxy"
+                response = {"response": response_text}
             elif command == "exit":
                 emulator.stop()
                 bridge.stop()
                 log("Exiting")
                 exit(1)
             else:
-                response = {"success": False, "error": "unknown command"}
-                await websocket.send(json.dumps(response))
-                log("Response: " + json.dumps(response))
-                continue
+                response = {"success": False, "error": f"unknown command - {command}"}
 
             if response:
+                # Relaying the ID and filling success, if not there already
+                response["id"] = request_id
+                if "success" not in response:
+                    response["success"] = True
                 log("Response: " + json.dumps(response))
                 await websocket.send(json.dumps(response))
 

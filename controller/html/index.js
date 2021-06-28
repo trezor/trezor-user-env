@@ -37,7 +37,7 @@ const populateEmulatorSelect = firmwares => {
 
 
 const handleMessage = event => {
-    output(`onmessage: ${event.data}`);
+    output(`Response received: ${event.data}`);
     if (!event.data || typeof event.data !== 'string') return;
 
     const data = JSON.parse(event.data);
@@ -53,12 +53,12 @@ function init() {
     // Set event handlers.
     ws.onopen = function () {
         document.getElementById('ws-status').style.display = 'none';
-        output('onopen');
+        output('Websocket opened');
     };
     ws.onmessage = handleMessage;
     ws.onclose = function () {
         document.getElementById('ws-status').style.display = 'block';
-        output('onclose');
+        output('Websocket closed');
     };
     ws.onerror = function (e) {
         output('onerror');
@@ -67,18 +67,27 @@ function init() {
 }
 
 function _send(json) {
-    ws.send(
-        JSON.stringify(
-            Object.assign(json, {
-                id,
-            }),
-        ),
-    );
+    const requestToSend = JSON.stringify(
+        Object.assign(json, {
+            id,
+        }),
+    )
+    ws.send(requestToSend);
     id++;
+    output(`Request sent: ${requestToSend}`);
 }
 
 function onSubmit() {
     const input = document.getElementById('raw-input');
+
+    // Defending against invalid JSON
+    try {
+        JSON.parse(input.value);
+    } catch(err) {
+        alert('Impossible to parse input into JSON! Please correct the input string');
+        return;
+    }
+
     _send(JSON.parse(input.value));
     output(`send: ${input.value}`);
     input.value = '';
@@ -161,6 +170,12 @@ function bridgeStop() {
 function exit() {
     _send({
         type: 'exit',
+    });
+}
+
+function ping() {
+    _send({
+        type: 'ping',
     });
 }
 
