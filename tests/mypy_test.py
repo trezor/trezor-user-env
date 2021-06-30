@@ -6,9 +6,9 @@ Requirements:
 """
 
 import os
+import subprocess
 import sys
 import unittest
-import subprocess
 
 
 class MypyTest(unittest.TestCase):
@@ -25,8 +25,7 @@ class MypyTest(unittest.TestCase):
         file_dir = os.path.dirname(os.path.realpath(__file__))
         main_code_dir = os.path.join(file_dir, "../controller")
         command_list = ["python3", "-m", "mypy", main_code_dir]
-        mypy_validation = subprocess.run(
-            command_list, capture_output=True, text=True)
+        mypy_validation = subprocess.run(command_list, capture_output=True, text=True)
         if "no issues found" not in mypy_validation.stdout:
             print(f"MYPY ERRORS:\n{mypy_validation.stdout}")
         self.assertTrue("no issues found" in mypy_validation.stdout)

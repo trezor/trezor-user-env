@@ -4,12 +4,13 @@
 Serves Dashboard at http://localhost:9002 to easily instruct the controller.
 """
 
-from pathlib import Path
-from http.server import SimpleHTTPRequestHandler, HTTPServer
-from socketserver import ThreadingMixIn
-import threading
-from termcolor import colored
 import sys
+import threading
+from http.server import HTTPServer, SimpleHTTPRequestHandler
+from pathlib import Path
+from socketserver import ThreadingMixIn
+
+from termcolor import colored
 
 IP = "0.0.0.0"
 PORT = 9002

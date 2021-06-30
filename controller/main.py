@@ -1,12 +1,12 @@
 import argparse
 import atexit
 import os
-import binaries
-import argparse
 
+import binaries
 import bridge
 import dashboard
 import emulator
+
 import controller
 
 import suite

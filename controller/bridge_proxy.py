@@ -7,14 +7,13 @@ Listening on port 21326 and routes requests to the trezord with changed Origin h
 It's also serving "controller.html" at the server index: http://localhost:21326/
 """
 
-import os
+import sys
 import threading
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from socketserver import ThreadingMixIn
 
 import requests
 from termcolor import colored
-import sys
 
 TREZORD_HOST = "0.0.0.0:21325"
 HEADERS = {

@@ -4,8 +4,10 @@ import time
 from pathlib import Path
 from subprocess import Popen
 
+import bridge
 from trezorlib import debuglink, device  # type: ignore
-from trezorlib.debuglink import DebugLink, TrezorClientDebugLink  # type: ignore
+from trezorlib.debuglink import DebugLink  # type: ignore
+from trezorlib.debuglink import TrezorClientDebugLink
 from trezorlib.device import reset, wipe  # type: ignore
 from trezorlib.transport.bridge import BridgeTransport  # type: ignore
 from trezorlib.transport.udp import UdpTransport  # type: ignore
