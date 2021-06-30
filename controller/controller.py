@@ -1,5 +1,6 @@
 import asyncio
 import json
+import traceback
 from typing import Any, Dict
 
 import binaries
@@ -148,7 +149,10 @@ async def handler(websocket, path) -> None:
         # we want to catch here. But catching general \Exception is bad because it catches
         # everything then including errors etc. A lot of kittens die when we are doing this.
         except Exception as e:
-            response = {"success": False, "error": str(e)}
+            tb = traceback.format_exc()
+            print(tb)
+            error_msg = f"{type(e).__name__} - {e}"
+            response = {"success": False, "error": error_msg, "tb": tb}
             log("Response: " + json.dumps(response))
             await websocket.send(json.dumps(response))
 
