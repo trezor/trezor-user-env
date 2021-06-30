@@ -4,6 +4,7 @@
 const websocketUrl = 'ws://localhost:9001/';
 const bridgeUrl = 'http://0.0.0.0:21325/status/';
 const watchBridgePeriod = 3000;
+const templateJSON = '{"type": "specify"}'
 
 let ws;
 let id = 0;
@@ -107,9 +108,11 @@ function onSubmit() {
         return;
     }
 
+    output(`Sent manually: ${input.value}`, 'magenta');
     _send(JSON.parse(input.value));
-    output(`send: ${input.value}`);
-    input.value = '';
+    // TODO: do we even want to revert to default one, would not
+    //   it be better to just leave it, so user can modify it?
+    input.value = templateJSON;
     input.focus();
 }
 
@@ -259,4 +262,5 @@ function watchBridge() {
 window.onload = function () {
     init();
     watchBridge();
+    document.getElementById('raw-input').value = templateJSON;
 }
