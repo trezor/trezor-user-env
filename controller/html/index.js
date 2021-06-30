@@ -1,6 +1,10 @@
 /* eslint-disable func-names */
 /* eslint-disable @typescript-eslint/camelcase */
 /* eslint-disable no-underscore-dangle */
+const websocketUrl = 'ws://localhost:9001/';
+const bridgeUrl = 'http://0.0.0.0:21325/status/';
+const watchBridgePeriod = 3000;
+
 let ws;
 let id = 0;
 let bridgeStatus = 'Stopped';  // Can also be 'Running'
@@ -12,7 +16,7 @@ function output(str, color = 'black') {
         .replace(/</, '&lt;')
         .replace(/>/, '&gt;')
         .replace(/"/, '&quot;'); // "
-    log.innerHTML = `<span style="color: ${color}">${escaped}</span><br>${log.innerHTML}`;
+    log.innerHTML = `<span style="color: ${color};">${escaped}</span><br>${log.innerHTML}`;
 }
 
 const createOption = (select, value) => {
@@ -63,7 +67,7 @@ const handleMessage = event => {
 
 function init() {
     // Connect to Web Socket
-    ws = new WebSocket('ws://localhost:9001/');
+    ws = new WebSocket(websocketUrl);
     // Set event handlers.
     ws.onopen = function () {
         document.getElementById('ws-status').style.display = 'none';
@@ -188,7 +192,7 @@ function ping() {
 
 function getBridgeStatus() {
     return new Promise((resolve, reject) => {
-        fetch('http://0.0.0.0:21325/status/', { mode: 'no-cors' }).then(
+        fetch(bridgeUrl, { mode: 'no-cors' }).then(
             response => {
                 bridgeStatus = 'Running';
                 resolve();
@@ -217,7 +221,7 @@ function watchBridge() {
                 writeBridgeStatus();
             },
         );
-    }, 3000);
+    }, watchBridgePeriod);
 }
 
 window.onload = function () {
