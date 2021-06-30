@@ -2,19 +2,11 @@
 import http.client
 import os
 import signal
-from subprocess import Popen
+from subprocess import PIPE, Popen
 
 proc = None
 
-# def findProcess():
-#     ps = Popen("ps -ef | grep trezord-go", shell=True, stdout=subprocess.PIPE)
-#     output = ps.stdout.read()
-#     ps.stdout.close()
-#     ps.wait()
-#     return output
 
-
-# todo: checking http response is suboptimal, it would be better to check if there is process running
 def is_running() -> bool:
     try:
         conn = http.client.HTTPConnection("0.0.0.0", 21325)
@@ -29,24 +21,24 @@ def is_running() -> bool:
 
 def start(version: str) -> None:
     global proc
-    if proc is None:
-        # findProcess()
-        # TODO:
-        # - check if trezord process is already running and kill it if so
-
-        # normalize path to be relative to this folder, not pwd
-        path = os.path.join(os.path.dirname(__file__), "../trezord-go/bin")
-
-        command = f"{path}/trezord-go-v{version} -ed 21324:21325 -u=false"
-        print("command", command)
-
-        proc = Popen(command, shell=True, preexec_fn=os.setsid)
-        # TODO: - add else condition and check if trezord is running and if i own this process
-        #   (trezord pid is the same with proc pid)
-
-
-def stop() -> None:
-    global proc
     if proc is not None:
+        raise RuntimeError("Bridge is already running, not spawning a new one")
+
+    # normalize path to be relative to this folder, not pwd
+    path = os.path.join(os.path.dirname(__file__), "../trezord-go/bin")
+
+    command = f"{path}/trezord-go-v{version} -ed 21324:21325 -u=false"
+    print("command", command)
+
+    proc = Popen(command, shell=True, preexec_fn=os.setsid)
+
+
+def stop(cleanup: bool = False) -> None:
+    global proc
+    # In case of cleanup it may happen that the bridge will not run - and it is fine
+    if proc is None:
+        if not cleanup:
+            raise RuntimeError("Bridge is not running, cannot be stopped")
+    else:
         os.killpg(os.getpgid(proc.pid), signal.SIGTERM)
         proc = None

@@ -4,7 +4,6 @@
 HTTPServer used as proxy for trezord calls from the outside of docker container
 This is workaround for original ip not beeing passed to the container. https://github.com/docker/for-mac/issues/180
 Listening on port 21326 and routes requests to the trezord with changed Origin header
-It's also serving "controller.html" at the server index: http://localhost:21326/
 """
 
 import sys
@@ -107,7 +106,8 @@ def start() -> None:
         )
     )
     global SERVER
-    assert SERVER is None, "Bridge server is already initialized, cannot be run again"
+    if SERVER is not None:
+        raise RuntimeError("Bridge proxy is already initialized, cannot be run again")
     SERVER = ThreadingServer((IP, PORT), Handler)
     SERVER.daemon_threads = True
     thread = threading.Thread(target=SERVER.serve_forever)
@@ -117,6 +117,8 @@ def start() -> None:
 
 def stop() -> None:
     print(colored("BRIDGE PROXY: Stopping", LOG_COLOR))
-    assert isinstance(
-        SERVER, ThreadingServer), "Bridge server is not running, cannot be stopped"
+    global SERVER
+    if SERVER is None:
+        raise RuntimeError("Bridge proxy is not running, cannot be stopped")
     SERVER.shutdown()
+    SERVER = None

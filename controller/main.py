@@ -14,7 +14,7 @@ import suite
 
 def cleanup():
     emulator.stop()
-    bridge.stop()
+    bridge.stop(cleanup=True)
 
 
 atexit.register(cleanup)
@@ -49,6 +49,7 @@ if __name__ == "__main__":
             "Communication with Bridge needs to be done directly."
         )
     else:
+        print("Will create bridge proxy when spawning a bridge.")
         controller.BRIDGE_PROXY = True
 
     controller.start()
