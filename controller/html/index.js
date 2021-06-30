@@ -55,6 +55,7 @@ const handleMessage = event => {
             color = 'green';
         } else {
             color = 'red';
+            alert("Some error happened, please look into Log below.")
         }
     }
 
@@ -166,22 +167,51 @@ function emulatorStop() {
 }
 
 function bridgeStart(version) {
+    reflectBridgeStarted(version);
     _send({
         type: 'bridge-start',
         version,
     });
 }
 
+function reflectBridgeStarted(version) {
+    document.getElementById(`bridge-${version}`).style.backgroundColor = "green";
+    document.querySelectorAll('.bridge-button').forEach(function (btn) {
+        if (btn.id !== `bridge-${version}`) {
+            btn.style.backgroundColor = "grey";
+        }
+    });
+    document.getElementById(`bridge-stop`).style.backgroundColor = "grey";
+}
+
 function bridgeStop() {
+    reflectBridgeStopped();
     _send({
         type: 'bridge-stop',
     });
 }
 
+function reflectBridgeStopped() {
+    document.querySelectorAll('.bridge-button').forEach(function (btn) {
+        btn.style.backgroundColor = "grey";
+    });
+    document.getElementById(`bridge-stop`).style.backgroundColor = "red";
+}
+
 function exit() {
+    // Not to have possible old state of the buttons, when we connect
+    //   again later
+    putBridgeButtonsIntoDefault();
     _send({
         type: 'exit',
     });
+}
+
+function putBridgeButtonsIntoDefault() {
+    document.querySelectorAll('.bridge-button').forEach(function (btn) {
+        btn.style.backgroundColor = "grey";
+    });
+    document.getElementById(`bridge-stop`).style.backgroundColor = "grey";
 }
 
 function ping() {
@@ -191,6 +221,8 @@ function ping() {
 }
 
 function getBridgeStatus() {
+    // TODO: we can retrieve a version of running bridge from this,
+    //   and integrate it with the buttons to reflect the situation correctly
     return new Promise((resolve, reject) => {
         fetch(bridgeUrl, { mode: 'no-cors' }).then(
             response => {
