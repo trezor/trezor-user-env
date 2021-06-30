@@ -3,16 +3,16 @@
 /* eslint-disable no-underscore-dangle */
 let ws;
 let id = 0;
-let bridge = false;
+let bridgeStatus = 'Stopped';  // Can also be 'Running'
 
-function output(str) {
+function output(str, color = 'black') {
     const log = document.getElementById('log');
     const escaped = str
         .replace(/&/, '&amp;')
         .replace(/</, '&lt;')
         .replace(/>/, '&gt;')
         .replace(/"/, '&quot;'); // "
-    log.innerHTML = `${escaped}<br>${log.innerHTML}`;
+    log.innerHTML = `<span style="color: ${color}">${escaped}</span><br>${log.innerHTML}`;
 }
 
 const createOption = (select, value) => {
@@ -37,13 +37,27 @@ const populateEmulatorSelect = firmwares => {
 
 
 const handleMessage = event => {
-    output(`Response received: ${event.data}`);
-    if (!event.data || typeof event.data !== 'string') return;
+    if (!event.data || typeof event.data !== 'string') {
+        output(`Response received without proper data: ${event.data}`, 'red');
+        return;
+    }
 
-    const data = JSON.parse(event.data);
+    const dataObject = JSON.parse(event.data);
+    
+    // Choosing the right color for the output - normal, success and error scenarios
+    let color = 'black';
+    if ('success' in dataObject) {
+        if (dataObject.success) {
+            color = 'green';
+        } else {
+            color = 'red';
+        }
+    }
 
-    if (data.type === 'client') {
-        populateEmulatorSelect(data.firmwares);
+    output(`Response received: ${event.data}`, color);
+
+    if (dataObject.type === 'client') {
+        populateEmulatorSelect(dataObject.firmwares);
     }
 };
 
@@ -71,10 +85,10 @@ function _send(json) {
         Object.assign(json, {
             id,
         }),
-    )
+    );
     ws.send(requestToSend);
     id++;
-    output(`Request sent: ${requestToSend}`);
+    output(`Request sent: ${requestToSend}`, 'blue');
 }
 
 function onSubmit() {
@@ -176,11 +190,11 @@ function getBridgeStatus() {
     return new Promise((resolve, reject) => {
         fetch('http://0.0.0.0:21325/status/', { mode: 'no-cors' }).then(
             response => {
-                bridge = true;
+                bridgeStatus = 'Running';
                 resolve();
             },
             error => {
-                bridge = false;
+                bridgeStatus = 'Stopped';
                 reject();
             },
         );
@@ -189,11 +203,7 @@ function getBridgeStatus() {
 
 function writeBridgeStatus() {
     const el = document.getElementById('bridge-status');
-    if (bridge) {
-        el.innerHTML = 'running';
-    } else {
-        el.innerHTML = 'stopped';
-    }
+    el.innerHTML = bridgeStatus;
 }
 
 // maybe not the best idea to bombard bridge with status requests. time will show.
@@ -212,4 +222,5 @@ function watchBridge() {
 
 window.onload = function () {
     init();
+    watchBridge();
 }
