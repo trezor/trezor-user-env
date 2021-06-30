@@ -18,9 +18,9 @@
         <h3>Bridge</h3>
         <div>
             <i>Start Bridge with emulator support.</i><br>
-            <button onclick="bridgeStart('2.0.31')">Start 2.0.31</button>
-            <button onclick="bridgeStop()">Stop</button>
-            <button onclick="bridgeStart('2.0.27')">Start 2.0.27</button>
+            <button class="bridge-button" id="bridge-2.0.31" onclick="bridgeStart('2.0.31')">Start 2.0.31</button>
+            <button id="bridge-stop" onclick="bridgeStop()">Stop</button>
+            <button class="bridge-button" id="bridge-2.0.27" onclick="bridgeStart('2.0.27')">Start 2.0.27</button>
         </div>
         <div>
             <div>Status: <span id="bridge-status">unknown</span></div>
