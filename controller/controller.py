@@ -152,7 +152,7 @@ async def handler(websocket, path) -> None:
             tb = traceback.format_exc()
             print(tb)
             error_msg = f"{type(e).__name__} - {e}"
-            response = {"success": False, "error": error_msg, "tb": tb}
+            response = {"success": False, "error": error_msg, "traceback": tb}
             log("Response: " + json.dumps(response))
             await websocket.send(json.dumps(response))
 

@@ -107,7 +107,7 @@ def start() -> None:
         )
     )
     global SERVER
-    assert SERVER is None
+    assert SERVER is None, "Bridge server is already initialized, cannot be run again"
     SERVER = ThreadingServer((IP, PORT), Handler)
     SERVER.daemon_threads = True
     thread = threading.Thread(target=SERVER.serve_forever)
@@ -117,5 +117,6 @@ def start() -> None:
 
 def stop() -> None:
     print(colored("BRIDGE PROXY: Stopping", LOG_COLOR))
-    assert isinstance(SERVER, ThreadingServer)
+    assert isinstance(
+        SERVER, ThreadingServer), "Bridge server is not running, cannot be stopped"
     SERVER.shutdown()
