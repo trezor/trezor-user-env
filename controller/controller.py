@@ -1,15 +1,13 @@
+import asyncio
 import json
+from typing import Any, Dict
+
 import binaries
-from typing import Dict, Any
-
-from termcolor import colored
-
 import bridge
 import bridge_proxy
 import emulator
-import suite
 import websockets  # type: ignore
-import asyncio
+from termcolor import colored
 
 IP = "0.0.0.0"
 PORT = 9001
@@ -23,7 +21,6 @@ async def welcome(websocket) -> None:
         "type": "client",
         "id": "TODO",
         "firmwares": binaries.FIRMWARES,
-        "suites": binaries.SUITES,
         "bridges": binaries.BRIDGES,
     }
     await websocket.send(json.dumps(intro))
@@ -64,10 +61,6 @@ async def handler(websocket, path) -> None:
         try:
             if command == "ping":
                 response = {"response": "pong"}
-            elif command == "suite-start":
-                version = request.get("version")
-                suite.start(version)
-                response = {"response": f"Suite {version} started"}
             elif command == "emulator-start":
                 version = request.get("version") or binaries.FIRMWARES["TT"][0]
                 wipe = request.get("wipe") or False

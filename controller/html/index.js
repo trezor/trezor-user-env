@@ -98,13 +98,6 @@ function onCloseClick() {
     ws.close();
 }
 
-function suiteStart(version) {
-    _send({
-        type: 'suite-start',
-        version,
-    });
-}
-
 function emulatorStart(select) {
     const version = document.getElementById(select).value;
     _send({
