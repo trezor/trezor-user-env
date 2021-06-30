@@ -2,7 +2,6 @@
 .idea
 firmware/repo
 trezord-go/repo
-trezord-go/bin/*
 controller/__pycache__
 firmware/bin/*
 !firmware/bin/download.sh

@@ -69,15 +69,15 @@ def start(version: str, wipe: bool) -> None:
     path = ROOT_DIR / "firmware/bin"
 
     if version[0] == "2":
-        model_t_image = "/var/tmp/trezor.flash"
-        if wipe and os.path.exists(model_t_image):
-            os.remove(model_t_image)
+        model_t_profile = "/var/tmp/trezor.flash"
+        if wipe and os.path.exists(model_t_profile):
+            os.remove(model_t_profile)
 
         command = f"{path}/trezor-emu-core-v{version} -O0 -X heapsize=20M -m main"
     else:
-        model_one_image = ROOT_DIR / "emulator.img"
-        if wipe and os.path.exists(model_one_image):
-            os.remove(model_one_image)
+        model_one_profile = ROOT_DIR / "emulator.img"
+        if wipe and os.path.exists(model_one_profile):
+            os.remove(model_one_profile)
 
         command = f"TREZOR_OLED_SCALE={TREZOR_ONE_OLED_SCALE} {path}/trezor-emu-legacy-v{version} -O0"
 
