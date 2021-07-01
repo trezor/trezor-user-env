@@ -3,12 +3,13 @@ import json
 import traceback
 from typing import Any, Dict
 
+from termcolor import colored
+
 import binaries
 import bridge
 import bridge_proxy
 import emulator
 import websockets  # type: ignore
-from termcolor import colored
 
 IP = "0.0.0.0"
 PORT = 9001
@@ -149,10 +150,15 @@ async def handler(websocket, path) -> None:
         # we want to catch here. But catching general \Exception is bad because it catches
         # everything then including errors etc. A lot of kittens die when we are doing this.
         except Exception as e:
-            tb = traceback.format_exc()
-            print(tb)
+            traceback_string = traceback.format_exc()
+            print(traceback_string)
             error_msg = f"{type(e).__name__} - {e}"
-            response = {"success": False, "error": error_msg, "traceback": tb}
+            response = {
+                "success": False,
+                "id": request_id,
+                "error": error_msg,
+                "traceback": traceback_string,
+            }
             log("Response: " + json.dumps(response))
             await websocket.send(json.dumps(response))
 
