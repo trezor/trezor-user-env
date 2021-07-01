@@ -28,6 +28,6 @@ RUN nix-shell --run "./suite/bin/download.sh"
 
 RUN rm -rf /var/tmp/trezor.flash
 
-RUN nix-shell controller/shell.nix --run "echo deps pre-installed"
+RUN nix-shell --run "echo deps pre-installed"
 
-CMD nix-shell controller/shell.nix --run './run.sh'
+CMD nix-shell --run './run.sh'
