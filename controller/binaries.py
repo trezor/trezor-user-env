@@ -52,7 +52,6 @@ def sort_firmwares(version: str) -> tuple:
 
 
 def explore_bridges() -> None:
-    # TODO automate
     BRIDGES.append("2.0.31")
     BRIDGES.append("2.0.27")
     BRIDGES.append("2.0.26")
