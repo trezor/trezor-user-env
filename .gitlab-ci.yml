@@ -3,7 +3,7 @@ variables:
   DOCKER_TLS_CERTDIR: ""
 
 style prebuild:
-  stage: prebuild
+  stage: .pre
   script:
     - nix-shell --run "make style_check"
 
