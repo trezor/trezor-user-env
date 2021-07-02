@@ -2,6 +2,11 @@ variables:
   # No need for TLS because everything runs on the same machine
   DOCKER_TLS_CERTDIR: ""
 
+style prebuild:
+  stage: prebuild
+  script:
+    - nix-shell --run "make style_check"
+
 .build: &build
   image: docker
   variables:
