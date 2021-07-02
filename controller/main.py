@@ -62,22 +62,8 @@ def message_received(client, server, message):
             version = cmd.get("version")
             suite.start(version)
             response = {"success": True}
-        elif cmdType == "emulator-start":
-            version = cmd.get("version") or binaries.FIRMWARES["TT"][0]
-            wipe = cmd.get("wipe") or False
-            emulator.start(version, wipe)
-            response = {"success": True}
         elif cmdType == "emulator-stop":
             emulator.stop()
-            response = {"success": True}
-        elif cmdType == "emulator-setup":
-            emulator.setup_device(
-                cmd["mnemonic"],
-                cmd["pin"],
-                cmd["passphrase_protection"],
-                cmd["label"],
-                cmd.get("needs_backup"),
-            )
             response = {"success": True}
         elif cmdType == "emulator-press-yes":
             emulator.press_yes()
