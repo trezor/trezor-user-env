@@ -1,0 +1,33 @@
+.build: &build
+  image: docker
+  variables:
+    CONTAINER_NAME: "$CI_REGISTRY/satoshilabs/trezor/trezor-user-env/trezor-user-env"
+  services:
+    - docker:dind
+  before_script:
+    - docker login $CI_REGISTRY -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD
+
+build and push image:
+  stage: build
+  <<: *build
+  only:
+    - schedules  # nightly build
+    - master
+    - /^run\//
+  script:
+    - docker build --tag $CONTAINER_NAME:$CI_COMMIT_SHA --tag $CONTAINER_NAME:latest -f docker/Dockerfile .
+    - docker push $CONTAINER_NAME:$CI_COMMIT_SHA
+    - docker push $CONTAINER_NAME:latest
+
+build and push test image:
+  stage: build
+  <<: *build
+  except:
+    - schedules
+    - master
+    - /^run\//
+  script:
+    # note that this way "test" tag gets overwritten everytime
+    - docker build --tag $CONTAINER_NAME:$CI_COMMIT_SHA --tag $CONTAINER_NAME:test -f docker/Dockerfile .
+    - docker push $CONTAINER_NAME:$CI_COMMIT_SHA
+    - docker push $CONTAINER_NAME:test
