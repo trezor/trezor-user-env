@@ -1,0 +1,4 @@
+style check:
+  stage: prebuild
+  script:
+    - nix-shell --run "make style_check"
