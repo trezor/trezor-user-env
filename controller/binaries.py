@@ -1,5 +1,6 @@
 import glob
 from pathlib import Path
+
 from termcolor import colored
 
 ROOT_DIR = Path(__file__).parent.parent.resolve()
