@@ -3,10 +3,9 @@ import os
 import signal
 from subprocess import Popen
 
+import bridge_proxy
 import requests
 from requests.exceptions import ConnectionError
-
-import bridge_proxy
 
 # TODO: consider creating a class from this module to avoid these globals
 proc = None

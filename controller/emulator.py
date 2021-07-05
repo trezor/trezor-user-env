@@ -4,14 +4,13 @@ import time
 from pathlib import Path
 from subprocess import PIPE, Popen
 
+import bridge
 from trezorlib import debuglink, device  # type: ignore
 from trezorlib.debuglink import DebugLink  # type: ignore
 from trezorlib.debuglink import TrezorClientDebugLink
 from trezorlib.device import reset, wipe  # type: ignore
 from trezorlib.transport.bridge import BridgeTransport  # type: ignore
 from trezorlib.transport.udp import UdpTransport  # type: ignore
-
-import bridge
 
 # TODO: consider creating a class from this module to avoid these globals
 proc = None
@@ -67,8 +66,8 @@ def is_running() -> bool:
     # When emulator is spawned and killed by user, it has 'defunct' in its process
     check_cmd = "ps -ef | grep 'trezor-emu' | grep -v 'defunct' | grep -v 'grep'"
     ps = Popen(check_cmd, shell=True, stdout=PIPE)
-    output = ps.stdout.read().decode()
-    ps.stdout.close()
+    output = ps.stdout.read().decode()  # type: ignore
+    ps.stdout.close()  # type: ignore
     ps.wait()
     return bool(output)
 
@@ -139,7 +138,12 @@ def setup_device(
     client.open()
     time.sleep(SLEEP)
     debuglink.load_device(
-        client, mnemonic, pin, passphrase_protection, label, needs_backup=needs_backup,
+        client,
+        mnemonic,
+        pin,
+        passphrase_protection,
+        label,
+        needs_backup=needs_backup,
     )
     client.close()
 
@@ -256,7 +260,8 @@ def apply_settings(passphrase_always_on_device: bool = False) -> None:
     client.open()
     time.sleep(SLEEP)
     device.apply_settings(
-        client, passphrase_always_on_device=passphrase_always_on_device,
+        client,
+        passphrase_always_on_device=passphrase_always_on_device,
     )
     client.close()
 

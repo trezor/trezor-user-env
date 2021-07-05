@@ -115,7 +115,7 @@ def start() -> None:
     thread.start()
 
 
-def stop(cleanup: bool = False,) -> None:
+def stop(cleanup: bool = False) -> None:
     print(colored("BRIDGE PROXY: Stopping", LOG_COLOR))
     global SERVER
     if SERVER is None:
