@@ -10,9 +10,9 @@ from hashlib import sha1
 from socket import error as SocketError
 
 if sys.version_info[0] < 3:
-    from SocketServer import ThreadingMixIn, TCPServer, StreamRequestHandler
+    from SocketServer import StreamRequestHandler, TCPServer, ThreadingMixIn
 else:
-    from socketserver import ThreadingMixIn, TCPServer, StreamRequestHandler
+    from socketserver import StreamRequestHandler, TCPServer, ThreadingMixIn
 
 logger = logging.getLogger(__name__)
 logging.basicConfig()

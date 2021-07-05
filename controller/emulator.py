@@ -1,16 +1,15 @@
 import os
 import signal
 import time
-from subprocess import Popen
 from pathlib import Path
+from subprocess import Popen
 
+import bridge
 from trezorlib import debuglink, device
 from trezorlib.debuglink import DebugLink, TrezorClientDebugLink
 from trezorlib.device import reset, wipe
 from trezorlib.transport.bridge import BridgeTransport
 from trezorlib.transport.udp import UdpTransport
-
-import bridge
 
 proc = None
 
@@ -73,16 +72,20 @@ def start(version, wipe):
         if wipe and os.path.exists(profile):
             os.remove(profile)
 
-        command = "{path}/trezor-emu-core-v{version} -O0 -X heapsize=20M -m main".format(
-            path=path, version=version
+        command = (
+            "{path}/trezor-emu-core-v{version} -O0 -X heapsize=20M -m main".format(
+                path=path, version=version
+            )
         )
     else:
         profile = ROOT_DIR / "emulator.img"
         if wipe and os.path.exists(profile):
             os.remove(profile)
 
-        command = "TREZOR_OLED_SCALE={scale} {path}/trezor-emu-legacy-v{version} -O0".format(
-            scale=TREZOR_ONE_OLED_SCALE, path=path, version=version
+        command = (
+            "TREZOR_OLED_SCALE={scale} {path}/trezor-emu-legacy-v{version} -O0".format(
+                scale=TREZOR_ONE_OLED_SCALE, path=path, version=version
+            )
         )
 
     if proc is None:
@@ -233,7 +236,8 @@ def apply_settings(passphrase_always_on_device=None):
     client.open()
     time.sleep(SLEEP)
     device.apply_settings(
-        client, passphrase_always_on_device=bool(passphrase_always_on_device),
+        client,
+        passphrase_always_on_device=bool(passphrase_always_on_device),
     )
     client.close()
 

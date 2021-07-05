@@ -1,16 +1,16 @@
+import argparse
 import atexit
 import json
 import os
+
 import binaries
-import argparse
-
-from termcolor import colored
-
 import bridge
 import emulator
-import suite
 import proxy
+from termcolor import colored
 from websocket_server import WebsocketServer
+
+import suite
 
 
 def cleanup():
@@ -104,7 +104,9 @@ def message_received(client, server, message):
             emulator.wipe_device()
             response = {"success": True}
         elif cmdType == "emulator-apply-settings":
-            emulator.apply_settings(cmd["passphrase_always_on_device"],)
+            emulator.apply_settings(
+                cmd["passphrase_always_on_device"],
+            )
             response = {"success": True}
         elif cmdType == "emulator-reset-device":
             resp = emulator.reset_device()
