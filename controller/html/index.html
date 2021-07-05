@@ -23,7 +23,7 @@
             <button class="bridge-button" id="bridge-2.0.27" onclick="bridgeStart('2.0.27')">Start 2.0.27</button>
         </div>
         <div>
-            <div>Status: <span id="bridge-status">unknown</span></div>
+            <div><b>Status: <span id="bridge-status">unknown</span></b></div>
             <div class="explain-note">
                 You may also check bridge status page on
                 <a href="http://0.0.0.0:21325/status/" target="_blank">
@@ -43,26 +43,26 @@
         <div>
             <h4>Trezor One</h4>
             <select id="t1-select"></select>
-            <button onclick="emulatorStart('t1-select');">Start</button>
+            <button class="emu-buttons" id="emu-1-start" onclick="emulatorStart('t1-select');">Start</button>
             <br />
         </div>
         <div>
             <h4>Trezor T</h4>
             <select id="t2-select"></select>
-            <button onclick="emulatorStart('t2-select');">Start</button>
+            <button class="emu-buttons" id="emu-2-start" onclick="emulatorStart('t2-select');">Start</button>
         </div>
         <hr />
         <h3>Emulator commands</h3>
         <div class="explain-note">These commands are auto-confirmed using the emulator's debug link.</div><br>
         <div>
-            <div>Status: <span id="emulator-status">unknown</span></div>
+            <div><b>Status: <span id="emulator-status">unknown</span></b></div>
             <button onclick="emulatorWipe();">Wipe</button>
             <input id="seed-input" type="text" placeholder="default seed: all all" />
             <button onclick="emulatorSetup();">Load seed</button>
             <button onclick="emulatorResetDevice();">Reset</button>
             <button onclick="emulatorPressYes();">Press yes</button>
             <button onclick="emulatorPressNo();">Press no</button>
-            <button onclick="emulatorStop();">Stop</button>
+            <button id="emu-stop" onclick="emulatorStop();">Stop</button>
         </div>
     </section>
     

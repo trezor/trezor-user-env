@@ -2,7 +2,7 @@ import os
 import signal
 import time
 from pathlib import Path
-from subprocess import Popen
+from subprocess import PIPE, Popen
 
 from trezorlib import debuglink, device  # type: ignore
 from trezorlib.debuglink import DebugLink  # type: ignore
@@ -13,7 +13,9 @@ from trezorlib.transport.udp import UdpTransport  # type: ignore
 
 import bridge
 
+# TODO: consider creating a class from this module to avoid these globals
 proc = None
+version_running = None
 
 ROOT_DIR = Path(__file__).parent.parent.resolve()
 
@@ -61,10 +63,29 @@ def get_device() -> device:
     return wait_for_udp_device()
 
 
+def is_running() -> bool:
+    # When emulator is spawned and killed by user, it has 'defunct' in its process
+    check_cmd = "ps -ef | grep 'trezor-emu' | grep -v 'defunct' | grep -v 'grep'"
+    ps = Popen(check_cmd, shell=True, stdout=PIPE)
+    output = ps.stdout.read().decode()
+    ps.stdout.close()
+    ps.wait()
+    return bool(output)
+
+
+def get_status() -> dict:
+    return {"is_running": is_running(), "version": version_running}
+
+
 def start(version: str, wipe: bool) -> None:
     global proc
+    global version_running
 
     if proc is not None:
+        print(
+            f"Before starting a new emulator - version {version}, "
+            f"killing the already running one - version {version_running}"
+        )
         stop()
 
     path = ROOT_DIR / "firmware/bin"
@@ -92,13 +113,17 @@ def start(version: str, wipe: bool) -> None:
         # - run two T2/T1 emulators
         proc = Popen(command, shell=True, preexec_fn=os.setsid)
         print(f"the commandline is {str(proc.args)}")
+        version_running = version
 
 
 def stop() -> None:
     global proc
+    global version_running
+
     if proc is not None:
         os.killpg(os.getpgid(proc.pid), signal.SIGTERM)
         proc = None
+        version_running = None
 
 
 def setup_device(
@@ -114,12 +139,7 @@ def setup_device(
     client.open()
     time.sleep(SLEEP)
     debuglink.load_device(
-        client,
-        mnemonic,
-        pin,
-        passphrase_protection,
-        label,
-        needs_backup=needs_backup,
+        client, mnemonic, pin, passphrase_protection, label, needs_backup=needs_backup,
     )
     client.close()
 
@@ -236,8 +256,7 @@ def apply_settings(passphrase_always_on_device: bool = False) -> None:
     client.open()
     time.sleep(SLEEP)
     device.apply_settings(
-        client,
-        passphrase_always_on_device=passphrase_always_on_device,
+        client, passphrase_always_on_device=passphrase_always_on_device,
     )
     client.close()
 
