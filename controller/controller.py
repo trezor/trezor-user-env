@@ -3,12 +3,11 @@ import json
 import traceback
 from typing import Any, Dict
 
-import websockets  # type: ignore
-from termcolor import colored
-
 import binaries
 import bridge
 import emulator
+import websockets
+from termcolor import colored
 
 IP = "0.0.0.0"
 PORT = 9001
@@ -118,7 +117,9 @@ async def handler(websocket, path) -> None:
                 emulator.wipe_device()
                 response = {"response": "Device wiped"}
             elif command == "emulator-apply-settings":
-                emulator.apply_settings(request["passphrase_always_on_device"],)
+                emulator.apply_settings(
+                    request["passphrase_always_on_device"],
+                )
                 response = {"response": f"Applied setting on emulator {request}"}
             elif command == "emulator-reset-device":
                 emulator.reset_device()

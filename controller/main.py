@@ -4,9 +4,10 @@ import os
 
 import binaries
 import bridge
-import controller
 import dashboard
 import emulator
+
+import controller
 
 
 def cleanup():
