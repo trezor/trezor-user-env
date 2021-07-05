@@ -3,13 +3,12 @@ import json
 import traceback
 from typing import Any, Dict
 
+import websockets  # type: ignore
 from termcolor import colored
 
 import binaries
 import bridge
-import bridge_proxy
 import emulator
-import websockets  # type: ignore
 
 IP = "0.0.0.0"
 PORT = 9001
@@ -43,7 +42,6 @@ async def handler(websocket, path) -> None:
         except websockets.exceptions.ConnectionClosedError:
             log("Client exiting with a failure. Goodbye")
             return
-        log("Request: " + request)
 
         try:
             request = json.loads(request)
@@ -57,12 +55,24 @@ async def handler(websocket, path) -> None:
             await websocket.send(json.dumps({"success": False, "error": error}))
             continue
 
+        if command != "background-check":
+            log(f"Request: {request}")
+
         # Saving the ID, if there, to match requests and responses for the client
         request_id = request.get("id", "unknown")
 
         try:
             if command == "ping":
                 response = {"response": "pong"}
+            elif command == "background-check":
+                bridge_status = bridge.get_status()
+                emulator_status = emulator.get_status()
+                response = {
+                    "response": "Background check done",
+                    "bridge_status": bridge_status,
+                    "emulator_status": emulator_status,
+                    "background_check": True,
+                }
             elif command == "emulator-start":
                 version = request.get("version") or binaries.FIRMWARES["TT"][0]
                 wipe = request.get("wipe") or False
@@ -108,26 +118,22 @@ async def handler(websocket, path) -> None:
                 emulator.wipe_device()
                 response = {"response": "Device wiped"}
             elif command == "emulator-apply-settings":
-                emulator.apply_settings(
-                    request["passphrase_always_on_device"],
-                )
+                emulator.apply_settings(request["passphrase_always_on_device"],)
                 response = {"response": f"Applied setting on emulator {request}"}
             elif command == "emulator-reset-device":
                 emulator.reset_device()
                 response = {"response": "Device reset"}
             elif command == "bridge-start":
                 version = request.get("version") or binaries.BRIDGES[0]
-                bridge.start(version)
+                bridge.start(version, proxy=BRIDGE_PROXY)
                 response_text = f"Bridge version {version} started"
                 if BRIDGE_PROXY:
-                    bridge_proxy.start()
                     response_text = response_text + " with bridge proxy"
                 response = {"response": response_text}
             elif command == "bridge-stop":
-                bridge.stop()
+                bridge.stop(proxy=BRIDGE_PROXY)
                 response_text = "Stopping bridge"
                 if BRIDGE_PROXY:
-                    bridge_proxy.stop()
                     response_text = response_text + " + stopping bridge proxy"
                 response = {"response": response_text}
             elif command == "exit":
@@ -143,7 +149,11 @@ async def handler(websocket, path) -> None:
                 response["id"] = request_id
                 if "success" not in response:
                     response["success"] = True
-                log("Response: " + json.dumps(response))
+
+                # Not logging in case of background checks, they would flood the screen
+                if "background_check" not in response:
+                    log("Response: " + json.dumps(response))
+
                 await websocket.send(json.dumps(response))
 
         # TODO: This is wrong and we should list all the trezorlib (or other) exceptions that

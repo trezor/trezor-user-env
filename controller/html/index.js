@@ -48,6 +48,18 @@ const handleMessage = event => {
     }
 
     const dataObject = JSON.parse(event.data);
+
+    // When the check is happening on the background (not forced by user),
+    //   do not print anything to the Log (but perform the UI update)
+    if ('background_check' in dataObject && dataObject.background_check) {
+        if ('bridge_status' in dataObject) {
+            reflectBridgeSituation(dataObject.bridge_status);
+        }
+        if ('emulator_status' in dataObject) {
+            reflectEmulatorSituation(dataObject.emulator_status);
+        }
+        return;
+    }
     
     // Choosing the right color for the output - normal, success and error scenarios
     let color = 'black';
@@ -97,6 +109,10 @@ function _send(json) {
     output(`Request sent: ${requestToSend}`, 'blue');
 }
 
+function _sendOnBackground(json) {
+    ws.send(JSON.stringify(json));
+}
+
 function onSubmit() {
     const input = document.getElementById('raw-input');
 
@@ -126,6 +142,7 @@ function emulatorStart(select) {
         type: 'emulator-start',
         version,
     });
+    setTimeout(getBackgroundStatus, 200);
 }
 
 function emulatorWipe() {
@@ -167,34 +184,41 @@ function emulatorStop() {
     _send({
         type: 'emulator-stop',
     });
+    setTimeout(getBackgroundStatus, 200);
 }
 
 function bridgeStart(version) {
-    reflectBridgeStarted(version);
     _send({
         type: 'bridge-start',
         version,
     });
+    setTimeout(getBackgroundStatus, 200);
 }
 
-function reflectBridgeStarted(version) {
-    document.getElementById(`bridge-${version}`).style.backgroundColor = "green";
+function reflectBridgeStartedInGUI(version) {
+    // Can happen that bridge is already running on the background, but
+    //   was not spawned by the GUI (causing confusion)
+    if (!version) {
+        alert("Please check if there is no instance of bridge running already - please kill them.");
+        return;
+    }
+
+    const btnIdToHighlight = `bridge-${version}`
     document.querySelectorAll('.bridge-button').forEach(function (btn) {
-        if (btn.id !== `bridge-${version}`) {
-            btn.style.backgroundColor = "grey";
-        }
+        btn.style.backgroundColor = "grey";
     });
+    document.getElementById(btnIdToHighlight).style.backgroundColor = "green";
     document.getElementById(`bridge-stop`).style.backgroundColor = "grey";
 }
 
 function bridgeStop() {
-    reflectBridgeStopped();
     _send({
         type: 'bridge-stop',
     });
+    setTimeout(getBackgroundStatus, 200);
 }
 
-function reflectBridgeStopped() {
+function reflectBridgeStoppedInGUI() {
     document.querySelectorAll('.bridge-button').forEach(function (btn) {
         btn.style.backgroundColor = "grey";
     });
@@ -202,19 +226,9 @@ function reflectBridgeStopped() {
 }
 
 function exit() {
-    // Not to have possible old state of the buttons, when we connect
-    //   again later
-    putBridgeButtonsIntoDefault();
     _send({
         type: 'exit',
     });
-}
-
-function putBridgeButtonsIntoDefault() {
-    document.querySelectorAll('.bridge-button').forEach(function (btn) {
-        btn.style.backgroundColor = "grey";
-    });
-    document.getElementById(`bridge-stop`).style.backgroundColor = "grey";
 }
 
 function ping() {
@@ -223,44 +237,65 @@ function ping() {
     });
 }
 
-function getBridgeStatus() {
-    // TODO: we can retrieve a version of running bridge from this,
-    //   and integrate it with the buttons to reflect the situation correctly
-    return new Promise((resolve, reject) => {
-        fetch(bridgeUrl, { mode: 'no-cors' }).then(
-            response => {
-                bridgeStatus = 'Running';
-                resolve();
-            },
-            error => {
-                bridgeStatus = 'Stopped';
-                reject();
-            },
-        );
-    });
+function reflectBridgeSituation(status) {
+    if (status.is_running) {
+        reflectBridgeStartedInGUI(status.version);
+        writeBridgeStatus(`Running - ${status.version}`);
+    } else {
+        reflectBridgeStoppedInGUI();
+        writeBridgeStatus("Stopped");
+    }
 }
 
-function writeBridgeStatus() {
+function reflectEmulatorSituation(status) {
+    if (status.is_running) {
+        reflectEmulatorStartedInGUI(status.version);
+        writeEmulatorStatus(`Running - ${status.version}`);
+    } else {
+        reflectEmulatorStoppedInGUI();
+        writeEmulatorStatus("Stopped");
+    }
+}
+
+function reflectEmulatorStartedInGUI(version) {
+    const versionNumber = version.charAt(0);
+    const btnIdToHighlight = `emu-${versionNumber}-start`;
+    document.querySelectorAll('.emu-buttons').forEach(function (btn) {
+        btn.style.backgroundColor = "grey";
+    });
+    document.getElementById(btnIdToHighlight).style.backgroundColor = "green";
+    document.getElementById("emu-stop").style.backgroundColor = "grey";
+}
+
+function reflectEmulatorStoppedInGUI() {
+    document.querySelectorAll('.emu-buttons').forEach(function (btn) {
+        btn.style.backgroundColor = "grey";
+    });
+    document.getElementById("emu-stop").style.backgroundColor = "red";
+}
+
+function getBackgroundStatus() {
+    _sendOnBackground({type: 'background-check'})
+}
+
+function writeBridgeStatus(status) {
     const el = document.getElementById('bridge-status');
-    el.innerHTML = bridgeStatus;
+    el.innerHTML = status;
+}
+
+function writeEmulatorStatus(status) {
+    const el = document.getElementById('emulator-status');
+    el.innerHTML = status;
 }
 
 // maybe not the best idea to bombard bridge with status requests. time will show.
-function watchBridge() {
-    setInterval(() => {
-        getBridgeStatus().then(
-            () => {
-                writeBridgeStatus();
-            },
-            () => {
-                writeBridgeStatus();
-            },
-        );
-    }, watchBridgePeriod);
+function watchBackgroundStatus() {
+    setTimeout(getBackgroundStatus, 200)
+    setInterval(getBackgroundStatus, watchBridgePeriod);
 }
 
 window.onload = function () {
     init();
-    watchBridge();
+    watchBackgroundStatus();
     document.getElementById('raw-input').value = templateJSON;
 }

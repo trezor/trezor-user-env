@@ -1,26 +1,44 @@
 #!/usr/bin/env python3
-import http.client
 import os
 import signal
-from subprocess import PIPE, Popen
+from subprocess import Popen
 
+import requests
+from requests.exceptions import ConnectionError
+
+import bridge_proxy
+
+# TODO: consider creating a class from this module to avoid these globals
 proc = None
+version_running = None
 
 
 def is_running() -> bool:
     try:
-        conn = http.client.HTTPConnection("0.0.0.0", 21325)
-        conn.request("GET", "/status/")
-        r = conn.getresponse()
-        if r.status == 200:
-            return True
+        r = requests.get("http://0.0.0.0:21325/status/")
+        return r.status_code == 200
+    except ConnectionError:
         return False
-    except:
+    except Exception as e:
+        print(f"Unexpected error when checking the bridge: {type(e).__name__} - {e}")
         return False
 
 
-def start(version: str) -> None:
+def get_status() -> dict:
+    return {"is_running": is_running(), "version": version_running}
+
+
+def start(version: str, proxy: bool = False) -> None:
     global proc
+    global version_running
+
+    # In case the bridge was killed outside of the stop() function
+    #   (for example manually by the user), we need to reflect the situation
+    #   not to still think the bridge is running
+    if proc is not None and not is_running():
+        print("Bridge was probably killed by user manually, resetting local state")
+        stop(cleanup=True, proxy=proxy)
+
     if proc is not None:
         raise RuntimeError("Bridge is already running, not spawning a new one")
 
@@ -28,13 +46,19 @@ def start(version: str) -> None:
     path = os.path.join(os.path.dirname(__file__), "../trezord-go/bin")
 
     command = f"{path}/trezord-go-v{version} -ed 21324:21325 -u=false"
-    print("command", command)
 
     proc = Popen(command, shell=True, preexec_fn=os.setsid)
 
+    version_running = version
 
-def stop(cleanup: bool = False) -> None:
+    if proxy:
+        bridge_proxy.start()
+
+
+def stop(cleanup: bool = False, proxy: bool = True) -> None:
     global proc
+    global version_running
+
     # In case of cleanup it may happen that the bridge will not run - and it is fine
     if proc is None:
         if not cleanup:
@@ -42,3 +66,7 @@ def stop(cleanup: bool = False) -> None:
     else:
         os.killpg(os.getpgid(proc.pid), signal.SIGTERM)
         proc = None
+        version_running = None
+
+    if proxy:
+        bridge_proxy.stop(cleanup=cleanup)
