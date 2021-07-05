@@ -29,7 +29,7 @@ You need:
 1. Run in terminal: `xhost +`
 2. Download the latest docker build: `docker-compose -f ./docker/compose.yml pull trezor-user-env-unix`
 3. Run it: `docker-compose -f ./docker/compose.yml up trezor-user-env-unix`
-4. Open http://localhost:21326.
+4. Open http://localhost:9002.
 
 For a future use you can omit the second step and run `up` (the third step) directly. **However, you will not have the latest master builds then!**
 
@@ -52,7 +52,7 @@ Download these as you are used to. We recommend using `nix` or `brew`, but that'
 3. Open a new terminal window (not in XQuartz) and add yourself to the X access control list: `xhost +127.0.0.1` (you will probably need to logout/login after XQuartz installation to have `xhost` command available)
 4. Download the latest docker build: `docker-compose -f ./docker/compose.yml pull trezor-user-env-mac`
 5. Run it: `docker-compose -f ./docker/compose.yml up trezor-user-env-mac`
-6. Open http://localhost:21326.
+6. Open http://localhost:9002.
 
 For a future use you can omit the second step and run `up` (the third step) directly. **However, you will not have the latest master builds then!**
 
@@ -68,7 +68,7 @@ In case you need to modify something in trezor-user-env you have two options.
 
 ### Natively in NixOS
 
-If you are using NixOS you can do the changes locally and then run the controller yourself. Run it via `nix-shell --run 'python controller/main.py'`. Make sure you have run `{firmware,suite,trezord-go}/bin/download.sh` beforehand otherwise you'll have old binaries.
+If you are using NixOS you can do the changes locally and then run the controller yourself. Run it via `nix-shell --run 'python controller/main.py'`. Make sure you have run `{firmware,trezord-go}/bin/download.sh` beforehand otherwise you'll have old binaries.
 
 This is suitable for smaller changes or things you can check via the HTML dashboard easily. However, if you are adding some functionality to trezor-user-env mainly because of Suite end-to-end tests, it is probably better to go the CI way (below). Otherwise you would need to run the whole Suite test suite locally.
 
