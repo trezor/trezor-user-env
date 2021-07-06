@@ -1,5 +1,6 @@
 .DS_Store
 .idea
+.vscode
 suite/repo
 firmware/repo
 trezord-go/repo
