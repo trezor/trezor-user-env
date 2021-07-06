@@ -3,7 +3,7 @@
 /* eslint-disable no-underscore-dangle */
 const websocketUrl = 'ws://localhost:9001/';
 const backgroundCheckPeriod = 3000;
-const templateJSON = '{"type": "specify"}'
+const templateJSON = '{"type": "specify"}';
 
 let ws;
 let id = 0;
@@ -19,27 +19,29 @@ function output(str, color = 'black') {
 }
 
 const createOption = (select, value) => {
-    const option = document.createElement("option");
+    const option = document.createElement('option');
     option.text = value;
     option.value = value;
     select.add(option);
-}
+};
 
-const clearOptions = select => {
-    while(select.options.length) select.remove(0);
-}
+const clearOptions = (select) => {
+    while (select.options.length) {
+        select.remove(0);
+    }
+};
 
-const populateEmulatorSelect = firmwares => {
+const populateEmulatorSelect = (firmwares) => {
     const t1Select = document.getElementById('t1-select');
     const t2Select = document.getElementById('t2-select');
     clearOptions(t1Select);
     clearOptions(t2Select);
-    firmwares["T1"].forEach(version => createOption(t1Select, version));
-    firmwares["TT"].forEach(version => createOption(t2Select, version));
-}
+    firmwares['T1'].forEach(version => createOption(t1Select, version));
+    firmwares['TT'].forEach(version => createOption(t2Select, version));
+};
 
 
-const handleMessage = event => {
+const handleMessage = (event) => {
     if (!event.data || typeof event.data !== 'string') {
         output(`Response received without proper data: ${event.data}`, 'red');
         return;
@@ -53,7 +55,7 @@ const handleMessage = event => {
         reflectBackgroundSituationInGUI(dataObject);
         return;
     }
-    
+
     // Choosing the right color for the output - normal, success and error scenarios
     let color = 'black';
     if ('success' in dataObject) {
@@ -61,7 +63,7 @@ const handleMessage = event => {
             color = 'green';
         } else {
             color = 'red';
-            alert("Some error happened, please look into Log below.")
+            alert('Some error happened, please look into Log below.');
         }
     }
 
@@ -86,7 +88,7 @@ function init() {
         output('Websocket closed');
     };
     ws.onerror = function (e) {
-        output('onerror');
+        output('onerror - please look into the console');
         console.log(e);
     };
 }
@@ -112,7 +114,7 @@ function onSubmit() {
     // Defending against invalid JSON
     try {
         JSON.parse(input.value);
-    } catch(err) {
+    } catch (err) {
         alert('Impossible to parse input into JSON! Please correct the input string');
         return;
     }
@@ -222,7 +224,7 @@ function reflectBridgeSituation(status) {
         writeBridgeStatus(`Running - ${status.version}`);
     } else {
         reflectBridgeStoppedInGUI();
-        writeBridgeStatus("Stopped");
+        writeBridgeStatus('Stopped');
     }
 }
 
@@ -230,23 +232,23 @@ function reflectBridgeStartedInGUI(version) {
     // Can happen that bridge is already running on the background, but
     //   was not spawned by the GUI (causing confusion)
     if (!version) {
-        alert("Please check if there is no instance of bridge running already - please kill them.");
+        alert('Please check if there is no instance of bridge running already - please kill them.');
         return;
     }
 
-    const btnIdToHighlight = `bridge-${version}`
-    document.querySelectorAll('.bridge-button').forEach(function (btn) {
-        btn.style.backgroundColor = "grey";
+    const btnIdToHighlight = `bridge-${version}`;
+    document.querySelectorAll('.bridge-button').forEach((btn) => {
+        btn.style.backgroundColor = 'grey';
     });
-    document.getElementById(btnIdToHighlight).style.backgroundColor = "green";
-    document.getElementById(`bridge-stop`).style.backgroundColor = "grey";
+    document.getElementById(btnIdToHighlight).style.backgroundColor = 'green';
+    document.getElementById('bridge-stop').style.backgroundColor = 'grey';
 }
 
 function reflectBridgeStoppedInGUI() {
-    document.querySelectorAll('.bridge-button').forEach(function (btn) {
-        btn.style.backgroundColor = "grey";
+    document.querySelectorAll('.bridge-button').forEach((btn) => {
+        btn.style.backgroundColor = 'grey';
     });
-    document.getElementById(`bridge-stop`).style.backgroundColor = "red";
+    document.getElementById('bridge-stop').style.backgroundColor = 'red';
 }
 
 function reflectEmulatorSituation(status) {
@@ -255,29 +257,31 @@ function reflectEmulatorSituation(status) {
         writeEmulatorStatus(`Running - ${status.version}`);
     } else {
         reflectEmulatorStoppedInGUI();
-        writeEmulatorStatus("Stopped");
+        writeEmulatorStatus('Stopped');
     }
 }
 
 function reflectEmulatorStartedInGUI(version) {
     const versionNumber = version.charAt(0);
     const btnIdToHighlight = `emu-${versionNumber}-start`;
-    document.querySelectorAll('.emu-buttons').forEach(function (btn) {
-        btn.style.backgroundColor = "grey";
+    document.querySelectorAll('.emu-buttons').forEach((btn) => {
+        btn.style.backgroundColor = 'grey';
     });
-    document.getElementById(btnIdToHighlight).style.backgroundColor = "green";
-    document.getElementById("emu-stop").style.backgroundColor = "grey";
+    document.getElementById(btnIdToHighlight).style.backgroundColor = 'green';
+    document.getElementById('emu-stop').style.backgroundColor = 'grey';
 }
 
 function reflectEmulatorStoppedInGUI() {
-    document.querySelectorAll('.emu-buttons').forEach(function (btn) {
-        btn.style.backgroundColor = "grey";
+    document.querySelectorAll('.emu-buttons').forEach((btn) => {
+        btn.style.backgroundColor = 'grey';
     });
-    document.getElementById("emu-stop").style.backgroundColor = "red";
+    document.getElementById('emu-stop').style.backgroundColor = 'red';
 }
 
 function getBackgroundStatus() {
-    _sendOnBackground({type: 'background-check'})
+    _sendOnBackground({
+        type: 'background-check',
+    });
 }
 
 function writeBridgeStatus(status) {
@@ -292,7 +296,7 @@ function writeEmulatorStatus(status) {
 
 // maybe not the best idea to bombard bridge with status requests. time will show.
 function watchBackgroundStatus() {
-    setTimeout(getBackgroundStatus, 200)
+    setTimeout(getBackgroundStatus, 200);
     setInterval(getBackgroundStatus, backgroundCheckPeriod);
 }
 
@@ -300,4 +304,4 @@ window.onload = function () {
     init();
     watchBackgroundStatus();
     document.getElementById('raw-input').value = templateJSON;
-}
+};
