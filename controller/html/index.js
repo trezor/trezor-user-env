@@ -2,13 +2,11 @@
 /* eslint-disable @typescript-eslint/camelcase */
 /* eslint-disable no-underscore-dangle */
 const websocketUrl = 'ws://localhost:9001/';
-const bridgeUrl = 'http://0.0.0.0:21325/status/';
-const watchBridgePeriod = 3000;
+const backgroundCheckPeriod = 3000;
 const templateJSON = '{"type": "specify"}'
 
 let ws;
 let id = 0;
-let bridgeStatus = 'Stopped';  // Can also be 'Running'
 
 function output(str, color = 'black') {
     const log = document.getElementById('log');
@@ -52,12 +50,7 @@ const handleMessage = event => {
     // When the check is happening on the background (not forced by user),
     //   do not print anything to the Log (but perform the UI update)
     if ('background_check' in dataObject && dataObject.background_check) {
-        if ('bridge_status' in dataObject) {
-            reflectBridgeSituation(dataObject.bridge_status);
-        }
-        if ('emulator_status' in dataObject) {
-            reflectEmulatorSituation(dataObject.emulator_status);
-        }
+        reflectBackgroundSituationInGUI(dataObject);
         return;
     }
     
@@ -195,6 +188,44 @@ function bridgeStart(version) {
     setTimeout(getBackgroundStatus, 200);
 }
 
+function bridgeStop() {
+    _send({
+        type: 'bridge-stop',
+    });
+    setTimeout(getBackgroundStatus, 200);
+}
+
+function exit() {
+    _send({
+        type: 'exit',
+    });
+}
+
+function ping() {
+    _send({
+        type: 'ping',
+    });
+}
+
+function reflectBackgroundSituationInGUI(dataObject) {
+    if ('bridge_status' in dataObject) {
+        reflectBridgeSituation(dataObject.bridge_status);
+    }
+    if ('emulator_status' in dataObject) {
+        reflectEmulatorSituation(dataObject.emulator_status);
+    }
+}
+
+function reflectBridgeSituation(status) {
+    if (status.is_running) {
+        reflectBridgeStartedInGUI(status.version);
+        writeBridgeStatus(`Running - ${status.version}`);
+    } else {
+        reflectBridgeStoppedInGUI();
+        writeBridgeStatus("Stopped");
+    }
+}
+
 function reflectBridgeStartedInGUI(version) {
     // Can happen that bridge is already running on the background, but
     //   was not spawned by the GUI (causing confusion)
@@ -211,40 +242,11 @@ function reflectBridgeStartedInGUI(version) {
     document.getElementById(`bridge-stop`).style.backgroundColor = "grey";
 }
 
-function bridgeStop() {
-    _send({
-        type: 'bridge-stop',
-    });
-    setTimeout(getBackgroundStatus, 200);
-}
-
 function reflectBridgeStoppedInGUI() {
     document.querySelectorAll('.bridge-button').forEach(function (btn) {
         btn.style.backgroundColor = "grey";
     });
     document.getElementById(`bridge-stop`).style.backgroundColor = "red";
-}
-
-function exit() {
-    _send({
-        type: 'exit',
-    });
-}
-
-function ping() {
-    _send({
-        type: 'ping',
-    });
-}
-
-function reflectBridgeSituation(status) {
-    if (status.is_running) {
-        reflectBridgeStartedInGUI(status.version);
-        writeBridgeStatus(`Running - ${status.version}`);
-    } else {
-        reflectBridgeStoppedInGUI();
-        writeBridgeStatus("Stopped");
-    }
 }
 
 function reflectEmulatorSituation(status) {
@@ -291,7 +293,7 @@ function writeEmulatorStatus(status) {
 // maybe not the best idea to bombard bridge with status requests. time will show.
 function watchBackgroundStatus() {
     setTimeout(getBackgroundStatus, 200)
-    setInterval(getBackgroundStatus, watchBridgePeriod);
+    setInterval(getBackgroundStatus, backgroundCheckPeriod);
 }
 
 window.onload = function () {

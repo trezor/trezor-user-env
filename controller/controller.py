@@ -12,7 +12,7 @@ from termcolor import colored
 IP = "0.0.0.0"
 PORT = 9001
 LOG_COLOR = "blue"
-BRIDGE_PROXY = False  # is being set in controller.py (when not disabled, will be True)
+BRIDGE_PROXY = False  # is being set in main.py (when not disabled, will be True)
 
 
 # Welcome new clients with info
@@ -46,11 +46,13 @@ async def handler(websocket, path) -> None:
             request = json.loads(request)
             command = request["type"]
         except KeyError:
-            error = "Key 'type' must be present in JSON"
+            error = f"Key 'type' must be present in JSON - {request}"
+            log(error)
             await websocket.send(json.dumps({"success": False, "error": error}))
             continue
         except json.decoder.JSONDecodeError:
-            error = "Invalid JSON message"
+            error = f"Invalid JSON message - {request}"
+            log(error)
             await websocket.send(json.dumps({"success": False, "error": error}))
             continue
 
@@ -143,7 +145,7 @@ async def handler(websocket, path) -> None:
                 log("Exiting")
                 exit(1)
             else:
-                response = {"success": False, "error": f"unknown command - {command}"}
+                response = {"success": False, "error": f"Unknown command - {command}"}
 
             if response:
                 # Relaying the ID and filling success, if not there already
@@ -170,7 +172,7 @@ async def handler(websocket, path) -> None:
                 "error": error_msg,
                 "traceback": traceback_string,
             }
-            log("Response: " + json.dumps(response))
+            log("ERROR response: " + json.dumps(response))
             await websocket.send(json.dumps(response))
 
 
@@ -180,7 +182,7 @@ def log(content: str) -> None:
 
 
 def start() -> None:
-    log(f"Starting at {IP}:{PORT}")
+    log(f"Starting websocket server (controller.py) at {IP}:{PORT}")
 
     server = websockets.serve(handler, IP, PORT)
 
