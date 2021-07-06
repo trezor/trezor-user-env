@@ -1,3 +1,5 @@
+check: style_check code_check
+
 style_check:
 	isort --version | awk '/VERSION/{print $$2}'
 	black --version
@@ -11,3 +13,9 @@ style:
 	@isort .
 	@echo [BLACK]
 	@black .
+
+code_check:
+	@echo [MYPY]
+	@mypy .
+	@echo [FLAKE8]
+	@flake8 .

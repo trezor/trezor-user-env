@@ -15,6 +15,7 @@ let
     ps.black
     ps.isort
     ps.mypy
+    ps.flake8
   ]);
 in
   stdenv.mkDerivation {

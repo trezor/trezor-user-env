@@ -1,5 +1,5 @@
-style check:
+full code check:
   image: nixos/nix:latest
   stage: prebuild
   script:
-    - nix-shell --run "make style_check"
+    - nix-shell --run "make check"
