@@ -1,11 +1,15 @@
+image: registry.gitlab.com/satoshilabs/trezor/trezor-user-env/base:latest
+
 variables:
   # No need for TLS because everything runs on the same machine
   DOCKER_TLS_CERTDIR: ""
 
 stages:
+  - environment
   - prebuild
   - build
 
 include:
+  - ci/environment.yml
   - ci/prebuild.yml
   - ci/build.yml

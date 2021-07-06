@@ -7,7 +7,7 @@
   before_script:
     - docker login $CI_REGISTRY -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD
 
-build and push image:
+build & push image:
   stage: build
   <<: *build
   only:
@@ -19,7 +19,7 @@ build and push image:
     - docker push $CONTAINER_NAME:$CI_COMMIT_SHA
     - docker push $CONTAINER_NAME:latest
 
-build and push test image:
+build & push test image:
   stage: build
   <<: *build
   except:
