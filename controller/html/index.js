@@ -115,15 +115,12 @@ function onSubmit() {
     try {
         JSON.parse(input.value);
     } catch (err) {
-        alert('Impossible to parse input into JSON! Please correct the input string');
+        alert('Invalid JSON provided!');
         return;
     }
 
     output(`Sent manually: ${input.value}`, 'magenta');
     _send(JSON.parse(input.value));
-    // TODO: do we even want to revert to default one, would not
-    //   it be better to just leave it, so user can modify it?
-    input.value = templateJSON;
     input.focus();
 }
 
@@ -232,7 +229,7 @@ function reflectBridgeStartedInGUI(version) {
     // Can happen that bridge is already running on the background, but
     //   was not spawned by the GUI (causing confusion)
     if (!version) {
-        alert('Please check if there is no instance of bridge running already - please kill them.');
+        alert('It seems you already have an instance of bridge running - please kill it.');
         return;
     }
 
