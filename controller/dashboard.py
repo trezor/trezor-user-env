@@ -14,13 +14,13 @@ from termcolor import colored
 
 IP = "0.0.0.0"
 PORT = 9002
-HTML = Path(__file__).parent.parent / "controller" / "html"
+HTML_DIR = Path(__file__).parent.parent / "controller" / "html"
 COLOR = "yellow"
 
 
 class Dashboard(SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs) -> None:
-        kwargs["directory"] = str(HTML)
+        kwargs["directory"] = str(HTML_DIR)
         super().__init__(*args, **kwargs)
 
     def log_message(self, format, *args) -> None:
