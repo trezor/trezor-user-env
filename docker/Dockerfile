@@ -22,8 +22,8 @@ WORKDIR ./trezor-user-env
 RUN ls /
 RUN ls /trezor-user-env
 
-RUN nix-shell --run "./firmware/bin/download.sh"
-RUN nix-shell --run "./trezord-go/bin/download.sh"
+RUN nix-shell --run "./src/binaries/firmware/bin/download.sh"
+RUN nix-shell --run "./src/binaries/trezord-go/bin/download.sh"
 
 RUN rm -rf /var/tmp/trezor.flash
 

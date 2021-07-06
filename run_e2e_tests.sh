@@ -2,12 +2,14 @@
 
 set -e
 
+DIR=$(dirname "$0")
+cd "${DIR}"
+
 # launch controller
-cd controller
-nix-shell --run "python main.py &"
+nix-shell --run "python src/main.py &"
 
 # launch Suite
-cd ../suite/repo
+cd src/binaries/suite/repo
 nix-shell --run "yarn && yarn suite:dev &"
 
 sleep 60  # wait for Suite to build TODO
