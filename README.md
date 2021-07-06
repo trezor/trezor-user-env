@@ -8,8 +8,27 @@ This environment is meant to support Trezor development - both Firmware and Suit
   - Send simple debug commands to the emulator.
 - Enable full integration testing of Suite, firmware emulator and Bridge using the websocket server.
 - Provide a HTML page that communicates with the server. This allows the developers to perform the actions above.
-- To be Nix-native but also offer Docker image to allow non-NixOS 
-developers to use it.
+- To be Nix-native but also offer Docker image to allow non-NixOS developers to use it.
+
+## Basic terminology
+
+- **Controller**
+  - Websocket server running on *localhost:9001*
+  - Has the functionality to control trezor components (run emulators, bridges, etc.)
+  - Used by Dashboard (below) or by automated end-to-end tests
+- **Dashboard**
+  - HTML page being accessible on *localhost:9002*
+  - Instructs the websocket server what to do by predefined functionality
+  - Used by developers testing their firmware/suite applications manually
+- **Bridge**
+  - Service running on *localhost:21325*
+  - Connection between the trezor device (or running emulator) and the trezorlib backend (below)
+  - Used by applications needing to communicate with trezor device (for example Suite)
+- **Bridge proxy**
+  - Proxies requests to the bridge
+- **Trezorlib**
+  - Python library able to communicate with the trezor device
+  - https://pypi.org/project/trezor/
 
 ## How to run
 
@@ -68,7 +87,7 @@ In case you need to modify something in trezor-user-env you have two options.
 
 ### Natively in NixOS
 
-If you are using NixOS you can do the changes locally and then run the controller yourself. Run it via `nix-shell --run 'python controller/main.py'`. Make sure you have run `{firmware,trezord-go}/bin/download.sh` beforehand otherwise you'll have old binaries.
+If you are using NixOS you can do the changes locally and then run the controller yourself. Run it via `nix-shell --run 'python src/main.py'`. Make sure you have run `src/binaries/{firmware,trezord-go}/bin/download.sh` beforehand otherwise you'll have old binaries.
 
 This is suitable for smaller changes or things you can check via the HTML dashboard easily. However, if you are adding some functionality to trezor-user-env mainly because of Suite end-to-end tests, it is probably better to go the CI way (below). Otherwise you would need to run the whole Suite test suite locally.
 

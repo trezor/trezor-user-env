@@ -1,2 +1,2 @@
-firmware/repo/
-trezord-go/repo/
+src/binaries/firmware/repo/
+src/binaries/trezord-go/repo/

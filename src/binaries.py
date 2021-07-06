@@ -18,7 +18,7 @@ def explore(args):
 
 
 def explore_firmwares(args: Any) -> None:
-    firmware_binary_files = str(ROOT_DIR / "firmware/bin/*")
+    firmware_binary_files = str(ROOT_DIR / "src/binaries/firmware/bin/*")
     if args.verbosity > 0:
         print(f"Scanning {colored(firmware_binary_files, 'yellow')}")
 

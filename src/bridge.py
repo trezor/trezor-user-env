@@ -42,7 +42,7 @@ def start(version: str, proxy: bool = False) -> None:
         raise RuntimeError("Bridge is already running, not spawning a new one")
 
     # normalize path to be relative to this folder, not pwd
-    path = os.path.join(os.path.dirname(__file__), "../trezord-go/bin")
+    path = os.path.join(os.path.dirname(__file__), "../src/binaries/trezord-go/bin")
 
     command = f"{path}/trezord-go-v{version} -ed 21324:21325 -u=false"
 

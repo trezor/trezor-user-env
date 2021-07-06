@@ -14,7 +14,7 @@ from termcolor import colored
 
 IP = "0.0.0.0"
 PORT = 9002
-HTML_DIR = Path(__file__).parent.parent / "controller" / "html"
+HTML_DIR = Path(__file__).parent.parent / "src" / "dashboard"
 COLOR = "yellow"
 
 

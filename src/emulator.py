@@ -87,7 +87,7 @@ def start(version: str, wipe: bool) -> None:
         )
         stop()
 
-    path = ROOT_DIR / "firmware/bin"
+    path = ROOT_DIR / "src/binaries/firmware/bin"
 
     if version[0] == "2":
         model_t_profile = "/var/tmp/trezor.flash"

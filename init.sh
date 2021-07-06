@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 
 set -e -o pipefail
+
+DIR=$(dirname "$0")
+cd "${DIR}/src/binaries"
+
 mkdir -p firmware/repo suite/repo
 
 if [[ -f firmware/repo/README.md ]]; then
