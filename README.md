@@ -15,20 +15,17 @@ This environment is meant to support Trezor development - both Firmware and Suit
 - **Controller**
   - Websocket server running on *localhost:9001*
   - Has the functionality to control trezor components (run emulators, bridges, etc.)
-  - Used by Dashboard (below) or by automated end-to-end tests
+  - Used by Dashboard (below) or by automated end-to-end tests in Trezor Suite
 - **Dashboard**
   - HTML page being accessible on *localhost:9002*
   - Instructs the websocket server what to do by predefined functionality
   - Used by developers testing their firmware/suite applications manually
 - **Bridge**
   - Service running on *localhost:21325*
-  - Connection between the trezor device (or running emulator) and the trezorlib backend (below)
+  - Connection between the trezor device (or running emulator) and the host
   - Used by applications needing to communicate with trezor device (for example Suite)
 - **Bridge proxy**
   - Proxies requests to the bridge
-- **Trezorlib**
-  - Python library able to communicate with the trezor device
-  - https://pypi.org/project/trezor/
 
 ## How to run
 
