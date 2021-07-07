@@ -142,7 +142,6 @@ function emulatorStart(select) {
         type: 'emulator-start',
         version,
     });
-    setTimeout(getBackgroundStatus, 200);
 }
 
 function emulatorWipe() {
@@ -184,7 +183,6 @@ function emulatorStop() {
     _send({
         type: 'emulator-stop',
     });
-    setTimeout(getBackgroundStatus, 200);
 }
 
 function bridgeStart(version) {
@@ -192,14 +190,12 @@ function bridgeStart(version) {
         type: 'bridge-start',
         version,
     });
-    setTimeout(getBackgroundStatus, 200);
 }
 
 function bridgeStop() {
     _send({
         type: 'bridge-stop',
     });
-    setTimeout(getBackgroundStatus, 200);
 }
 
 function exit() {
@@ -225,62 +221,23 @@ function reflectBackgroundSituationInGUI(dataObject) {
 
 function reflectBridgeSituation(status) {
     if (status.is_running) {
-        reflectBridgeStartedInGUI(status.version);
-        writeBridgeStatus(`Running - ${status.version}`);
+        // Can happen that bridge is already running on the background, but
+        //   was not spawned by the GUI (causing confusion)
+        if (!status.version) {
+            alert('It seems you already have an instance of bridge running - please kill it.');
+        }
+        writeBridgeStatus(`Running - ${status.version}`, 'green');
     } else {
-        reflectBridgeStoppedInGUI();
-        writeBridgeStatus('Stopped');
+        writeBridgeStatus('Stopped', 'red');
     }
-}
-
-function reflectBridgeStartedInGUI(version) {
-    // Can happen that bridge is already running on the background, but
-    //   was not spawned by the GUI (causing confusion)
-    if (!version) {
-        alert('It seems you already have an instance of bridge running - please kill it.');
-        return;
-    }
-
-    const btnIdToHighlight = `bridge-${version}`;
-    document.querySelectorAll('.bridge-button').forEach((btn) => {
-        btn.style.backgroundColor = 'grey';
-    });
-    document.getElementById(btnIdToHighlight).style.backgroundColor = 'green';
-    document.getElementById('bridge-stop').style.backgroundColor = 'grey';
-}
-
-function reflectBridgeStoppedInGUI() {
-    document.querySelectorAll('.bridge-button').forEach((btn) => {
-        btn.style.backgroundColor = 'grey';
-    });
-    document.getElementById('bridge-stop').style.backgroundColor = 'red';
 }
 
 function reflectEmulatorSituation(status) {
     if (status.is_running) {
-        reflectEmulatorStartedInGUI(status.version);
-        writeEmulatorStatus(`Running - ${status.version}`);
+        writeEmulatorStatus(`Running - ${status.version}`, 'green');
     } else {
-        reflectEmulatorStoppedInGUI();
-        writeEmulatorStatus('Stopped');
+        writeEmulatorStatus('Stopped', 'red');
     }
-}
-
-function reflectEmulatorStartedInGUI(version) {
-    const versionNumber = version.charAt(0);
-    const btnIdToHighlight = `emu-${versionNumber}-start`;
-    document.querySelectorAll('.emu-buttons').forEach((btn) => {
-        btn.style.backgroundColor = 'grey';
-    });
-    document.getElementById(btnIdToHighlight).style.backgroundColor = 'green';
-    document.getElementById('emu-stop').style.backgroundColor = 'grey';
-}
-
-function reflectEmulatorStoppedInGUI() {
-    document.querySelectorAll('.emu-buttons').forEach((btn) => {
-        btn.style.backgroundColor = 'grey';
-    });
-    document.getElementById('emu-stop').style.backgroundColor = 'red';
 }
 
 function getBackgroundStatus() {
@@ -289,19 +246,17 @@ function getBackgroundStatus() {
     });
 }
 
-function writeBridgeStatus(status) {
-    const el = document.getElementById('bridge-status');
-    el.innerHTML = status;
+function writeBridgeStatus(status, color = 'black') {
+    document.getElementById('bridge-status').innerHTML = status;
+    document.getElementById('bridge-status-line').style["color"] = color;
 }
 
-function writeEmulatorStatus(status) {
-    const el = document.getElementById('emulator-status');
-    el.innerHTML = status;
+function writeEmulatorStatus(status, color = 'black') {
+    document.getElementById('emu-status').innerHTML = status;
+    document.getElementById('emu-status-line').style["color"] = color;
 }
 
-// maybe not the best idea to bombard bridge with status requests. time will show.
 function watchBackgroundStatus() {
-    setTimeout(getBackgroundStatus, 200);
     setInterval(getBackgroundStatus, backgroundCheckPeriod);
 }
 
