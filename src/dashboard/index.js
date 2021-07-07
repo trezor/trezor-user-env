@@ -2,20 +2,28 @@
 /* eslint-disable @typescript-eslint/camelcase */
 /* eslint-disable no-underscore-dangle */
 const websocketUrl = 'ws://localhost:9001/';
-const backgroundCheckPeriod = 3000;
+const backgroundCheckPeriod = 500;
 const templateJSON = '{"type": "specify"}';
 
 let ws;
 let id = 0;
 
-function output(str, color = 'black') {
+function output(text, color = 'black') {
     const log = document.getElementById('log');
-    const escaped = str
+    const escapedText = text
         .replace(/&/, '&amp;')
         .replace(/</, '&lt;')
         .replace(/>/, '&gt;')
         .replace(/"/, '&quot;'); // "
-    log.innerHTML = `<span style="color: ${color};">${escaped}</span><br>${log.innerHTML}`;
+    log.innerHTML = `<span style="color: ${color};">${currentTime()} - ${escapedText}</span><br>${log.innerHTML}`;
+}
+
+const currentTime = () => {
+    const now = new Date();
+    const hours = ('0' + now.getHours()).slice(-2)
+    const minutes = ('0' + now.getMinutes()).slice(-2)
+    const seconds = ('0' + now.getSeconds()).slice(-2)
+    return `${hours}:${minutes}:${seconds}`;
 }
 
 const createOption = (select, value) => {
