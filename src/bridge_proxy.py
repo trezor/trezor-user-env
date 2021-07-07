@@ -2,7 +2,8 @@
 
 """
 HTTPServer used as proxy for trezord calls from the outside of docker container
-This is workaround for original ip not beeing passed to the container. https://github.com/docker/for-mac/issues/180
+This is workaround for original ip not beeing passed to the container:
+    https://github.com/docker/for-mac/issues/180
 Listening on port 21326 and routes requests to the trezord with changed Origin header
 """
 
@@ -67,13 +68,15 @@ class Handler(BaseHTTPRequestHandler):
             self.send_error(404, f"Error trying to proxy: {self.path} Error: {e}")
 
     def send_resp_headers(self, resp) -> None:
-        # response Access-Control header needs to be exact with original request from the caller
+        # response Access-Control header needs to be exact with original
+        #   request from the caller
         self.send_header(
             "Access-Control-Allow-Origin",
             self.headers.get("Access-Control-Allow-Origin", "*"),
         )
 
-        # remove Access-Control and Transfer-Encoding headers from the original trezord response
+        # remove Access-Control and Transfer-Encoding headers
+        #   from the original trezord response
         h = dict(resp.headers)
         h.pop(
             "Transfer-Encoding", "chunked"
@@ -101,7 +104,8 @@ class ThreadingServer(ThreadingMixIn, HTTPServer):
 def start() -> None:
     print(
         colored(
-            f"BRIDGE PROXY: Starting at {IP}:{PORT}. All requests will be forwarded to Bridge.",
+            f"BRIDGE PROXY: Starting at {IP}:{PORT}. "
+            "All requests will be forwarded to Bridge.",
             LOG_COLOR,
         )
     )

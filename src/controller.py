@@ -160,9 +160,10 @@ async def handler(websocket, path) -> None:
 
                 await websocket.send(json.dumps(response))
 
-        # TODO: This is wrong and we should list all the trezorlib (or other) exceptions that
-        # we want to catch here. But catching general \Exception is bad because it catches
-        # everything then including errors etc. A lot of kittens die when we are doing this.
+        # TODO: This is wrong and we should list all the trezorlib
+        #   (or other) exceptions that we want to catch here.
+        # But catching general \Exception is bad because it catches everything
+        #   then including errors etc. A lot of kittens die when we are doing this.
         except Exception as e:
             traceback_string = traceback.format_exc()
             print(traceback_string)

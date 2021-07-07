@@ -19,9 +19,10 @@ version_running = None
 
 ROOT_DIR = Path(__file__).parent.parent.resolve()
 
-# when communicating with device via bridge/debuglink, this sleep is required otherwise there
-# may appear weird race conditions in communications. when not going through bridge but webusb
-# there is no need for it, but we can skip bridge only when doing initial setup before test.
+# When communicating with device via bridge/debuglink, this sleep is required
+#   otherwise there may appear weird race conditions in communications.
+# When not going through bridge but webusb, there is no need for it,
+#   but we can skip bridge only when doing initial setup before test.
 SLEEP = 0.501
 
 # makes Trezor One emulator larger
@@ -101,7 +102,10 @@ def start(version: str, wipe: bool) -> None:
         if wipe and os.path.exists(model_one_profile):
             os.remove(model_one_profile)
 
-        command = f"TREZOR_OLED_SCALE={TREZOR_ONE_OLED_SCALE} {path}/trezor-emu-legacy-v{version} -O0"
+        command = (
+            f"TREZOR_OLED_SCALE={TREZOR_ONE_OLED_SCALE} "
+            f"{path}/trezor-emu-legacy-v{version} -O0"
+        )
 
     if proc is None:
         # TODO:
@@ -133,8 +137,8 @@ def setup_device(
     label: str,
     needs_backup: bool = False,
 ) -> None:
-    # TODO:
-    # - check if device is acquired otherwise throws "wrong previous session" from bridge
+    # TODO: check if device is acquired, otherwise throws
+    #   "wrong previous session" from bridge
     client = TrezorClientDebugLink(get_device())
     client.open()
     time.sleep(SLEEP)
