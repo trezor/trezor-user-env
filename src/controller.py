@@ -3,11 +3,12 @@ import json
 import traceback
 from typing import Any, Dict
 
+import websockets
+from termcolor import colored
+
 import binaries
 import bridge
 import emulator
-import websockets
-from termcolor import colored
 
 IP = "0.0.0.0"
 PORT = 9001
