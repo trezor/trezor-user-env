@@ -4,16 +4,20 @@ import traceback
 from typing import Any, Dict
 
 import websockets
-from termcolor import colored
 
 import binaries
 import bridge
 import emulator
+import helpers
 
 IP = "0.0.0.0"
 PORT = 9001
 LOG_COLOR = "blue"
 BRIDGE_PROXY = False  # is being set in main.py (when not disabled, will be True)
+
+
+def log(text: str, color: str = LOG_COLOR) -> None:
+    helpers.log(f"CONTROLLER: {text}", color)
 
 
 # Welcome new clients with info
@@ -25,7 +29,7 @@ async def welcome(websocket) -> None:
         "bridges": binaries.BRIDGES,
     }
     await websocket.send(json.dumps(intro))
-    log("Welcome: " + json.dumps(intro))
+    log(f"Welcome: {json.dumps(intro)}")
 
 
 async def handler(websocket, path) -> None:
@@ -40,7 +44,7 @@ async def handler(websocket, path) -> None:
             log("Client exiting OK. Goodbye")
             return
         except websockets.exceptions.ConnectionClosedError:
-            log("Client exiting with a failure. Goodbye")
+            log("Client exiting with a failure. Goodbye", "red")
             return
 
         try:
@@ -48,12 +52,12 @@ async def handler(websocket, path) -> None:
             command = request["type"]
         except KeyError:
             error = f"Key 'type' must be present in JSON - {request}"
-            log(error)
+            log(error, "red")
             await websocket.send(json.dumps({"success": False, "error": error}))
             continue
         except json.decoder.JSONDecodeError:
             error = f"Invalid JSON message - {request}"
-            log(error)
+            log(error, "red")
             await websocket.send(json.dumps({"success": False, "error": error}))
             continue
 
@@ -143,7 +147,7 @@ async def handler(websocket, path) -> None:
             elif command == "exit":
                 emulator.stop()
                 bridge.stop()
-                log("Exiting")
+                log("Exiting", "red")
                 exit(1)
             else:
                 response = {"success": False, "error": f"Unknown command - {command}"}
@@ -156,7 +160,7 @@ async def handler(websocket, path) -> None:
 
                 # Not logging in case of background checks, they would flood the screen
                 if "background_check" not in response:
-                    log("Response: " + json.dumps(response))
+                    log(f"Response: {json.dumps(response)}")
 
                 await websocket.send(json.dumps(response))
 
@@ -166,7 +170,7 @@ async def handler(websocket, path) -> None:
         #   then including errors etc. A lot of kittens die when we are doing this.
         except Exception as e:
             traceback_string = traceback.format_exc()
-            print(traceback_string)
+            log(traceback_string, "red")
             error_msg = f"{type(e).__name__} - {e}"
             response = {
                 "success": False,
@@ -174,13 +178,8 @@ async def handler(websocket, path) -> None:
                 "error": error_msg,
                 "traceback": traceback_string,
             }
-            log("ERROR response: " + json.dumps(response))
+            log(f"ERROR response: {json.dumps(response)}", "red")
             await websocket.send(json.dumps(response))
-
-
-# TODO: use logging
-def log(content: str) -> None:
-    print(colored("CONTROLLER: " + content, LOG_COLOR))
 
 
 def start() -> None:

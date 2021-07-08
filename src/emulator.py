@@ -12,6 +12,7 @@ from trezorlib.transport.bridge import BridgeTransport  # type: ignore
 from trezorlib.transport.udp import UdpTransport  # type: ignore
 
 import bridge
+import helpers
 
 # TODO: consider creating a class from this module to avoid these globals
 proc = None
@@ -27,6 +28,12 @@ SLEEP = 0.501
 
 # makes Trezor One emulator larger
 TREZOR_ONE_OLED_SCALE = 2
+
+LOG_COLOR = "magenta"
+
+
+def log(text: str, color: str = LOG_COLOR) -> None:
+    helpers.log(f"EMULATOR: {text}", color)
 
 
 def get_bridge_device() -> device:
@@ -70,7 +77,7 @@ def is_running() -> bool:
     process = Popen(check_cmd, shell=True, stdout=PIPE, stderr=PIPE)
     stdout, stderr = [part.decode() for part in process.communicate()]
     if stderr:
-        print(f"Error when checking emulator process: {stderr}")
+        log(f"Error when checking emulator process: {stderr}", "red")
     return bool(stdout)
 
 
@@ -83,9 +90,10 @@ def start(version: str, wipe: bool) -> None:
     global version_running
 
     if proc is not None:
-        print(
+        log(
             f"Before starting a new emulator - version {version}, "
-            f"killing the already running one - version {version_running}"
+            f"killing the already running one - version {version_running}",
+            "red",
         )
         stop()
 
@@ -116,7 +124,7 @@ def start(version: str, wipe: bool) -> None:
         # - run T1 & T2 emulator at once
         # - run two T2/T1 emulators
         proc = Popen(command, shell=True, preexec_fn=os.setsid)
-        print(f"the commandline is {str(proc.args)}")
+        log(f"the commandline is {str(proc.args)}")
         version_running = version
 
 
