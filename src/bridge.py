@@ -7,10 +7,17 @@ import requests
 from requests.exceptions import ConnectionError
 
 import bridge_proxy
+import helpers
 
 # TODO: consider creating a class from this module to avoid these globals
 proc = None
 version_running = None
+
+LOG_COLOR = "magenta"
+
+
+def log(text: str, color: str = LOG_COLOR) -> None:
+    helpers.log(f"BRIDGE: {text}", color)
 
 
 def is_running() -> bool:
@@ -20,7 +27,10 @@ def is_running() -> bool:
     except ConnectionError:
         return False
     except Exception as e:
-        print(f"Unexpected error when checking the bridge: {type(e).__name__} - {e}")
+        log(
+            f"Unexpected error when checking the bridge: {type(e).__name__} - {e}",
+            "red",
+        )
         return False
 
 
@@ -36,7 +46,7 @@ def start(version: str, proxy: bool = False) -> None:
     #   (for example manually by the user), we need to reflect the situation
     #   not to still think the bridge is running
     if proc is not None and not is_running():
-        print("Bridge was probably killed by user manually, resetting local state")
+        log("Bridge was probably killed by user manually, resetting local state")
         stop(cleanup=True, proxy=proxy)
 
     if proc is not None:
@@ -56,6 +66,7 @@ def start(version: str, proxy: bool = False) -> None:
 
 
 def stop(cleanup: bool = False, proxy: bool = True) -> None:
+    log("Stopping")
     global proc
     global version_running
 

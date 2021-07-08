@@ -4,18 +4,21 @@
 Serves Dashboard at http://localhost:9002 to easily instruct the controller.
 """
 
-import sys
 import threading
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from pathlib import Path
 from socketserver import ThreadingMixIn
 
-from termcolor import colored
+import helpers
 
 IP = "0.0.0.0"
 PORT = 9002
 HTML_DIR = Path(__file__).parent.parent / "src" / "dashboard"
-COLOR = "yellow"
+LOG_COLOR = "yellow"
+
+
+def log(text: str, color: str = LOG_COLOR) -> None:
+    helpers.log(f"DASHBOARD: {text}", color)
 
 
 class Dashboard(SimpleHTTPRequestHandler):
@@ -25,12 +28,9 @@ class Dashboard(SimpleHTTPRequestHandler):
 
     def log_message(self, format, *args) -> None:
         """Adds color to make the log clearer."""
-        sys.stderr.write(
-            colored(
-                "DASHBOARD: %s - - [%s] %s\n"
-                % (self.address_string(), self.log_date_time_string(), format % args),
-                COLOR,
-            )
+        log(
+            "%s - - [%s] %s\n"
+            % (self.address_string(), self.log_date_time_string(), format % args)
         )
 
 
@@ -39,7 +39,7 @@ class ThreadingServer(ThreadingMixIn, HTTPServer):
 
 
 def start() -> None:
-    print(colored(f"DASHBOARD: Starting Dashboard at: http://{IP}:{PORT}", COLOR))
+    log(f"Starting Dashboard at: http://{IP}:{PORT}")
     server = ThreadingServer((IP, PORT), Dashboard)
     server.daemon_threads = True
     thread = threading.Thread(target=server.serve_forever)

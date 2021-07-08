@@ -7,13 +7,13 @@ This is workaround for original ip not beeing passed to the container:
 Listening on port 21326 and routes requests to the trezord with changed Origin header
 """
 
-import sys
 import threading
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from socketserver import ThreadingMixIn
 
 import requests
-from termcolor import colored
+
+import helpers
 
 TREZORD_HOST = "0.0.0.0:21325"
 HEADERS = {
@@ -24,6 +24,10 @@ IP = "0.0.0.0"
 PORT = 21326
 SERVER = None
 LOG_COLOR = "green"
+
+
+def log(text: str, color: str = LOG_COLOR) -> None:
+    helpers.log(f"BRIDGE PROXY: {text}", color)
 
 
 # POST request headers override
@@ -88,12 +92,9 @@ class Handler(BaseHTTPRequestHandler):
 
     def log_message(self, format, *args) -> None:
         """Adds color to make the log clearer."""
-        sys.stderr.write(
-            colored(
-                "BRIDGE PROXY: %s - - [%s] %s\n"
-                % (self.address_string(), self.log_date_time_string(), format % args),
-                LOG_COLOR,
-            )
+        log(
+            "%s - - [%s] %s\n"
+            % (self.address_string(), self.log_date_time_string(), format % args),
         )
 
 
@@ -102,12 +103,8 @@ class ThreadingServer(ThreadingMixIn, HTTPServer):
 
 
 def start() -> None:
-    print(
-        colored(
-            f"BRIDGE PROXY: Starting at {IP}:{PORT}. "
-            "All requests will be forwarded to Bridge.",
-            LOG_COLOR,
-        )
+    log(
+        f"Starting at {IP}:{PORT}. All requests will be forwarded to Bridge.",
     )
     global SERVER
     if SERVER is not None:
@@ -120,7 +117,7 @@ def start() -> None:
 
 
 def stop(cleanup: bool = False) -> None:
-    print(colored("BRIDGE PROXY: Stopping", LOG_COLOR))
+    log("Stopping")
     global SERVER
     if SERVER is None:
         if not cleanup:

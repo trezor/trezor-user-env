@@ -7,6 +7,7 @@ import bridge
 import controller
 import dashboard
 import emulator
+import helpers
 
 
 def cleanup():
@@ -15,6 +16,12 @@ def cleanup():
 
 
 atexit.register(cleanup)
+
+LOG_COLOR = "cyan"
+
+
+def log(text: str, color: str = LOG_COLOR) -> None:
+    helpers.log(f"MAIN: {text}", color)
 
 
 if __name__ == "__main__":
@@ -35,18 +42,18 @@ if __name__ == "__main__":
     effective_work_dir = os.path.abspath(os.path.expanduser(effective_work_dir))
 
     os.chdir(effective_work_dir)
-    print(f"Working from {os.getcwd()}")
+    log(f"Working from {os.getcwd()}")
 
     binaries.explore(args)
     dashboard.start()
 
     if args.disable_bridge_proxy:
-        print(
+        log(
             "Bridge proxy disabled. "
             "Communication with Bridge needs to be done directly."
         )
     else:
-        print("Will create bridge proxy when spawning a bridge.")
+        log("Will create bridge proxy when spawning a bridge.")
         controller.BRIDGE_PROXY = True
 
     controller.start()
