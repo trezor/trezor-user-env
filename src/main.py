@@ -10,7 +10,7 @@ import emulator
 import helpers
 
 
-def cleanup():
+def cleanup() -> None:
     emulator.stop()
     bridge.stop(cleanup=True)
 

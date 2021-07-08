@@ -12,7 +12,7 @@ FIRMWARES: Dict[str, list] = {
 BRIDGES = []
 
 
-def explore(args):
+def explore(args: Any) -> None:
     explore_firmwares(args)
     explore_bridges()
 
