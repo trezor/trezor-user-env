@@ -9,3 +9,4 @@ src/binaries/firmware/bin/*
 emulator.img
 .vscode
 .mypy_cache
+docker/version.txt
