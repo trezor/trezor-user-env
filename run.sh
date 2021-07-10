@@ -1,9 +1,20 @@
 #!/usr/bin/env sh
 
 DIR=$(dirname "$0")
+cd "${DIR}"
 
-nix-shell "$DIR/shell.nix" --run "python --version"
-nix-shell "$DIR/shell.nix" --run "trezorctl --version"
+version_file="docker/version.txt"
+if [ -f "${version_file}" ]
+then
+    cat "${version_file}"
+else
+    echo "Version file is missing - ${version_file}"
+fi
+
+echo -n "Python version: "
+nix-shell --run "python --version"
+echo -n "Trezorctl version: "
+nix-shell --run "trezorctl version"
 
 echo "Starting trezor-user-env server"
-nix-shell "$DIR/shell.nix" --run "python $DIR/src/main.py"
+nix-shell --run "python src/main.py"

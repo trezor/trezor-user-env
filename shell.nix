@@ -29,5 +29,6 @@ in
       docker-compose
       xorg.xhost
       wget
+      git
     ];
   }
