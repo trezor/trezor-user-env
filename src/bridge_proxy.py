@@ -116,12 +116,11 @@ def start() -> None:
     thread.start()
 
 
-def stop(cleanup: bool = False) -> None:
+def stop() -> None:
     log("Stopping")
     global SERVER
     if SERVER is None:
-        if not cleanup:
-            raise RuntimeError("Bridge proxy is not running, cannot be stopped")
+        log("WARNING: Attempting to stop a brige proxy, but it is not running", "red")
     else:
         SERVER.shutdown()
         SERVER = None
