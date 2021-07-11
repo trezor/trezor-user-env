@@ -12,7 +12,7 @@ import helpers
 
 def cleanup() -> None:
     emulator.stop()
-    bridge.stop(cleanup=True)
+    bridge.stop()
 
 
 atexit.register(cleanup)

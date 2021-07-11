@@ -47,7 +47,7 @@ def start(version: str, proxy: bool = False) -> None:
     #   not to still think the bridge is running
     if proc is not None and not is_running():
         log("Bridge was probably killed by user manually, resetting local state")
-        stop(cleanup=True, proxy=proxy)
+        stop(proxy=proxy)
 
     if proc is not None:
         raise RuntimeError("Bridge is already running, not spawning a new one")
@@ -65,19 +65,17 @@ def start(version: str, proxy: bool = False) -> None:
         bridge_proxy.start()
 
 
-def stop(cleanup: bool = False, proxy: bool = True) -> None:
+def stop(proxy: bool = True) -> None:
     log("Stopping")
     global proc
     global version_running
 
-    # In case of cleanup it may happen that the bridge will not run - and it is fine
     if proc is None:
-        if not cleanup:
-            raise RuntimeError("Bridge is not running, cannot be stopped")
+        log("WARNING: Attempting to stop a brige, but it is not running", "red")
     else:
         os.killpg(os.getpgid(proc.pid), signal.SIGTERM)
         proc = None
         version_running = None
 
     if proxy:
-        bridge_proxy.stop(cleanup=cleanup)
+        bridge_proxy.stop()
