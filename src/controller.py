@@ -1,4 +1,5 @@
 import asyncio
+import http
 import json
 import traceback
 from typing import Any, Dict
@@ -182,10 +183,15 @@ async def handler(websocket, path) -> None:
             await websocket.send(json.dumps(response))
 
 
+async def health_check(path, request_headers):
+    if path == "/health/":
+        return http.HTTPStatus.OK, [], b"OK\n"
+
+
 def start() -> None:
     log(f"Starting websocket server (controller.py) at {IP}:{PORT}")
 
-    server = websockets.serve(handler, IP, PORT)
+    server = websockets.serve(handler, IP, PORT, process_request=health_check)
 
     asyncio.get_event_loop().run_until_complete(server)
     asyncio.get_event_loop().run_forever()
