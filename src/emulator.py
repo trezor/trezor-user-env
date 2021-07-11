@@ -129,10 +129,13 @@ def start(version: str, wipe: bool) -> None:
 
 
 def stop() -> None:
+    log("Stopping")
     global proc
     global version_running
 
-    if proc is not None:
+    if proc is None:
+        log("WARNING: Attempting to stop emulator, but it is not running", "red")
+    else:
         os.killpg(os.getpgid(proc.pid), signal.SIGTERM)
         proc = None
         version_running = None
