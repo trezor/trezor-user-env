@@ -50,7 +50,8 @@ def start(version: str, proxy: bool = False) -> None:
         stop(proxy=proxy)
 
     if proc is not None:
-        raise RuntimeError("Bridge is already running, not spawning a new one")
+        log("WARNING: Bridge is already running, not spawning a new one", "red")
+        return
 
     # normalize path to be relative to this folder, not pwd
     path = os.path.join(os.path.dirname(__file__), "../src/binaries/trezord-go/bin")
