@@ -108,7 +108,9 @@ def start() -> None:
     )
     global SERVER
     if SERVER is not None:
-        raise RuntimeError("Bridge proxy is already initialized, cannot be run again")
+        log("WARNING: Bridge proxy is already initialized, cannot be run again", "red")
+        return
+
     SERVER = ThreadingServer((IP, PORT), Handler)
     SERVER.daemon_threads = True
     thread = threading.Thread(target=SERVER.serve_forever)
