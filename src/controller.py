@@ -82,8 +82,12 @@ async def handler(websocket, path) -> None:
             elif command == "emulator-start":
                 version = request.get("version") or binaries.FIRMWARES["TT"][0]
                 wipe = request.get("wipe") or False
-                emulator.start(version, wipe)
-                response = {"response": f"Emulator version {version} started"}
+                result = emulator.start(version, wipe)
+                response = {
+                    "response": result.get("response", ""),
+                    "details": result.get("details", []),
+                    "warnings": result.get("warnings", []),
+                }
             elif command == "emulator-stop":
                 emulator.stop()
                 response = {"response": "Emulator stopped"}

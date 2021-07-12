@@ -3,6 +3,7 @@ import signal
 import time
 from pathlib import Path
 from subprocess import PIPE, Popen
+from typing import List
 
 from trezorlib import debuglink, device  # type: ignore
 from trezorlib.debuglink import DebugLink  # type: ignore
@@ -85,16 +86,21 @@ def get_status() -> dict:
     return {"is_running": is_running(), "version": version_running}
 
 
-def start(version: str, wipe: bool) -> None:
+def start(version: str, wipe: bool) -> dict:
     global proc
     global version_running
 
+    response = ""
+    details: List[str] = []
+    warnings: List[str] = []
+
     if proc is not None:
-        log(
+        warning = (
             f"Before starting a new emulator - version {version}, "
-            f"killing the already running one - version {version_running}",
-            "red",
+            f"killing the already running one - version {version_running}"
         )
+        warnings.append(warning)
+        log(warning, "red")
         stop()
 
     path = ROOT_DIR / "src/binaries/firmware/bin"
@@ -103,17 +109,27 @@ def start(version: str, wipe: bool) -> None:
         model_t_profile = "/var/tmp/trezor.flash"
         if wipe and os.path.exists(model_t_profile):
             os.remove(model_t_profile)
+            detail = f"Removing TT profile - {model_t_profile}"
+            details.append(detail)
+            log(detail)
 
         command = f"{path}/trezor-emu-core-v{version} -O0 -X heapsize=20M -m main"
     else:
         model_one_profile = ROOT_DIR / "emulator.img"
         if wipe and os.path.exists(model_one_profile):
             os.remove(model_one_profile)
+            detail = f"Removing T1 profile - {model_one_profile}"
+            details.append(detail)
+            log(detail)
 
         command = (
             f"TREZOR_OLED_SCALE={TREZOR_ONE_OLED_SCALE} "
             f"{path}/trezor-emu-legacy-v{version} -O0"
         )
+
+    detail = f"Command to spawn emulator - {command}"
+    details.append(detail)
+    log(detail)
 
     if proc is None:
         # TODO:
@@ -124,8 +140,14 @@ def start(version: str, wipe: bool) -> None:
         # - run T1 & T2 emulator at once
         # - run two T2/T1 emulators
         proc = Popen(command, shell=True, preexec_fn=os.setsid)
-        log(f"the commandline is {str(proc.args)}")
         version_running = version
+        response = f"Emulator version {version} started"
+
+    return {
+        "response": response,
+        "details": details,
+        "warnings": warnings,
+    }
 
 
 def stop() -> None:
