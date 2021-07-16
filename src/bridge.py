@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 import os
 import signal
+import socket
+import time
 from subprocess import Popen
 
 import requests
@@ -8,6 +10,9 @@ from requests.exceptions import ConnectionError
 
 import bridge_proxy
 import helpers
+from bridge_proxy import PORT as BRIDGE_PROXY_PORT
+
+BRIDGE_PORT = 21325
 
 # TODO: consider creating a class from this module to avoid these globals
 proc = None
@@ -38,7 +43,20 @@ def get_status() -> dict:
     return {"is_running": is_running(), "version": version_running}
 
 
+def is_port_in_use(port: int) -> bool:
+    """Checks if a certain port is listening on localhost"""
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        return s.connect_ex(("0.0.0.0", port)) == 0
+
+
+def check_bridge_and_proxy_status() -> None:
+    """Reporting the status of bridge and proxy, for debugging purposes"""
+    log(f"Is bridge running - {is_port_in_use(BRIDGE_PORT)}")
+    log(f"Is bridge proxy running - {is_port_in_use(BRIDGE_PROXY_PORT)}")
+
+
 def start(version: str, proxy: bool = False) -> None:
+    log("Starting")
     global proc
     global version_running
 
@@ -65,6 +83,9 @@ def start(version: str, proxy: bool = False) -> None:
     if proxy:
         bridge_proxy.start()
 
+    time.sleep(0.5)
+    check_bridge_and_proxy_status()
+
 
 def stop(proxy: bool = True) -> None:
     log("Stopping")
@@ -80,3 +101,6 @@ def stop(proxy: bool = True) -> None:
 
     if proxy:
         bridge_proxy.stop()
+
+    time.sleep(0.5)
+    check_bridge_and_proxy_status()
