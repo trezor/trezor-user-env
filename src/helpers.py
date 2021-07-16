@@ -1,11 +1,17 @@
 import logging
+import os
 from pathlib import Path
 
 from termcolor import colored
 
 ROOT_DIR = Path(__file__).parent.parent.resolve()
+LOG_DIR = ROOT_DIR / "logs"
 
-LOG_FILENAME = str(ROOT_DIR / "debugging.log")
+# Creating log dir here, so it does not need to be included in repository
+if not os.path.exists(LOG_DIR):
+    os.mkdir(LOG_DIR)
+
+LOG_FILENAME = str(LOG_DIR / "debugging.log")
 
 logging.basicConfig(
     filename=LOG_FILENAME,

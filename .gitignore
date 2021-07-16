@@ -10,4 +10,4 @@ emulator.img
 .vscode
 .mypy_cache
 docker/version.txt
-debugging.log
+logs/debugging.log
