@@ -3,6 +3,7 @@ import signal
 import time
 from pathlib import Path
 from subprocess import PIPE, Popen
+from typing import Optional
 
 from trezorlib import debuglink, device  # type: ignore
 from trezorlib.debuglink import DebugLink  # type: ignore
@@ -271,13 +272,38 @@ def select_num_of_words(num_of_words: int = 12) -> None:
     client.close()
 
 
-def apply_settings(passphrase_always_on_device: bool = False) -> None:
+def apply_settings(
+    language: Optional[str] = None,
+    label: Optional[str] = None,
+    use_passphrase: Optional[bool] = None,
+    homescreen: Optional[str] = None,
+    auto_lock_delay_ms: Optional[int] = None,
+    display_rotation: Optional[int] = None,
+    passphrase_always_on_device: Optional[bool] = None,
+    safety_checks: Optional[int] = None,
+) -> None:
+    """Forwards settings fields to be applied on a device.
+
+    NOTE: does not handle the experimental_features argument,
+      seems that it is not yet supported in latest trezorlib
+    """
+    # Homescreen needs to be bytes object, so if there,
+    #   it should be encoded from the received string
+    homescreen_bytes = homescreen.encode() if homescreen else None
+
     client = TrezorClientDebugLink(get_device())
     client.open()
     time.sleep(SLEEP)
     device.apply_settings(
         client,
+        label=label,
+        language=language,
+        use_passphrase=use_passphrase,
+        homescreen=homescreen_bytes,
         passphrase_always_on_device=passphrase_always_on_device,
+        auto_lock_delay_ms=auto_lock_delay_ms,
+        display_rotation=display_rotation,
+        safety_checks=safety_checks,
     )
     client.close()
 

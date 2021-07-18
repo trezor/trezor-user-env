@@ -119,10 +119,14 @@ class ResponseGetter:
             emulator.wipe_device()
             return {"response": "Device wiped"}
         elif self.command == "emulator-apply-settings":
-            emulator.apply_settings(
-                self.request_dict["passphrase_always_on_device"],
-            )
-            return {"response": f"Applied setting on emulator {self.request_dict}"}
+            # Relaying all the relevant fields from the request, to make sure
+            #   the client is notified when it sends an unknown field
+            #   and the function will throw an Exception
+            settings_fields = deepcopy(self.request_dict)
+            settings_fields.pop("type", None)
+            settings_fields.pop("id", None)
+            emulator.apply_settings(**settings_fields)
+            return {"response": f"Applied settings on emulator {settings_fields}"}
         elif self.command == "emulator-reset-device":
             emulator.reset_device()
             return {"response": "Device reset"}
