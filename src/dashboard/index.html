@@ -27,7 +27,7 @@
             <div class="explain-note">
                 You may also check bridge status page on
                 <a href="http://0.0.0.0:21325/status/" target="_blank">
-                    http://0.0.0.0:21325/status/ 
+                    http://0.0.0.0:21325/status/
                 </a>
                 when the bridge is running
             </div>
@@ -49,6 +49,8 @@
             <select id="t2-select"></select>
             <button onclick="emulatorStart('t2-select');">Start</button>
         </div>
+        <input id="wipeDevice" type="checkbox">
+        <label for="wipeDevice">Start with wiped/empty device</label><br>
         <hr />
         <h3>Emulator commands</h3>
         <div class="explain-note">These commands are auto-confirmed using the emulator's debug link.</div><br>
@@ -62,7 +64,7 @@
             <button id="emu-stop" onclick="emulatorStop();">Stop</button>
         </div>
     </section>
-    
+
     <section>
         <h3>Server</h3>
         <textarea id="raw-input" rows="3"></textarea>
@@ -78,7 +80,7 @@
         <h3>Log</h3>
         <div id="log"></div>
     </section>
-    
+
     <script type="text/javascript" src="index.js"></script>
 </body>
 </html>

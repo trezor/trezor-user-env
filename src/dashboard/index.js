@@ -138,9 +138,11 @@ function onCloseClick() {
 
 function emulatorStart(select) {
     const version = document.getElementById(select).value;
+    const wipe = document.getElementById("wipeDevice").checked;
     _send({
         type: 'emulator-start',
         version,
+        wipe,
     });
 }
 
