@@ -5,9 +5,6 @@ import socket
 import time
 from subprocess import Popen
 
-import requests
-from requests.exceptions import ConnectionError
-
 import bridge_proxy
 import helpers
 from bridge_proxy import PORT as BRIDGE_PROXY_PORT
@@ -26,17 +23,7 @@ def log(text: str, color: str = LOG_COLOR) -> None:
 
 
 def is_running() -> bool:
-    try:
-        r = requests.get("http://0.0.0.0:21325/status/")
-        return r.status_code == 200
-    except ConnectionError:
-        return False
-    except Exception as e:
-        log(
-            f"Unexpected error when checking the bridge: {type(e).__name__} - {e}",
-            "red",
-        )
-        return False
+    return is_port_in_use(BRIDGE_PORT)
 
 
 def get_status() -> dict:
