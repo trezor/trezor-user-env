@@ -78,7 +78,10 @@ class ResponseGetter:
             version = self.request_dict.get("version") or binaries.FIRMWARES["TT"][0]
             wipe = self.request_dict.get("wipe") or False
             emulator.start(version, wipe)
-            return {"response": f"Emulator version {version} started"}
+            response_text = f"Emulator version {version} started"
+            if wipe:
+                response_text = response_text + " and wiped to be empty"
+            return {"response": response_text}
         elif self.command == "emulator-stop":
             emulator.stop()
             return {"response": "Emulator stopped"}
