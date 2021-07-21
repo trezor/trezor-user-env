@@ -52,7 +52,10 @@
   - **action**: simulates the Single backup process
 
 - **emulator-read-and-confirm-shamir-mnemonic**
-  - **action**: simulates the Shamir backup process
+  - **action**: simulates the Shamir backup process for chosen amount of shares and threshold
+  - **arguments**:
+    - **shares**: `int` (defaults to 1)
+    - **threshold**: `int` (defaults to 1)
 
 - **emulator-allow-unsafe-paths**
   - **action**: allow unsafe path on emulator

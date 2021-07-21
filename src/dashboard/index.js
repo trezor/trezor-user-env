@@ -219,8 +219,12 @@ function readAndConfirmMnemonic() {
 }
 
 function readAndConfirmMnemonicShamir() {
+    const shares = parseInt(document.getElementById("shares-input").value);
+    const threshold = parseInt(document.getElementById("threshold-input").value);
     _send({
-        type: 'emulator-read-and-confirm-mnemonic-shamir',
+        type: 'emulator-read-and-confirm-shamir-mnemonic',
+        shares,
+        threshold,
     });
 }
 

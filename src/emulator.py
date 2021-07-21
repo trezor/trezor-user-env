@@ -224,6 +224,7 @@ def swipe(direction: str) -> None:
 
 
 def read_and_confirm_mnemonic() -> None:
+    # Connecting to the device
     client = DebugLink(get_device().find_debug())
     client.open()
     time.sleep(SLEEP)
@@ -252,26 +253,58 @@ def read_and_confirm_mnemonic() -> None:
         client.input(mnemonic[index])
         time.sleep(SLEEP)
 
+    # Click Continue to finish the quiz
     client.press_yes()
+    time.sleep(SLEEP)
+
+    # Click Continue to finish the backup
     client.press_yes()
+    time.sleep(SLEEP)
+
     client.close()
 
 
-def read_and_confirm_mnemonic_shamir():
+def read_and_confirm_shamir_mnemonic(shares: int = 1, threshold: int = 1) -> None:
+    """Performs a walkthrough of the whole Shamir backup on the device.
+
+    NOTE: does not support Super Shamir.
+    """
+    MIN_SHARES = 1
+    MAX_SHARES = 16
+    if shares < MIN_SHARES or shares > MAX_SHARES:
+        raise RuntimeError(
+            f"Number of shares must be between {MIN_SHARES} and {MAX_SHARES}."
+        )
+    if threshold > shares:
+        raise RuntimeError("Threshold cannot be bigger than number of shares.")
+
+    # For setting the right amount of shares/thresholds, we need location of buttons
+    MINUS_BUTTON_COORDS = (60, 70)
+    PLUS_BUTTON_COORDS = (180, 70)
+
+    # Connecting to the device
     client = DebugLink(get_device().find_debug())
     client.open()
     time.sleep(SLEEP)
 
     # Click Continue to begin Shamir setup process
     client.press_yes()
+    time.sleep(SLEEP)
 
-    # Clicking the minus button four times to set only one share (it starts at 5)
-    minus_button_coords = (60, 70)
-    for _ in range(4):
-        client.click(minus_button_coords)
-        time.sleep(SLEEP)
+    # Clicking the minus/plus button to set right number of shares (it starts at 5)
+    DEFAULT_SHARES = 5
+    needed_clicks = abs(shares - DEFAULT_SHARES)
+    if needed_clicks > 0:
+        if shares < DEFAULT_SHARES:
+            button_coords_to_click = MINUS_BUTTON_COORDS
+        else:
+            button_coords_to_click = PLUS_BUTTON_COORDS
 
-    # Click Continue to confirm one share
+        for _ in range(needed_clicks):
+            client.click(button_coords_to_click)
+            time.sleep(SLEEP)
+
+    # Click Continue to confirm the number of shares
     client.press_yes()
     time.sleep(SLEEP)
 
@@ -279,7 +312,24 @@ def read_and_confirm_mnemonic_shamir():
     client.press_yes()
     time.sleep(SLEEP)
 
-    # Click Continue to set threshold to one
+    # When we have 1 or 2 shares, the threshold is set and cannot be changed
+    # (it will be 1 and 2 respectively)
+    # Otherise assign it correctly by clicking the plus/minus button
+    if shares not in [1, 2]:
+        # Default threshold can be calculated from the share number
+        default_threshold = shares // 2 + 1
+        needed_clicks = abs(threshold - default_threshold)
+        if needed_clicks > 0:
+            if threshold < default_threshold:
+                button_coords_to_click = MINUS_BUTTON_COORDS
+            else:
+                button_coords_to_click = PLUS_BUTTON_COORDS
+
+            for _ in range(needed_clicks):
+                client.click(button_coords_to_click)
+                time.sleep(SLEEP)
+
+    # Click Continue to confirm our chosen threshold
     client.press_yes()
     time.sleep(SLEEP)
 
@@ -291,29 +341,37 @@ def read_and_confirm_mnemonic_shamir():
     client.press_yes()
     time.sleep(SLEEP)
 
-    # Scrolling through all the 20 words on next 5 pages
-    # While doing so, saving all the words on the screen for the "quiz" later
-    mnemonic = []
-    for _ in range(5):
+    # Loop through all the shares and fulfill all checks
+    for _ in range(shares):
+        # Scrolling through all the 20 words on next 5 pages
+        # While doing so, saving all the words on the screen for the "quiz" later
+        mnemonic = []
+        for _ in range(5):
+            mnemonic.extend(client.read_reset_word().split())
+            client.swipe_up()
+            time.sleep(SLEEP)
+
         mnemonic.extend(client.read_reset_word().split())
-        client.swipe_up()
+        assert len(mnemonic) == 20
+
+        # Confirming that I have written the seed down
+        client.press_yes()
         time.sleep(SLEEP)
 
-    mnemonic.extend(client.read_reset_word().split())
-    assert len(mnemonic) == 20
+        # Answering 3 questions asking for a specific word
+        for _ in range(3):
+            index = client.read_reset_word_pos()
+            client.input(mnemonic[index])
+            time.sleep(SLEEP)
 
-    # Confirming that I have written the seed down
+        # Click Continue to finish this quiz
+        client.press_yes()
+        time.sleep(SLEEP)
+
+    # Click Continue to finish the backup
     client.press_yes()
     time.sleep(SLEEP)
 
-    # Answering 3 questions asking for a specific word
-    for _ in range(3):
-        index = client.read_reset_word_pos()
-        client.input(mnemonic[index])
-        time.sleep(SLEEP)
-
-    client.press_yes()
-    client.press_yes()
     client.close()
 
 
