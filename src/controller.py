@@ -108,8 +108,14 @@ class ResponseGetter:
             emulator.read_and_confirm_mnemonic()
             return {"response": "Read and confirm mnemonic"}
         elif self.command == "emulator-read-and-confirm-shamir-mnemonic":
-            emulator.read_and_confirm_mnemonic_shamir()
-            return {"response": "Read and confirm Shamir mnemonic"}
+            shares = self.request_dict.get("shares") or 1
+            threshold = self.request_dict.get("threshold") or 1
+            emulator.read_and_confirm_shamir_mnemonic(
+                shares=shares, threshold=threshold
+            )
+            return {
+                "response": f"Read and confirm Shamir mnemonic for {shares} shares and threshold {threshold}."
+            }
         elif self.command == "emulator-allow-unsafe-paths":
             emulator.allow_unsafe()
             return {"response": "Allowed unsafe path"}
