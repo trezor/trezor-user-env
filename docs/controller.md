@@ -49,7 +49,10 @@
     - **value**: `str`
 
 - **emulator-read-and-confirm-mnemonic**
-  - **action**: simulates the backup process
+  - **action**: simulates the Single backup process
+
+- **emulator-read-and-confirm-shamir-mnemonic**
+  - **action**: simulates the Shamir backup process
 
 - **emulator-allow-unsafe-paths**
   - **action**: allow unsafe path on emulator

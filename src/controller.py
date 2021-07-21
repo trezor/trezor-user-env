@@ -107,6 +107,9 @@ class ResponseGetter:
         elif self.command == "emulator-read-and-confirm-mnemonic":
             emulator.read_and_confirm_mnemonic()
             return {"response": "Read and confirm mnemonic"}
+        elif self.command == "emulator-read-and-confirm-shamir-mnemonic":
+            emulator.read_and_confirm_mnemonic_shamir()
+            return {"response": "Read and confirm Shamir mnemonic"}
         elif self.command == "emulator-allow-unsafe-paths":
             emulator.allow_unsafe()
             return {"response": "Allowed unsafe path"}
