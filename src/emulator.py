@@ -228,36 +228,29 @@ def read_and_confirm_mnemonic() -> None:
     client.open()
     time.sleep(SLEEP)
 
+    # Clicking continue button
     client.press_yes()
     time.sleep(SLEEP)
 
+    # Scrolling through all the 12 words on next three pages
+    for _ in range(3):
+        client.swipe_up()
+        time.sleep(SLEEP)
+
+    # Confirming that I have written the seed down
+    client.press_yes()
+    time.sleep(SLEEP)
+
+    # Retrieving the seed words for next "quiz"
     mnem = client.state().mnemonic_secret.decode("utf-8")
     mnemonic = mnem.split()
     time.sleep(SLEEP)
 
-    client.swipe_up()
-    time.sleep(SLEEP)
-
-    client.swipe_up()
-    time.sleep(SLEEP)
-
-    client.swipe_up()
-    time.sleep(SLEEP)
-
-    client.press_yes()
-    time.sleep(SLEEP)
-
-    index = client.read_reset_word_pos()
-    client.input(mnemonic[index])
-    time.sleep(SLEEP)
-
-    index = client.read_reset_word_pos()
-    client.input(mnemonic[index])
-    time.sleep(SLEEP)
-
-    index = client.read_reset_word_pos()
-    client.input(mnemonic[index])
-    time.sleep(SLEEP)
+    # Answering 3 questions asking for a specific word
+    for _ in range(3):
+        index = client.read_reset_word_pos()
+        client.input(mnemonic[index])
+        time.sleep(SLEEP)
 
     client.press_yes()
     client.press_yes()
@@ -269,75 +262,55 @@ def read_and_confirm_mnemonic_shamir():
     client.open()
     time.sleep(SLEEP)
 
+    # Click Continue to begin Shamir setup process
     client.press_yes()
 
-    # one group
+    # Clicking the minus button four times to set only one share (it starts at 5)
+    minus_button_coords = (60, 70)
+    for _ in range(4):
+        client.click(minus_button_coords)
+        time.sleep(SLEEP)
 
-    client.swipe_left()
-    time.sleep(SLEEP)
-
-    client.swipe_left()
-    time.sleep(SLEEP)
-
-    client.swipe_left()
-    time.sleep(SLEEP)
-
-    client.swipe_left()
-    time.sleep(SLEEP)
-
+    # Click Continue to confirm one share
     client.press_yes()
     time.sleep(SLEEP)
 
-    # one share
-
+    # Click Continue to set threshold
     client.press_yes()
     time.sleep(SLEEP)
 
-    # set the treshold for one
-
-    client.press_yes()
-    time.sleep(SLEEP)
-    client.press_yes()
-    time.sleep(SLEEP)
+    # Click Continue to set threshold to one
     client.press_yes()
     time.sleep(SLEEP)
 
+    # Click Continue to continue
     client.press_yes()
     time.sleep(SLEEP)
 
-    mnem = client.state().mnemonic_secret.decode("utf-8")
-    mnemonic = mnem.split()
-    time.sleep(SLEEP)
-
-    client.swipe_up()
-    time.sleep(SLEEP)
-
-    client.swipe_up()
-    time.sleep(SLEEP)
-
-    client.swipe_up()
-    time.sleep(SLEEP)
-
-    client.swipe_up()
-    time.sleep(SLEEP)
-
-    client.swipe_up()
-    time.sleep(SLEEP)
-
+    # Click I understand
     client.press_yes()
     time.sleep(SLEEP)
 
-    index = client.read_reset_word_pos()
-    client.input(mnemonic[index])
+    # Scrolling through all the 20 words on next 5 pages
+    # While doing so, saving all the words on the screen for the "quiz" later
+    mnemonic = []
+    for _ in range(5):
+        mnemonic.extend(client.read_reset_word().split())
+        client.swipe_up()
+        time.sleep(SLEEP)
+
+    mnemonic.extend(client.read_reset_word().split())
+    assert len(mnemonic) == 20
+
+    # Confirming that I have written the seed down
+    client.press_yes()
     time.sleep(SLEEP)
 
-    index = client.read_reset_word_pos()
-    client.input(mnemonic[index])
-    time.sleep(SLEEP)
-
-    index = client.read_reset_word_pos()
-    client.input(mnemonic[index])
-    time.sleep(SLEEP)
+    # Answering 3 questions asking for a specific word
+    for _ in range(3):
+        index = client.read_reset_word_pos()
+        client.input(mnemonic[index])
+        time.sleep(SLEEP)
 
     client.press_yes()
     client.press_yes()

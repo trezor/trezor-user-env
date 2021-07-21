@@ -212,6 +212,18 @@ function ping() {
     });
 }
 
+function readAndConfirmMnemonic() {
+    _send({
+        type: 'emulator-read-and-confirm-mnemonic',
+    });
+}
+
+function readAndConfirmMnemonicShamir() {
+    _send({
+        type: 'emulator-read-and-confirm-mnemonic-shamir',
+    });
+}
+
 function reflectBackgroundSituationInGUI(dataObject) {
     if ('bridge_status' in dataObject) {
         reflectBridgeSituation(dataObject.bridge_status);
