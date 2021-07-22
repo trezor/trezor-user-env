@@ -14,6 +14,11 @@
 - **ping**
   - **response**: `{"response": "pong"}`
 
+- **log**
+  - **action**: log the supplied text to be preserved in debugging.log (e.g. for auditing purposes)
+  - **arguments**:
+    - **text**: `str`
+
 - **background-check**
   - **action**: check current status of bridge and emulator
   - **response**: `{"bridge_status": bool, "emulator_status": bool}`
