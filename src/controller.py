@@ -65,6 +65,10 @@ class ResponseGetter:
         """Performs wanted action and returns details of what happened."""
         if self.command == "ping":
             return {"response": "pong"}
+        elif self.command == "log":
+            text = self.request_dict["text"]
+            log(text)
+            return {"response": "Text logged"}
         elif self.command == "background-check":
             bridge_status = bridge.get_status()
             emulator_status = emulator.get_status()
