@@ -46,8 +46,9 @@ def explore_firmwares(args: Any) -> None:
 
 
 def sort_firmwares(version: str) -> tuple:
+    # Having master version as the first one in the list
     if "master" in version:
-        return 0, 0, 0
+        return 99, 99, 99
     return tuple(int(n) for n in version.split("."))
 
 
