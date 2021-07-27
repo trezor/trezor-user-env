@@ -108,6 +108,11 @@ class ResponseGetter:
             value = self.request_dict["value"]
             emulator.input(value)
             return {"response": f"Input into emulator: {value}"}
+        elif self.command == "emulator-click":
+            x = self.request_dict["x"]
+            y = self.request_dict["y"]
+            emulator.click(x=x, y=y)
+            return {"response": f"Clicked in emulator: x: {x}, y: {y}"}
         elif self.command == "emulator-read-and-confirm-mnemonic":
             emulator.read_and_confirm_mnemonic()
             return {"response": "Read and confirm mnemonic"}
