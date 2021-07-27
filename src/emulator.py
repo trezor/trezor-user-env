@@ -208,6 +208,14 @@ def input(value: str) -> None:
     client.close()
 
 
+def click(x: int, y: int) -> None:
+    client = DebugLink(get_device().find_debug())
+    client.open()
+    time.sleep(SLEEP)
+    client.click((x, y))
+    client.close()
+
+
 def swipe(direction: str) -> None:
     client = DebugLink(get_device().find_debug())
     client.open()

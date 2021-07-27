@@ -48,6 +48,12 @@
   - **arguments**:
     - **value**: `str`
 
+- **emulator-click**
+  - **action**: click on a specified pixel coordination (x, y) on emulator
+  - **arguments**:
+    - **x**: `int`
+    - **y**: `int`
+
 - **emulator-read-and-confirm-mnemonic**
   - **action**: simulates the Single backup process
 
