@@ -1,6 +1,6 @@
 # trezor-user-env docker images build
 .build: &build
-  image: docker
+  image: $CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX/docker
   variables:
     CONTAINER_NAME: "$CI_REGISTRY/satoshilabs/trezor/trezor-user-env/trezor-user-env"
   services:
@@ -35,9 +35,9 @@ build and push test image:
 
 # regtest docker images build
 .build_regtest: &build_regtest
-  image: docker
+  image: $CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX/docker
   variables:
-    CONTAINER_NAME: "$CI_REGISTRY/satoshilabs/trezor/trezor-user-env/trezor-user-env-regtest"
+    CONTAINER_NAME_REGTEST: "$CI_REGISTRY/satoshilabs/trezor/trezor-user-env/trezor-user-env-regtest"
   services:
     - docker:dind
   before_script:
@@ -46,10 +46,9 @@ build and push test image:
 build and push bitcoin regtest image:
   stage: build
   <<: *build_regtest
-  except:
-    - schedules
+  only:
     - master
-    - /^run\//
+    - bitcoin-regtest-server
   script:
-    - docker build --tag $CONTAINER_NAME:$CI_COMMIT_SHA  -f docker/regtest/Dockerfile .
-    - docker push $CONTAINER_NAME:$CI_COMMIT_SHA
+    - docker build --tag $CONTAINER_NAME_REGTEST:latest  -f docker/bitcoin-regtest/Dockerfile .
+    - docker push $CONTAINER_NAME_REGTEST:latest
