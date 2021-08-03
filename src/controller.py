@@ -9,11 +9,17 @@ import binaries
 import bridge
 import emulator
 import helpers
+from bitcoin_regtest.rpc import BTCJsonRPC
 
 IP = "0.0.0.0"
 PORT = 9001
 LOG_COLOR = "blue"
 BRIDGE_PROXY = False  # is being set in main.py (when not disabled, will be True)
+REGTEST_RPC = BTCJsonRPC(
+    url="http://0.0.0.0:18021",
+    user="rpc",
+    passwd="rpc",
+)
 
 
 def log(text: str, color: str = LOG_COLOR) -> None:
@@ -78,7 +84,44 @@ class ResponseGetter:
                 "emulator_status": emulator_status,
                 "background_check": True,
             }
-        elif self.command == "emulator-start":
+        elif self.command == "exit":
+            emulator.stop()
+            bridge.stop()
+            log("Exiting", "red")
+            exit(1)
+        elif self.command.startswith("bridge"):
+            return self.run_bridge_command()
+        elif (
+            self.command.startswith("emulator") or self.command == "select-num-of-words"
+        ):
+            return self.run_emulator_command()
+        elif self.command.startswith("regtest"):
+            return self.run_regtest_command()
+        else:
+            return {"success": False, "error": f"Unknown command - {self.command}"}
+
+    def run_bridge_command(self) -> dict:
+        if self.command == "bridge-start":
+            version = self.request_dict.get("version") or binaries.BRIDGES[0]
+            bridge.start(version, proxy=BRIDGE_PROXY)
+            response_text = f"Bridge version {version} started"
+            if BRIDGE_PROXY:
+                response_text = response_text + " with bridge proxy"
+            return {"response": response_text}
+        elif self.command == "bridge-stop":
+            bridge.stop(proxy=BRIDGE_PROXY)
+            response_text = "Stopping bridge"
+            if BRIDGE_PROXY:
+                response_text = response_text + " + stopping bridge proxy"
+            return {"response": response_text}
+        else:
+            return {
+                "success": False,
+                "error": f"Unknown bridge command - {self.command}",
+            }
+
+    def run_emulator_command(self) -> dict:
+        if self.command == "emulator-start":
             version = self.request_dict.get("version") or binaries.FIRMWARES["TT"][0]
             wipe = self.request_dict.get("wipe") or False
             emulator.start(version, wipe)
@@ -151,26 +194,30 @@ class ResponseGetter:
         elif self.command == "emulator-reset-device":
             emulator.reset_device()
             return {"response": "Device reset"}
-        elif self.command == "bridge-start":
-            version = self.request_dict.get("version") or binaries.BRIDGES[0]
-            bridge.start(version, proxy=BRIDGE_PROXY)
-            response_text = f"Bridge version {version} started"
-            if BRIDGE_PROXY:
-                response_text = response_text + " with bridge proxy"
-            return {"response": response_text}
-        elif self.command == "bridge-stop":
-            bridge.stop(proxy=BRIDGE_PROXY)
-            response_text = "Stopping bridge"
-            if BRIDGE_PROXY:
-                response_text = response_text + " + stopping bridge proxy"
-            return {"response": response_text}
-        elif self.command == "exit":
-            emulator.stop()
-            bridge.stop()
-            log("Exiting", "red")
-            exit(1)
         else:
-            return {"success": False, "error": f"Unknown command - {self.command}"}
+            return {
+                "success": False,
+                "error": f"Unknown emulator command - {self.command}",
+            }
+
+    def run_regtest_command(self) -> dict:
+        if self.command == "regtest-mine-blocks":
+            block_amount = self.request_dict["block_amount"]
+            address = self.request_dict.get("address") or REGTEST_RPC.getnewaddress()
+            REGTEST_RPC.generatetoaddress(block_amount, address)
+            return {"response": f"Mined {block_amount} blocks by address {address}"}
+        elif self.command == "regtest-send-to-address":
+            btc_amount = self.request_dict["btc_amount"]
+            address = self.request_dict["address"]
+            # Sending the amount and mining a block to confirm it
+            REGTEST_RPC.sendtoaddress(address, btc_amount)
+            REGTEST_RPC.generatetoaddress(1, REGTEST_RPC.getnewaddress())
+            return {"response": f"{btc_amount} BTC sent to {address}."}
+        else:
+            return {
+                "success": False,
+                "error": f"Unknown regtest command - {self.command}",
+            }
 
     def generate_websocket_response(self, command_response: dict) -> dict:
         """Modifies the response before sending to websocket.

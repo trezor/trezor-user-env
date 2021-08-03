@@ -108,5 +108,17 @@
 - **bridge-stop**
   - **action**: stop the bridge
 
+- **regtest-mine-blocks**
+  - **action**: mine amount of blocks, optionally to a specified address
+  - **arguments**:
+    - **block_amount**: `int`
+    - **address**: `str` (optional) - defaults to the wallet's own address
+
+- **regtest-send-to-address**
+  - **action**: send amount of BTC to address (also mines a new block to confirm the transaction)
+  - **arguments**:
+    - **btc_amount**: `float`
+    - **address**: `str`
+
 - **exit**
   - **action**: stop the controller
