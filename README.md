@@ -50,11 +50,12 @@ On NixOS, simply enter the `nix-shell`, it is all there.
 
 #### Run it
 
-1. Clone this repo `git clone git@github.com:trezor/trezor-user-env.git`. If on NixOS, enter `nix-shell`.
-2. Run in terminal: `xhost +`
-3. Download the latest docker build: `docker-compose -f ./docker/compose.yml pull trezor-user-env-unix trezor-user-env-regtest`
-4. Run it: `docker-compose -f ./docker/compose.yml up trezor-user-env-unix trezor-user-env-regtest`
-5. Open http://localhost:9002.
+1. Clone this repo `git clone git@github.com:trezor/trezor-user-env.git`. If you are new to Github, try `git clone https://github.com/trezor/trezor-user-env.git` instead.
+2. Enter the directory using `cd trezor-user-env`. If on NixOS also enter the nix shell using `nix-shell`.
+3. Run in terminal: `xhost +`
+4. Download the latest docker build: `docker-compose -f ./docker/compose.yml pull trezor-user-env-unix trezor-user-env-regtest`
+5. Run it: `docker-compose -f ./docker/compose.yml up trezor-user-env-unix trezor-user-env-regtest`
+6. Open http://localhost:9002.
 
 For a future use you can omit the second step and run `up` (the third step) directly. **However, you will not have the latest master builds then!**
 
@@ -77,10 +78,11 @@ Download these as you are used to. We recommend using `nix` or `brew`, but that'
 1. Run XQuartz and leave it running on the background. Wait till it is launched.
 2. In XQuartz settings go to Preferences > Security and enable "Allow connections from network clients".
 3. Open a new terminal window (not in XQuartz) and add yourself to the X access control list: `xhost +127.0.0.1` (you will probably need to logout/login after XQuartz installation to have `xhost` command available)
-4. Clone this repo `git clone git@github.com:trezor/trezor-user-env.git`.
-5. Download the latest docker build: `docker-compose -f ./docker/compose.yml pull trezor-user-env-mac trezor-user-env-regtest`
-6. Run it: `docker-compose -f ./docker/compose.yml up trezor-user-env-mac trezor-user-env-regtest`
-7. Open http://localhost:9002.
+4. Clone this repo `git clone git@github.com:trezor/trezor-user-env.git`. If you are new to Github, try `git clone https://github.com/trezor/trezor-user-env.git` instead.
+5. Enter the directory using `cd trezor-user-env`.
+6. Download the latest docker build: `docker-compose -f ./docker/compose.yml pull trezor-user-env-mac trezor-user-env-regtest`
+7. Run it: `docker-compose -f ./docker/compose.yml up trezor-user-env-mac trezor-user-env-regtest`
+8. Open http://localhost:9002.
 
 For a future use you can omit the second step and run `up` (the third step) directly. **However, you will not have the latest master builds then!**
 
