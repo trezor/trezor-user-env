@@ -48,16 +48,18 @@ You need:
 
 On NixOS, simply enter the `nix-shell`, it is all there.
 
-#### Run it
+#### Set it up
 
 1. Clone this repo `git clone git@github.com:trezor/trezor-user-env.git`. If you are new to Github, try `git clone https://github.com/trezor/trezor-user-env.git` instead.
 2. Enter the directory using `cd trezor-user-env`. If on NixOS also enter the nix shell using `nix-shell`.
 3. Run in terminal: `xhost +`
-4. Download the latest docker build: `docker-compose -f ./docker/compose.yml pull trezor-user-env-unix trezor-user-env-regtest`
-5. Run it: `docker-compose -f ./docker/compose.yml up trezor-user-env-unix trezor-user-env-regtest`
-6. Open http://localhost:9002.
+4. Download the latest docker build: `docker-compose -f ./docker/compose.yml pull trezor-user-env-unix trezor-user-env-regtest`. If there is an issue try the same command preceded by `sudo`.
+#### Run it
+1. Start the docker daemon: `dockerd`. Try `sudo dockerd` if needed. 
+2. Run it: `docker-compose -f ./docker/compose.yml up trezor-user-env-unix trezor-user-env-regtest`. Again, use `sudo` if there is an issue.
+3. Open http://localhost:9002.
 
-For a future use you can omit the second step and run `up` (the third step) directly. **However, you will not have the latest master builds then!**
+For future use you can omit the setup and skip directly to the **Run it** step. **However, this means you might not have the latest master builds!**
 
 ----
 
