@@ -5,7 +5,7 @@ set -e
 cd /opt/coins/nodes/bitcoin_regtest
 
 echo "Starting bitcoin regtest backend service"
-bin/bitcoind -datadir=/opt/coins/data/bitcoin_regtest/backend -conf=/opt/coins/nodes/bitcoin_regtest/bitcoin_regtest.conf &
+bin/bitcoind -blockfilterindex -datadir=/opt/coins/data/bitcoin_regtest/backend -conf=/opt/coins/nodes/bitcoin_regtest/bitcoin_regtest.conf &
 
 sleep 5
 
