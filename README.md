@@ -54,10 +54,12 @@ On NixOS, simply enter the `nix-shell`, it is all there.
 2. Enter the directory using `cd trezor-user-env`. If on NixOS also enter the nix shell using `nix-shell`.
 3. Run in terminal: `xhost +`
 4. Download the latest docker build: `docker-compose -f ./docker/compose.yml pull trezor-user-env-unix trezor-user-env-regtest`
-5. Run it: `docker-compose -f ./docker/compose.yml up trezor-user-env-unix trezor-user-env-regtest`
+5. Run it: `docker-compose -f ./docker/compose.yml up trezor-user-env-unix trezor-user-env-regtest` [^1]
 6. Open http://localhost:9002.
 
 For a future use you can omit the second step and run `up` (the third step) directly. **However, you will not have the latest master builds then!**
+
+[^1]: If you get an error with `trezor-user-env-regtest` starting up, you will need to clean container contents by pruning that container or all stopped containers with `docker container prune`
 
 ----
 
@@ -81,11 +83,12 @@ Download these as you are used to. We recommend using `nix` or `brew`, but that'
 4. Clone this repo `git clone git@github.com:trezor/trezor-user-env.git`. If you are new to Github, try `git clone https://github.com/trezor/trezor-user-env.git` instead.
 5. Enter the directory using `cd trezor-user-env`.
 6. Download the latest docker build: `docker-compose -f ./docker/compose.yml pull trezor-user-env-mac trezor-user-env-regtest`
-7. Run it: `docker-compose -f ./docker/compose.yml up trezor-user-env-mac trezor-user-env-regtest`
+7. Run it: `docker-compose -f ./docker/compose.yml up trezor-user-env-mac trezor-user-env-regtest` [^1]
 8. Open http://localhost:9002.
 
 For a future use you can omit the second step and run `up` (the third step) directly. **However, you will not have the latest master builds then!**
 
+[^1]: If you get an error with `trezor-user-env-regtest` starting up, you will need to clean container contents by pruning that container or all stopped containers with `docker container prune`
 ----
 
 ### Windows
