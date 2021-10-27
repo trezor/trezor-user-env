@@ -34,6 +34,39 @@ build and push test image:
     - docker push $CONTAINER_NAME:$CI_COMMIT_SHA
     - docker push $CONTAINER_NAME:test
 
+# trezor-user-env arm docker images build
+.build_arm: &build_arm
+  image: $CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX/docker
+  variables:
+    CONTAINER_NAME_ARM: "$CI_REGISTRY/satoshilabs/trezor/trezor-user-env/trezor-user-env-arm"
+  services:
+    - docker:dind
+  before_script:
+    - docker login $CI_REGISTRY -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD
+
+build and push arm image:
+  stage: build
+  <<: *build_arm
+  only:
+    - master
+    - vdovhanych/m1-support
+  script:
+    - docker build --tag $CONTAINER_NAME_ARM:latest  -f docker/arm/Dockerfile .
+    - docker push $CONTAINER_NAME_ARM:latest
+
+build and push arm test image:
+  stage: build
+  <<: *build
+  except:
+    - schedules
+    - master
+    - /^run\//
+  script:
+    # note that this way "test" tag gets overwritten everytime
+    - docker build --tag $CONTAINER_NAME_ARM:$CI_COMMIT_SHA --tag $CONTAINER_NAME_ARM:test -f docker/arm/Dockerfile .
+    - docker push $CONTAINER_NAME_ARM:$CI_COMMIT_SHA
+    - docker push $CONTAINER_NAME_ARM:test
+
 # regtest docker images build
 .build_regtest: &build_regtest
   image: $CI_DEPENDENCY_PROXY_DIRECT_GROUP_IMAGE_PREFIX/docker
