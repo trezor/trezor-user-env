@@ -19,11 +19,11 @@ cd /opt/coins/blockbook/bitcoin_regtest
 
 echo "Starting blockbook service"
 bin/blockbook \
-    -blockchaincfg=config/blockchaincfg.json \
+    -blockchaincfg=/opt/coins/blockbook/bitcoin_regtest/config/blockchaincfg.json \
     -datadir=/opt/coins/data/bitcoin_regtest/blockbook/db \
     -sync \
     -internal=:19021 \
     -public=:19121 \
-    -certfile=cert/blockbook \
     -explorer= \
-    -log_dir=logs
+    -log_dir=/opt/coins/blockbook/bitcoin_regtest/logs \
+    -dbcache=0
