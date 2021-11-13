@@ -16,6 +16,8 @@ RUN wget https://github.com/vdovhanych/blockbook/releases/download/v0.3.5/backen
   && rm blockbook-bitcoin-regtest_0.3.5_amd64.deb \
   && rm backend-bitcoin-regtest_0.21.1-satoshilabs-1_amd64.deb
 
+# replace default blockbook config with custom config with changed coin_shortcut to "REGTEST", to be compatibile with trezor-common shorcut.
+COPY ./docker/bitcoin-regtest/blockchaincfg.json /opt/coins/blockbook/bitcoin_regtest/config/blockchaincfg.json
 COPY ./docker/bitcoin-regtest/entrypoint.sh ./entrypoint.sh
 RUN chmod +x ./entrypoint.sh
 
