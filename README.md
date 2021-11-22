@@ -65,7 +65,7 @@ For a future use you can omit the second step and run `up` (the third step) dire
 
 ### MacOS
 
-*Supported on Intel Mac devices (ARM Mac's are not supported for now)*
+*Supported on Intel and ARM Mac devices (Regtest is not supported on ARM Mac device)*
 
 #### Prerequisites
 
@@ -75,7 +75,7 @@ You need:
 
 Download these as you are used to. We recommend using `nix` or `brew`, but that's your fight.
 
-#### Run it
+#### Run it on Intel Mac
 
 1. Run XQuartz and leave it running on the background. Wait till it is launched.
 2. In XQuartz settings go to Preferences > Security and enable "Allow connections from network clients".
@@ -86,9 +86,17 @@ Download these as you are used to. We recommend using `nix` or `brew`, but that'
 7. Run it: `docker-compose -f ./docker/compose.yml up trezor-user-env-mac trezor-user-env-regtest` [^1]
 8. Open http://localhost:9002.
 
+#### Run it on ARM Mac
+
+1. Follow steps 1-5 above for Intel Mac.
+2. Download the latest docker build: `docker-compose -f ./docker/compose.yml pull trezor-user-env-mac-arm`.
+3. Run it: `docker-compose -f ./docker/compose.yml up trezor-user-env-mac-arm`.
+4. Open http://localhost:9002.
+
 For a future use you can omit the second step and run `up` (the third step) directly. **However, you will not have the latest master builds then!**
 
 [^1]: If you get an error with `trezor-user-env-regtest` starting up, you will need to clean container contents by pruning that container or all stopped containers with `docker container prune`
+
 ----
 
 ### Windows
