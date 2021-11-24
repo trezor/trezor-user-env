@@ -3,7 +3,8 @@ import json
 import traceback
 from copy import deepcopy
 
-import websockets
+from websockets.exceptions import ConnectionClosedError, ConnectionClosedOK
+from websockets.server import serve
 
 import binaries
 import bridge
@@ -268,10 +269,10 @@ async def handler(websocket, path) -> None:
             request = await websocket.recv()
             response = RESPONSE_GETTER.get_response(request)
             await websocket.send(json.dumps(response))
-        except websockets.exceptions.ConnectionClosedOK:
+        except ConnectionClosedOK:
             log("Client exiting OK. Goodbye")
             return
-        except websockets.exceptions.ConnectionClosedError:
+        except ConnectionClosedError:
             log("Client exiting with a failure. Goodbye", "red")
             return
 
@@ -279,7 +280,7 @@ async def handler(websocket, path) -> None:
 def start() -> None:
     log(f"Starting websocket server (controller.py) at {IP}:{PORT}")
 
-    server = websockets.serve(handler, IP, PORT)
+    server = serve(handler, IP, PORT)
 
     asyncio.get_event_loop().run_until_complete(server)
     asyncio.get_event_loop().run_forever()
