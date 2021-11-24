@@ -1,10 +1,10 @@
 with import <nixpkgs> {};
 
-# the last successful build of nixos-21.05 (stable) as of 2021-07-02
+# the last successful build of nixpkgs-unstable as of 2021-11-18
 with import
   (builtins.fetchTarball {
-    url = "https://github.com/NixOS/nixpkgs/archive/e9148dc1c30e02aae80cc52f68ceb37b772066f3.tar.gz";
-    sha256 = "1xs5all93r3fg4ld13s9lmzri0bgq25d9dydb08caqa7pc10f5ki";
+    url = "https://github.com/NixOS/nixpkgs/archive/7fad01d9d5a3f82081c00fb57918d64145dc904c.tar.gz";
+    sha256 = "0g0jn8cp1f3zgs7xk2xb2vwa44gb98qlp7k0dvigs0zh163c2kim";
   })
 { };
 
