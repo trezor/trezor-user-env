@@ -31,4 +31,8 @@ in
       wget
       git
     ];
-  }
+  # NIX_PATH needed for autoPatchelfHook nix-shells in download.sh scripts
+  shellHook = ''
+    export NIX_PATH="nixpkgs=https://github.com/NixOS/nixpkgs/archive/7fad01d9d5a3f82081c00fb57918d64145dc904c.tar.gz"
+  '';
+}
