@@ -27,8 +27,15 @@
   - **action**: start the specified version of emulator (and if one already runs, kills it)
   - **arguments**:
     - **version**: `str` (1.9.4, 2.4.0., etc.) - default is the latest TT
-    - **wipe**: `bool` ... whether to delete the emulator profile before starting it - default is False
+    - **wipe**: `bool` whether to delete the emulator profile before starting it - default is False
     - **output_to_logfile**: `bool` whether the debug output should go to a logfile - default is True - otherwise it goes to stdout
+
+- **emulator-start-from-url**
+  - **action**: downloads emulator from specified URL and runs it
+  - **arguments**:
+    - **url**: `str` from where to download the emulator
+    - **model**: `str` which emulator it is - either "1" for T1 or "2" for T2
+    - **wipe**: `bool` whether to delete the emulator profile before starting it - default is False
 
 - **emulator-stop**
   - **action**: stop the emulator

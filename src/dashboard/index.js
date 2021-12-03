@@ -148,6 +148,53 @@ function emulatorStart(select) {
     });
 }
 
+function emulatorStartFromUrl() {
+    let url = document.getElementById("emu-url").value;
+    if (!url) {
+        alert("URL is empty!");
+        return
+    }
+
+    // Taking the last character - "1" or "2" from the model
+    const model = document.getElementById("emu-url-model-select").value.substr(-1);
+    const urlFormat = document.getElementById("emu-url-format-select").value;
+    const wipe = document.getElementById("wipeDevice").checked;
+    const output_to_logfile = document.getElementById("emulatorUseLogfile").checked;
+
+    const gitlabJobPrefix = "https://gitlab.com/satoshilabs/trezor/trezor-firmware/-/jobs"
+    const T1PathSuffix = "artifacts/raw/legacy/firmware/trezor.elf"
+    const T2PathSuffix = "artifacts/raw/core/build/unix/trezor-emu-core"
+
+    // URL might need some processing in case it is not complete
+    // (Yes, handling URLs as strings is not very good, but should be alright in this easy case)
+    if (urlFormat === "Gitlab job link") {
+        // Getting rid of possible slash at the end
+        if (url.substr(-1) === "/") {
+            url = url.slice(0, -1);
+        }
+
+        if (model === "1") {
+            url = `${url}/${T1PathSuffix}`
+        } else {
+            url = `${url}/${T2PathSuffix}`
+        }
+    } else if (urlFormat === "Gitlab job ID") {
+        if (model === "1") {
+            url = `${gitlabJobPrefix}/${url}/${T1PathSuffix}`
+        } else {
+            url = `${gitlabJobPrefix}/${url}/${T2PathSuffix}`
+        }
+    }
+
+    _send({
+        type: 'emulator-start-from-url',
+        url,
+        model,
+        wipe,
+        output_to_logfile,
+    });
+}
+
 function emulatorWipe() {
     _send({
         type: 'emulator-wipe',
@@ -292,4 +339,13 @@ window.onload = function () {
     init();
     watchBackgroundStatus();
     document.getElementById('raw-input').value = templateJSON;
+
+    const t1orT2Select = document.getElementById('emu-url-model-select');
+    createOption(t1orT2Select, "T2")
+    createOption(t1orT2Select, "T1")
+
+    const urlFormatSelect = document.getElementById('emu-url-format-select');
+    createOption(urlFormatSelect, "Gitlab job link")
+    createOption(urlFormatSelect, "Gitlab job ID")
+    createOption(urlFormatSelect, "Custom link")
 };
