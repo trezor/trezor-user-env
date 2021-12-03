@@ -110,13 +110,13 @@ class ResponseGetter:
             )
             response_text = f"Bridge version {version} started"
             if BRIDGE_PROXY:
-                response_text = response_text + " with bridge proxy"
+                response_text += " with bridge proxy"
             return {"response": response_text}
         elif self.command == "bridge-stop":
             bridge.stop(proxy=BRIDGE_PROXY)
             response_text = "Stopping bridge"
             if BRIDGE_PROXY:
-                response_text = response_text + " + stopping bridge proxy"
+                response_text += " + stopping bridge proxy"
             return {"response": response_text}
         else:
             return {
@@ -132,7 +132,17 @@ class ResponseGetter:
             emulator.start(version, wipe, output_to_logfile)
             response_text = f"Emulator version {version} started"
             if wipe:
-                response_text = response_text + " and wiped to be empty"
+                response_text += " and wiped to be empty"
+            return {"response": response_text}
+        elif self.command == "emulator-start-from-url":
+            url = self.request_dict["url"]
+            model = self.request_dict["model"]
+            wipe = self.request_dict.get("wipe", False)
+            output_to_logfile = self.request_dict.get("output_to_logfile", True)
+            emulator.start_from_url(url, model, wipe, output_to_logfile)
+            response_text = f"Emulator downloaded from {url} and started"
+            if wipe:
+                response_text += " and wiped to be empty"
             return {"response": response_text}
         elif self.command == "emulator-stop":
             emulator.stop()

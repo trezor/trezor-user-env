@@ -1,9 +1,12 @@
 import os
+import stat
 import sys
 import time
+import urllib.request
 from pathlib import Path
 from subprocess import PIPE, Popen
-from typing import Optional
+from typing import Literal, Optional
+from urllib.error import HTTPError
 
 from trezorlib import debuglink, device, messages
 from trezorlib._internal.emulator import CoreEmulator, LegacyEmulator
@@ -21,6 +24,10 @@ EMULATOR = None
 
 ROOT_DIR = Path(__file__).parent.parent.resolve()
 FIRMWARE_DIR = ROOT_DIR / "src/binaries/firmware/bin"
+
+FW_PATH = ROOT_DIR / "src/binaries/firmware/bin"
+IDENTIFIER_T1 = "trezor-emu-legacy-v"
+IDENTIFIER_TT = "trezor-emu-core-v"
 
 # When communicating with device via bridge/debuglink, this sleep is required
 #   otherwise there may appear weird race conditions in communications.
@@ -85,6 +92,43 @@ def is_running() -> bool:
 
 def get_status() -> dict:
     return {"is_running": is_running(), "version": version_running}
+
+
+def get_url_identifier(url: str) -> str:
+    return url.replace("/", "-").replace(":", "-")
+
+
+def start_from_url(
+    url: str, model: Literal["1", "2"], wipe: bool, output_to_logfile: bool = True
+) -> None:
+    # Creating an identifier of emulator from this URL, so we have to
+    # download it only once and can reuse it any time later
+    emu_name = f"{model}-url-{get_url_identifier(url)}"
+
+    # Deciding the location to save depending on being T1/TT
+    # (to be compatible with already existing emulators)
+    if model == "1":
+        emu_path = FW_PATH / f"{IDENTIFIER_T1}{emu_name}"
+    elif model == "2":
+        emu_path = FW_PATH / f"{IDENTIFIER_TT}{emu_name}"
+    else:
+        raise RuntimeError("Only 1 and 2 are supported Trezor versions")
+
+    # Downloading only if it does not yet exist
+    if not emu_path.is_file():
+        log(f"Emulator from {url} will be saved under {emu_path}")
+        try:
+            urllib.request.urlretrieve(url, emu_path)
+        except HTTPError as e:
+            err = f"HTTP error when downloading emulator from {url}, err: {e}"
+            log(err, "red")
+            raise RuntimeError(err)
+        # We need to run chmod +x on the newly downloaded file
+        emu_path.chmod(emu_path.stat().st_mode | stat.S_IEXEC)
+    else:
+        log(f"Emulator from {url} already exists under {emu_path}")
+
+    return start(emu_name, wipe, output_to_logfile)
 
 
 def start(version: str, wipe: bool, output_to_logfile: bool = True) -> None:

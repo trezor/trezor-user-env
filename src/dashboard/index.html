@@ -38,24 +38,40 @@
 
     <section>
         <h3>Emulator</h3>
-        <div class="explain-note">Use left and right arrow keys to emulate the Trezor One buttons. Mouse clicks for Trezor T.</div><br>
-        <div id="emu-status-line"><b>Status: <span id="emu-status">unknown</span></b></div>
+        <div class="explain-note">
+            Use left and right arrow keys to emulate the Trezor One buttons. Mouse clicks for Trezor T.
+        </div>
+
+        <br>
+
+        <div id="emu-status-line">
+            <b>Status: <span id="emu-status">unknown</span></b>
+        </div>
         <div>
             <h4>Trezor One</h4>
             <select id="t1-select"></select>
             <button onclick="emulatorStart('t1-select');">Start</button>
-            <br />
         </div>
         <div>
             <h4>Trezor T</h4>
             <select id="t2-select"></select>
             <button onclick="emulatorStart('t2-select');">Start</button>
         </div>
-        <input id="wipeDevice" type="checkbox">
-        <label for="wipeDevice">Start with wiped/empty device</label><br>
-        <input id="emulatorUseLogfile" type="checkbox">
-        <label for="emulatorUseLogfile">Logs into logfile</label><br>
-        <hr />
+        <div>
+            <input id="wipeDevice" type="checkbox">
+            <label for="wipeDevice">Start with wiped/empty device</label>
+            <input id="emulatorUseLogfile" type="checkbox">
+            <label for="emulatorUseLogfile">Logs into logfile</label><br>
+        </div>
+        <div>
+            <input id="emu-url" type="text" placeholder="Full emulator URL, link to Gitlab job or just job ID - as specified in select. Do not forget to specify model (T1/T2)" style="width:50%;"/>
+            <select id="emu-url-format-select"></select>
+            <select id="emu-url-model-select"></select>
+            <button onclick="emulatorStartFromUrl();">Start from URL</button>
+        </div>
+
+        <hr>
+
         <h3>Emulator commands</h3>
         <div class="explain-note">These commands are auto-confirmed using the emulator's debug link.</div><br>
         <div>
