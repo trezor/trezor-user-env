@@ -28,6 +28,7 @@
   - **arguments**:
     - **version**: `str` (1.9.4, 2.4.0., etc.) - default is the latest TT
     - **wipe**: `bool` ... whether to delete the emulator profile before starting it - default is False
+    - **output_to_logfile**: `bool` whether the debug output should go to a logfile - default is True - otherwise it goes to stdout
 
 - **emulator-stop**
   - **action**: stop the emulator
@@ -104,6 +105,7 @@
   - **action**: start the specified version of bridge (only if it is not already running)
   - **arguments**:
     - **version**: `str` (2.0.27, 2.0.31, etc.) - defaults to the latest available one
+    - **output_to_logfile**: `bool` whether the debug output should go to a logfile - default is True - otherwise it goes to stdout
 
 - **bridge-stop**
   - **action**: stop the bridge

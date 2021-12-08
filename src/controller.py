@@ -104,7 +104,10 @@ class ResponseGetter:
     def run_bridge_command(self) -> dict:
         if self.command == "bridge-start":
             version = self.request_dict.get("version") or binaries.BRIDGES[0]
-            bridge.start(version, proxy=BRIDGE_PROXY)
+            output_to_logfile = self.request_dict.get("output_to_logfile", True)
+            bridge.start(
+                version, proxy=BRIDGE_PROXY, output_to_logfile=output_to_logfile
+            )
             response_text = f"Bridge version {version} started"
             if BRIDGE_PROXY:
                 response_text = response_text + " with bridge proxy"
@@ -125,7 +128,8 @@ class ResponseGetter:
         if self.command == "emulator-start":
             version = self.request_dict.get("version") or binaries.FIRMWARES["TT"][0]
             wipe = self.request_dict.get("wipe") or False
-            emulator.start(version, wipe)
+            output_to_logfile = self.request_dict.get("output_to_logfile", True)
+            emulator.start(version, wipe, output_to_logfile)
             response_text = f"Emulator version {version} started"
             if wipe:
                 response_text = response_text + " and wiped to be empty"

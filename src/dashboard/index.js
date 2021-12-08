@@ -139,10 +139,12 @@ function onCloseClick() {
 function emulatorStart(select) {
     const version = document.getElementById(select).value;
     const wipe = document.getElementById("wipeDevice").checked;
+    const output_to_logfile = document.getElementById("emulatorUseLogfile").checked;
     _send({
         type: 'emulator-start',
         version,
         wipe,
+        output_to_logfile,
     });
 }
 
@@ -188,9 +190,11 @@ function emulatorStop() {
 }
 
 function bridgeStart(version) {
+    const output_to_logfile = document.getElementById("bridgeUseLogfile").checked;
     _send({
         type: 'bridge-start',
         version,
+        output_to_logfile,
     });
 }
 

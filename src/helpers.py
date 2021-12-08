@@ -12,6 +12,8 @@ if not os.path.exists(LOG_DIR):
     os.mkdir(LOG_DIR)
 
 LOG_FILENAME = str(LOG_DIR / "debugging.log")
+EMU_BRIDGE_LOG = str(LOG_DIR / "emulator_bridge.log")
+
 
 logging.basicConfig(
     filename=LOG_FILENAME,

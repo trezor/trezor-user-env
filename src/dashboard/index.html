@@ -21,6 +21,8 @@
             <button onclick="bridgeStart('2.0.31')">Start 2.0.31</button>
             <button onclick="bridgeStop()">Stop</button>
             <button onclick="bridgeStart('2.0.27')">Start 2.0.27</button>
+            <input id="bridgeUseLogfile" type="checkbox">
+            <label for="bridgeUseLogfile">Logs into logfile</label><br>
         </div>
         <div>
             <div id="bridge-status-line"><b>Status: <span id="bridge-status">unknown</span></b></div>
@@ -51,6 +53,8 @@
         </div>
         <input id="wipeDevice" type="checkbox">
         <label for="wipeDevice">Start with wiped/empty device</label><br>
+        <input id="emulatorUseLogfile" type="checkbox">
+        <label for="emulatorUseLogfile">Logs into logfile</label><br>
         <hr />
         <h3>Emulator commands</h3>
         <div class="explain-note">These commands are auto-confirmed using the emulator's debug link.</div><br>

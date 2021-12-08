@@ -85,7 +85,7 @@ def get_status() -> dict:
     return {"is_running": is_running(), "version": version_running}
 
 
-def start(version: str, wipe: bool) -> None:
+def start(version: str, wipe: bool, output_to_logfile: bool = True) -> None:
     global proc
     global version_running
 
@@ -123,7 +123,19 @@ def start(version: str, wipe: bool) -> None:
         # - run T1 emulator
         # - run T1 & T2 emulator at once
         # - run two T2/T1 emulators
-        proc = Popen(command, shell=True, preexec_fn=os.setsid)
+        if output_to_logfile:
+            # Conditionally redirecting the output to a logfile instead of terminal/stdout
+            log_file = open(helpers.EMU_BRIDGE_LOG, "a")
+            log(f"All the emulator debug output redirected to {helpers.EMU_BRIDGE_LOG}")
+            proc = Popen(
+                command,
+                shell=True,
+                preexec_fn=os.setsid,
+                stdout=log_file,
+                stderr=log_file,
+            )
+        else:
+            proc = Popen(command, shell=True, preexec_fn=os.setsid)
         log(f"the commandline is {str(proc.args)}")
         version_running = version
 
