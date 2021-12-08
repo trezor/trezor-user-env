@@ -5,9 +5,9 @@ from pathlib import Path
 from subprocess import PIPE, Popen
 from typing import Optional
 
-from trezorlib import debuglink, device
+from trezorlib import debuglink, device, messages
 from trezorlib.debuglink import DebugLink, TrezorClientDebugLink
-from trezorlib.device import reset, wipe
+from trezorlib.exceptions import TrezorFailure
 from trezorlib.transport.bridge import BridgeTransport
 from trezorlib.transport.udp import UdpTransport
 
@@ -168,7 +168,7 @@ def wipe_device() -> None:
     client = TrezorClientDebugLink(get_device())
     client.open()
     time.sleep(SLEEP)
-    wipe(client)
+    device.wipe(client)
     client.close()
 
 
@@ -176,7 +176,7 @@ def reset_device() -> None:
     client = TrezorClientDebugLink(get_device())
     client.open()
     time.sleep(SLEEP)
-    reset(client, skip_backup=True, pin_protection=False)
+    device.reset(client, skip_backup=True, pin_protection=False)
     client.close()
 
 
@@ -428,10 +428,27 @@ def apply_settings(
 
 def allow_unsafe() -> None:
     client = TrezorClientDebugLink(get_device())
-    # ignore for Legacy firmware, there is no such setting
-    if client.features.major_version == 1:
-        return
     client.open()
     time.sleep(SLEEP)
-    device.apply_settings(client, safety_checks=1)  # TODO
+
+    # Each model has its own supported safety checks level
+    if client.features.major_version == 1:
+        safety_checks = messages.SafetyCheckLevel.PromptTemporarily
+    else:
+        safety_checks = messages.SafetyCheckLevel.PromptAlways
+
+    # Some older devices do not support safety checks, so we know
+    # the command will fail with a specific error message
+    # T1 supports safety checks from 1.10.1 and T2 from 2.3.2
+    try:
+        device.apply_settings(client, safety_checks=safety_checks)
+    except TrezorFailure as err:
+        # Catching only specific error message, otherwise reraising the exception
+        if "No setting provided" in str(err):
+            log(
+                f"Could not allow unsafe. Device does not support safety checks. Err: {err}",
+                "red",
+            )
+        else:
+            raise
     client.close()
