@@ -11,3 +11,4 @@ emulator.img
 .mypy_cache
 docker/version.txt
 logs/debugging.log
+logs/emulator_bridge.log

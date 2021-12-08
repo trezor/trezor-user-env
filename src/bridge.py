@@ -42,7 +42,7 @@ def check_bridge_and_proxy_status() -> None:
     log(f"Is bridge proxy running - {is_port_in_use(BRIDGE_PROXY_PORT)}")
 
 
-def start(version: str, proxy: bool = False) -> None:
+def start(version: str, proxy: bool = False, output_to_logfile: bool = True) -> None:
     log("Starting")
     global proc
     global version_running
@@ -63,7 +63,15 @@ def start(version: str, proxy: bool = False) -> None:
 
     command = f"{path}/trezord-go-v{version} -ed 21324:21325 -u=false"
 
-    proc = Popen(command, shell=True, preexec_fn=os.setsid)
+    if output_to_logfile:
+        # Conditionally redirecting the output to a logfile instead of terminal/stdout
+        log_file = open(helpers.EMU_BRIDGE_LOG, "a")
+        log(f"All the bridge debug output redirected to {helpers.EMU_BRIDGE_LOG}")
+        proc = Popen(
+            command, shell=True, preexec_fn=os.setsid, stdout=log_file, stderr=log_file
+        )
+    else:
+        proc = Popen(command, shell=True, preexec_fn=os.setsid)
 
     version_running = version
 
