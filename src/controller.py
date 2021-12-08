@@ -103,7 +103,7 @@ class ResponseGetter:
 
     def run_bridge_command(self) -> dict:
         if self.command == "bridge-start":
-            version = self.request_dict.get("version") or binaries.BRIDGES[0]
+            version = self.request_dict.get("version", binaries.BRIDGES[0])
             output_to_logfile = self.request_dict.get("output_to_logfile", True)
             bridge.start(
                 version, proxy=BRIDGE_PROXY, output_to_logfile=output_to_logfile
@@ -126,8 +126,8 @@ class ResponseGetter:
 
     def run_emulator_command(self) -> dict:
         if self.command == "emulator-start":
-            version = self.request_dict.get("version") or binaries.FIRMWARES["TT"][0]
-            wipe = self.request_dict.get("wipe") or False
+            version = self.request_dict.get("version", binaries.FIRMWARES["TT"][0])
+            wipe = self.request_dict.get("wipe", False)
             output_to_logfile = self.request_dict.get("output_to_logfile", True)
             emulator.start(version, wipe, output_to_logfile)
             response_text = f"Emulator version {version} started"
@@ -143,7 +143,7 @@ class ResponseGetter:
                 self.request_dict["pin"],
                 self.request_dict["passphrase_protection"],
                 self.request_dict["label"],
-                self.request_dict.get("needs_backup") or False,
+                self.request_dict.get("needs_backup", False),
             )
             return {"response": f"Emulator set up - {self.request_dict}"}
         elif self.command == "emulator-press-yes":
@@ -165,8 +165,8 @@ class ResponseGetter:
             emulator.read_and_confirm_mnemonic()
             return {"response": "Read and confirm mnemonic"}
         elif self.command == "emulator-read-and-confirm-shamir-mnemonic":
-            shares = self.request_dict.get("shares") or 1
-            threshold = self.request_dict.get("threshold") or 1
+            shares = self.request_dict.get("shares", 1)
+            threshold = self.request_dict.get("threshold", 1)
             emulator.read_and_confirm_shamir_mnemonic(
                 shares=shares, threshold=threshold
             )
@@ -208,7 +208,7 @@ class ResponseGetter:
     def run_regtest_command(self) -> dict:
         if self.command == "regtest-mine-blocks":
             block_amount = self.request_dict["block_amount"]
-            address = self.request_dict.get("address") or REGTEST_RPC.getnewaddress()
+            address = self.request_dict.get("address", REGTEST_RPC.getnewaddress())
             REGTEST_RPC.generatetoaddress(block_amount, address)
             return {"response": f"Mined {block_amount} blocks by address {address}"}
         elif self.command == "regtest-send-to-address":
