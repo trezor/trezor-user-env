@@ -1,11 +1,12 @@
 import os
-import signal
+import sys
 import time
 from pathlib import Path
 from subprocess import PIPE, Popen
 from typing import Optional
 
 from trezorlib import debuglink, device, messages
+from trezorlib._internal.emulator import CoreEmulator, LegacyEmulator
 from trezorlib.debuglink import DebugLink, TrezorClientDebugLink
 from trezorlib.exceptions import TrezorFailure
 from trezorlib.transport.bridge import BridgeTransport
@@ -15,10 +16,11 @@ import bridge
 import helpers
 
 # TODO: consider creating a class from this module to avoid these globals
-proc = None
 version_running = None
+EMULATOR = None
 
 ROOT_DIR = Path(__file__).parent.parent.resolve()
+FIRMWARE_DIR = ROOT_DIR / "src/binaries/firmware/bin"
 
 # When communicating with device via bridge/debuglink, this sleep is required
 #   otherwise there may appear weird race conditions in communications.
@@ -86,10 +88,10 @@ def get_status() -> dict:
 
 
 def start(version: str, wipe: bool, output_to_logfile: bool = True) -> None:
-    global proc
     global version_running
+    global EMULATOR
 
-    if proc is not None:
+    if EMULATOR is not None:
         log(
             f"Before starting a new emulator - version {version}, "
             f"killing the already running one - version {version_running}",
@@ -97,59 +99,46 @@ def start(version: str, wipe: bool, output_to_logfile: bool = True) -> None:
         )
         stop()
 
-    path = ROOT_DIR / "src/binaries/firmware/bin"
+    # Conditionally redirecting the output to a logfile instead of terminal/stdout
+    if output_to_logfile:
+        logfile = open(helpers.EMU_BRIDGE_LOG, "a")
+    else:
+        logfile = sys.stdout
 
     if version[0] == "2":
-        model_t_profile = "/var/tmp/trezor.flash"
-        if wipe and os.path.exists(model_t_profile):
-            os.remove(model_t_profile)
-
-        command = f"{path}/trezor-emu-core-v{version} -O0 -X heapsize=20M -m main"
-    else:
-        model_one_profile = ROOT_DIR / "emulator.img"
-        if wipe and os.path.exists(model_one_profile):
-            os.remove(model_one_profile)
-
-        command = (
-            f"TREZOR_OLED_SCALE={TREZOR_ONE_OLED_SCALE} "
-            f"{path}/trezor-emu-legacy-v{version} -O0"
+        EMULATOR = CoreEmulator(
+            FIRMWARE_DIR / f"trezor-emu-core-v{version}",
+            profile_dir=FIRMWARE_DIR,
+            logfile=logfile,
         )
+    elif version[0] == "1":
+        os.environ["TREZOR_OLED_SCALE"] = str(TREZOR_ONE_OLED_SCALE)
+        EMULATOR = LegacyEmulator(
+            FIRMWARE_DIR / f"trezor-emu-legacy-v{version}",
+            profile_dir=FIRMWARE_DIR,
+            logfile=logfile,
+        )
+    else:
+        raise RuntimeError("Version can start only with 1 or 2")
 
-    if proc is None:
-        # TODO:
-        # - check if emulator process is already running and kill it if so
-        # - detect if Popen process starts without error (if udp port is listening)
-        # - run custom firmware
-        # - run T1 emulator
-        # - run T1 & T2 emulator at once
-        # - run two T2/T1 emulators
-        if output_to_logfile:
-            # Conditionally redirecting the output to a logfile instead of terminal/stdout
-            log_file = open(helpers.EMU_BRIDGE_LOG, "a")
-            log(f"All the emulator debug output redirected to {helpers.EMU_BRIDGE_LOG}")
-            proc = Popen(
-                command,
-                shell=True,
-                preexec_fn=os.setsid,
-                stdout=log_file,
-                stderr=log_file,
-            )
-        else:
-            proc = Popen(command, shell=True, preexec_fn=os.setsid)
-        log(f"the commandline is {str(proc.args)}")
-        version_running = version
+    if wipe and EMULATOR.storage.exists():
+        EMULATOR.storage.unlink()
+
+    EMULATOR.start()
+
+    version_running = version
 
 
 def stop() -> None:
     log("Stopping")
-    global proc
     global version_running
+    global EMULATOR
 
-    if proc is None:
+    if EMULATOR is None:
         log("WARNING: Attempting to stop emulator, but it is not running", "red")
     else:
-        os.killpg(os.getpgid(proc.pid), signal.SIGTERM)
-        proc = None
+        EMULATOR.stop()
+        EMULATOR = None
         version_running = None
 
 
