@@ -3,9 +3,9 @@ image: $CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX/nixos/nix:latest
 code check prebuild:
   stage: prebuild
   script:
-    - nix-shell --run "make code_check"
+    - nix-shell --run "poetry run make code_check"
 
 style check prebuild:
   stage: prebuild
   script:
-    - nix-shell --run "make style_check"
+    - nix-shell --run "poetry run make style_check"
