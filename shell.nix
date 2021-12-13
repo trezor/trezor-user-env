@@ -10,21 +10,11 @@ with import
     url = nixpkgsUrl;
     sha256 = nixpkgsSha256;
   }) { };
-let
-  MyPython = python3.withPackages(ps: [
-    ps.termcolor
-    ps.trezor
-    ps.black
-    ps.isort
-    ps.mypy
-    ps.flake8
-    ps.websockets
-  ]);
-in
 stdenv.mkDerivation {
   name = "trezor-user-env-controller";
   buildInputs = [
-    MyPython
+    python39
+    poetry
     SDL2
     SDL2_image
     docker

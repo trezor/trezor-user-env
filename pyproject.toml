@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "trezor-user-env"
+version = "0.0.0"
+description = ""
+authors = ["SatoshiLabs <info@satoshilabs.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+termcolor = "^1.1.0"
+trezor = "^0.13.0"
+websockets = "^10.1"
+
+[tool.poetry.dev-dependencies]
+black = "^21.12b0"
+isort = "^5.10.1"
+mypy = "^0.910"
+flake8 = "^4.0.1"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
