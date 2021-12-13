@@ -12,9 +12,9 @@ else
 fi
 
 echo -n "Python version: "
-nix-shell --run "python --version"
+nix-shell --run "poetry run python --version"
 echo -n "Trezorctl version: "
-nix-shell --run "trezorctl version"
+nix-shell --run "poetry run trezorctl version"
 
 echo "Starting trezor-user-env server"
-nix-shell --run "python src/main.py"
+nix-shell --run "poetry run python src/main.py"

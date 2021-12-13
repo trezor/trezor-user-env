@@ -46,12 +46,12 @@ You need:
 - Docker (to run NixOS in a container).
 - xhost
 
-On NixOS, simply enter the `nix-shell`, it is all there.
+On NixOS, simply enter the `nix-shell`, it is all there. All needed python libraries are then installed through `Poetry`, by `poetry install` and `poetry shell`.
 
 #### Run it
 
 1. Clone this repo `git clone git@github.com:trezor/trezor-user-env.git`. If you are new to Github, try `git clone https://github.com/trezor/trezor-user-env.git` instead.
-2. Enter the directory using `cd trezor-user-env`. If on NixOS also enter the nix shell using `nix-shell`.
+2. Enter the directory using `cd trezor-user-env`. If on NixOS also enter the Poetry shell by following commands: `nix-shell`, `poetry install` and `poetry shell`.
 3. Run in terminal: `xhost +`
 4. Download the latest docker build: `docker-compose -f ./docker/compose.yml pull trezor-user-env-unix trezor-user-env-regtest`
 5. Run it: `docker-compose -f ./docker/compose.yml up trezor-user-env-unix trezor-user-env-regtest` [^1]
@@ -101,7 +101,7 @@ In case you need to modify something in trezor-user-env you have two options.
 
 ### Natively in NixOS
 
-If you are using NixOS you can do the changes locally and then run the controller yourself. Run it via `nix-shell --run 'python src/main.py'`. Make sure you have run `src/binaries/{firmware,trezord-go}/bin/download.sh` beforehand otherwise you'll have old binaries.
+If you are using NixOS you can do the changes locally and then run the controller yourself. Run it via `nix-shell --run 'poetry run python src/main.py'` (or just `python src/main.py` in `Poetry` shell). Make sure you have run `src/binaries/{firmware,trezord-go}/bin/download.sh` beforehand otherwise you'll have old binaries.
 
 This is suitable for smaller changes or things you can check via the HTML dashboard easily. However, if you are adding some functionality to trezor-user-env mainly because of Suite end-to-end tests, it is probably better to go the CI way (below). Otherwise you would need to run the whole Suite test suite locally.
 
