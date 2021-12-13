@@ -34,4 +34,6 @@ RUN rm -rf /var/tmp/trezor.flash
 
 RUN nix-shell --run "echo deps pre-installed"
 
+RUN nix-shell --run "poetry install"
+
 CMD nix-shell --run './run.sh'
