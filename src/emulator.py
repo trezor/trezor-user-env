@@ -5,12 +5,11 @@ from pathlib import Path
 from subprocess import PIPE, Popen
 from typing import Optional
 
-from trezorlib import debuglink, device  # type: ignore
-from trezorlib.debuglink import DebugLink  # type: ignore
-from trezorlib.debuglink import TrezorClientDebugLink
-from trezorlib.device import reset, wipe  # type: ignore
-from trezorlib.transport.bridge import BridgeTransport  # type: ignore
-from trezorlib.transport.udp import UdpTransport  # type: ignore
+from trezorlib import debuglink, device
+from trezorlib.debuglink import DebugLink, TrezorClientDebugLink
+from trezorlib.device import reset, wipe
+from trezorlib.transport.bridge import BridgeTransport
+from trezorlib.transport.udp import UdpTransport
 
 import bridge
 import helpers
