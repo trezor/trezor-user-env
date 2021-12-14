@@ -431,7 +431,7 @@ def allow_unsafe() -> None:
     client.open()
     time.sleep(SLEEP)
 
-    # Each model has its own supported safety checks level
+    # T1 does not support PromptAlways
     if client.features.major_version == 1:
         safety_checks = messages.SafetyCheckLevel.PromptTemporarily
     else:
