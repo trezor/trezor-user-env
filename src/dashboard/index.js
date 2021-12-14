@@ -183,6 +183,12 @@ function emulatorPressNo() {
     });
 }
 
+function emulatorAllowUnsafe() {
+    _send({
+        type: 'emulator-allow-unsafe-paths',
+    });
+}
+
 function emulatorStop() {
     _send({
         type: 'emulator-stop',

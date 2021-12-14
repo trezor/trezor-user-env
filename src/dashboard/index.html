@@ -63,9 +63,12 @@
             <input id="seed-input" type="text" placeholder="default seed: all all" />
             <button onclick="emulatorSetup();">Load seed</button>
             <button onclick="emulatorResetDevice();">Reset</button>
+            <button onclick="emulatorStop();">Stop</button>
+        </div>
+        <div>
             <button onclick="emulatorPressYes();">Press yes</button>
             <button onclick="emulatorPressNo();">Press no</button>
-            <button id="emu-stop" onclick="emulatorStop();">Stop</button>
+            <button onclick="emulatorAllowUnsafe();">Allow unsafe (safety checks)</button>
         </div>
         <div>
             <button onclick="readAndConfirmMnemonic();">Read and confirm mnemonic</button>
