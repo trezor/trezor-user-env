@@ -23,6 +23,7 @@ build and push image:
 build and push test image:
   stage: build
   <<: *build
+  when: manual
   except:
     - schedules
     - master
