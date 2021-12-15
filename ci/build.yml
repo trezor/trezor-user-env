@@ -1,6 +1,6 @@
 # trezor-user-env docker images build
 .build: &build
-  image: $CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX/docker
+  image: $$CI_DEPENDENCY_PROXY_DIRECT_GROUP_IMAGE_PREFIX/docker
   variables:
     CONTAINER_NAME: "$CI_REGISTRY/satoshilabs/trezor/trezor-user-env/trezor-user-env"
   services:
@@ -36,7 +36,7 @@ build and push test image:
 
 # regtest docker images build
 .build_regtest: &build_regtest
-  image: $CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX/docker
+  image: $$CI_DEPENDENCY_PROXY_DIRECT_GROUP_IMAGE_PREFIX/docker
   variables:
     CONTAINER_NAME_REGTEST: "$CI_REGISTRY/satoshilabs/trezor/trezor-user-env/trezor-user-env-regtest"
   services:
