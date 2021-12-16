@@ -1,4 +1,4 @@
-image: $CI_DEPENDENCY_PROXY_DIRECT_GROUP_IMAGE_PREFIX/nixos/nix:latest
+image: $CI_DEPENDENCY_PROXY_DIRECT_GROUP_IMAGE_PREFIX/nixos/nix:2.3.12
 
 code check prebuild:
   stage: prebuild
