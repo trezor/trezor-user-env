@@ -54,18 +54,6 @@ build and push arm image:
     - docker build --tag $CONTAINER_NAME_ARM:latest  -f docker/arm/Dockerfile .
     - docker push $CONTAINER_NAME_ARM:latest
 
-build and push arm test image:
-  stage: build
-  <<: *build
-  when: manual
-  except:
-    - schedules
-    - master
-    - /^run\//
-  script:
-    - docker build  --tag $CONTAINER_NAME_ARM:CI_COMMIT_BRANCH-test -f docker/arm/Dockerfile .
-    - docker push $CONTAINER_NAME_ARM:CI_COMMIT_BRANCH-test
-
 # regtest docker images build
 .build_regtest: &build_regtest
   image: $CI_DEPENDENCY_PROXY_DIRECT_GROUP_IMAGE_PREFIX/docker

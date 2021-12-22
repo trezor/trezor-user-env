@@ -1,9 +1,5 @@
 FROM vdovhanych/nixos
 
-# "fake" dbus address to prevent errors
-# https://github.com/SeleniumHQ/docker-selenium/issues/87
-#ENV DBUS_SESSION_BUS_ADDRESS=/dev/null
-
 # good colors for most applications
 ENV TERM xterm
 
