@@ -1,3 +1,4 @@
+import base64
 import os
 import stat
 import sys
@@ -28,6 +29,9 @@ FIRMWARE_DIR = ROOT_DIR / "src/binaries/firmware/bin"
 FW_PATH = ROOT_DIR / "src/binaries/firmware/bin"
 IDENTIFIER_T1 = "trezor-emu-legacy-v"
 IDENTIFIER_TT = "trezor-emu-core-v"
+
+SCREEN_DIR = ROOT_DIR / "logs/screens"
+SCREEN_DIR.mkdir(exist_ok=True)
 
 # When communicating with device via bridge/debuglink, this sleep is required
 #   otherwise there may appear weird race conditions in communications.
@@ -172,6 +176,15 @@ def start(version: str, wipe: bool, output_to_logfile: bool = True) -> None:
 
     version_running = version
 
+    # Saving the screenshots on any screen-change, so we can send the
+    # current screen on demand
+    # Only applicable to TT, T1 is not capable of screenshotting
+    if version[0] == "2":
+        time.sleep(1)
+        client = DebugLink(get_device().find_debug())
+        client.open()
+        client.start_recording(str(SCREEN_DIR))
+
 
 def stop() -> None:
     log("Stopping")
@@ -184,6 +197,20 @@ def stop() -> None:
         EMULATOR.stop()
         EMULATOR = None
         version_running = None
+
+
+def get_current_screen() -> str:
+    """Return the screenshot encoded as base64."""
+    # Screenshots are being saved automatically on screen-change,
+    # so we take the latest file
+    all_screenshots = list(SCREEN_DIR.glob("*.png"))
+    if not all_screenshots:
+        raise RuntimeError("There are no screenshots")
+    latest_screenshot = max(all_screenshots, key=lambda p: p.stat().st_ctime)
+
+    with open(latest_screenshot, "rb") as f:
+        encoded_string = base64.b64encode(f.read()).decode()
+        return encoded_string
 
 
 def setup_device(
