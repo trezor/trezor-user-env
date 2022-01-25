@@ -108,6 +108,10 @@
 - **emulator-reset-device**
   - **action**: reset the device
 
+- **emulator-get-screenshot**
+  - **action**: get current screen encoded as base64
+  - **response**: `{"response": str}`
+
 - **bridge-start**
   - **action**: start the specified version of bridge (only if it is not already running)
   - **arguments**:

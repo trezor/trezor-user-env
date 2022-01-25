@@ -209,6 +209,9 @@ class ResponseGetter:
         elif self.command == "emulator-reset-device":
             emulator.reset_device()
             return {"response": "Device reset"}
+        elif self.command == "emulator-get-screenshot":
+            screen_base_64 = emulator.get_current_screen()
+            return {"response": screen_base_64}
         else:
             return {
                 "success": False,
