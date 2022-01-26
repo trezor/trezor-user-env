@@ -140,11 +140,13 @@ function emulatorStart(select) {
     const version = document.getElementById(select).value;
     const wipe = document.getElementById("wipeDevice").checked;
     const output_to_logfile = document.getElementById("emulatorUseLogfile").checked;
+    const save_screenshots = document.getElementById("emulatorSaveScreenshots").checked;
     _send({
         type: 'emulator-start',
         version,
         wipe,
         output_to_logfile,
+        save_screenshots,
     });
 }
 
@@ -239,6 +241,12 @@ function emulatorAllowUnsafe() {
 function emulatorStop() {
     _send({
         type: 'emulator-stop',
+    });
+}
+
+function emulatorGetScreenshot() {
+    _send({
+        type: 'emulator-get-screenshot',
     });
 }
 

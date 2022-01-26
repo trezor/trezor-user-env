@@ -27,15 +27,18 @@
   - **action**: start the specified version of emulator (and if one already runs, kills it)
   - **arguments**:
     - **version**: `str` (1.9.4, 2.4.0., etc.) - default is the latest TT
-    - **wipe**: `bool` whether to delete the emulator profile before starting it - default is False
-    - **output_to_logfile**: `bool` whether the debug output should go to a logfile - default is True - otherwise it goes to stdout
+    - **wipe**: `bool` (default=False) whether to delete the emulator profile before starting it
+    - **output_to_logfile**: `bool` (default=True) whether the debug output should go to a logfile - otherwise it goes to stdout
+    - **save_screenshots**: `bool` (default=False) whether to save screenshots to enable calling **emulator-get-screenshot**
 
 - **emulator-start-from-url**
   - **action**: downloads emulator from specified URL and runs it
   - **arguments**:
     - **url**: `str` from where to download the emulator
     - **model**: `str` which emulator it is - either "1" for T1 or "2" for T2
-    - **wipe**: `bool` whether to delete the emulator profile before starting it - default is False
+    - **wipe**: `bool` (default=False) whether to delete the emulator profile before starting it
+    - **output_to_logfile**: `bool` (default=True) whether the debug output should go to a logfile - otherwise it goes to stdout
+    - **save_screenshots**: `bool` (default=False) whether to save screenshots to enable calling **emulator-get-screenshot**
 
 - **emulator-stop**
   - **action**: stop the emulator
@@ -48,7 +51,7 @@
     - **pin**: `str`
     - **passphrase_protection**: `bool`
     - **label**: `str`
-    - **needs_backup**: `bool` - default is False
+    - **needs_backup**: `bool` (default=False)
 
 - **emulator-press-yes**
   - **action**: press yes button on the emulator
@@ -73,8 +76,8 @@
 - **emulator-read-and-confirm-shamir-mnemonic**
   - **action**: simulates the Shamir backup process for chosen amount of shares and threshold
   - **arguments**:
-    - **shares**: `int` (defaults to 1)
-    - **threshold**: `int` (defaults to 1)
+    - **shares**: `int` (default=1)
+    - **threshold**: `int` (default=1)
 
 - **emulator-allow-unsafe-paths**
   - **action**: allow unsafe path on emulator
@@ -116,7 +119,7 @@
   - **action**: start the specified version of bridge (only if it is not already running)
   - **arguments**:
     - **version**: `str` (2.0.27, 2.0.31, etc.) - defaults to the latest available one
-    - **output_to_logfile**: `bool` whether the debug output should go to a logfile - default is True - otherwise it goes to stdout
+    - **output_to_logfile**: `bool` (default=True) whether the debug output should go to a logfile, otherwise it goes to stdout
 
 - **bridge-stop**
   - **action**: stop the bridge

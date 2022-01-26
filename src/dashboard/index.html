@@ -61,7 +61,9 @@
             <input id="wipeDevice" type="checkbox">
             <label for="wipeDevice">Start with wiped/empty device</label>
             <input id="emulatorUseLogfile" type="checkbox">
-            <label for="emulatorUseLogfile">Logs into logfile</label><br>
+            <label for="emulatorUseLogfile">Logs into logfile</label>
+            <input id="emulatorSaveScreenshots" type="checkbox">
+            <label for="emulatorSaveScreenshots">Save screenshots</label><br>
         </div>
         <div>
             <input id="emu-url" type="text" placeholder="Full emulator URL, link to Gitlab job or just job ID - as specified in select. Do not forget to specify model (T1/T2)" style="width:50%;"/>
@@ -85,6 +87,7 @@
             <button onclick="emulatorPressYes();">Press yes</button>
             <button onclick="emulatorPressNo();">Press no</button>
             <button onclick="emulatorAllowUnsafe();">Allow unsafe (safety checks)</button>
+            <button onclick="emulatorGetScreenshot();">Get screenshot</button>
         </div>
         <div>
             <button onclick="readAndConfirmMnemonic();">Read and confirm mnemonic</button>
