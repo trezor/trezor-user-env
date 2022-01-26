@@ -103,7 +103,11 @@ def get_url_identifier(url: str) -> str:
 
 
 def start_from_url(
-    url: str, model: Literal["1", "2"], wipe: bool, output_to_logfile: bool = True
+    url: str,
+    model: Literal["1", "2"],
+    wipe: bool,
+    output_to_logfile: bool = True,
+    save_screenshots: bool = False,
 ) -> None:
     # Creating an identifier of emulator from this URL, so we have to
     # download it only once and can reuse it any time later
@@ -132,10 +136,15 @@ def start_from_url(
     else:
         log(f"Emulator from {url} already exists under {emu_path}")
 
-    return start(emu_name, wipe, output_to_logfile)
+    return start(emu_name, wipe, output_to_logfile, save_screenshots)
 
 
-def start(version: str, wipe: bool, output_to_logfile: bool = True) -> None:
+def start(
+    version: str,
+    wipe: bool,
+    output_to_logfile: bool = True,
+    save_screenshots: bool = False,
+) -> None:
     global version_running
     global EMULATOR
 
@@ -176,10 +185,10 @@ def start(version: str, wipe: bool, output_to_logfile: bool = True) -> None:
 
     version_running = version
 
-    # Saving the screenshots on any screen-change, so we can send the
+    # Optionally saving the screenshots on any screen-change, so we can send the
     # current screen on demand
     # Only applicable to TT, T1 is not capable of screenshotting
-    if version[0] == "2":
+    if save_screenshots and version[0] == "2":
         time.sleep(1)
         client = DebugLink(get_device().find_debug())
         client.open()
@@ -205,7 +214,9 @@ def get_current_screen() -> str:
     # so we take the latest file
     all_screenshots = list(SCREEN_DIR.glob("*.png"))
     if not all_screenshots:
-        raise RuntimeError("There are no screenshots")
+        raise RuntimeError(
+            "There are no screenshots. Did you start emulator with save_screenshots=True?"
+        )
     latest_screenshot = max(all_screenshots, key=lambda p: p.stat().st_ctime)
 
     with open(latest_screenshot, "rb") as f:

@@ -129,7 +129,8 @@ class ResponseGetter:
             version = self.request_dict.get("version", binaries.FIRMWARES["TT"][0])
             wipe = self.request_dict.get("wipe", False)
             output_to_logfile = self.request_dict.get("output_to_logfile", True)
-            emulator.start(version, wipe, output_to_logfile)
+            save_screenshots = self.request_dict.get("save_screenshots", False)
+            emulator.start(version, wipe, output_to_logfile, save_screenshots)
             response_text = f"Emulator version {version} started"
             if wipe:
                 response_text += " and wiped to be empty"
@@ -139,7 +140,10 @@ class ResponseGetter:
             model = self.request_dict["model"]
             wipe = self.request_dict.get("wipe", False)
             output_to_logfile = self.request_dict.get("output_to_logfile", True)
-            emulator.start_from_url(url, model, wipe, output_to_logfile)
+            save_screenshots = self.request_dict.get("save_screenshots", False)
+            emulator.start_from_url(
+                url, model, wipe, output_to_logfile, save_screenshots
+            )
             response_text = f"Emulator downloaded from {url} and started"
             if wipe:
                 response_text += " and wiped to be empty"
