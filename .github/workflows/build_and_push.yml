@@ -1,0 +1,50 @@
+name: Build and push images to registry
+
+on:
+  push:
+    branches:
+      - master
+  schedule:
+    - cron: "0 1 * * *"
+
+jobs:
+  build_images:
+    runs-on: ubuntu-latest
+    steps:
+      -
+        name: Checkout
+        uses: actions/checkout@v2
+      -
+        name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+      -
+        name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+      -
+        name: Login to GitHub Container Registry
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ secrets.TREZOR_BOT_USERNAME }}
+          password: ${{ secrets.TREZOR_BOT_TOKEN }}
+      -
+        name: Build and push trezor-user-env
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./docker/Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/trezor-user-env:${{ github.sha }}
+            ghcr.io/${{ github.repository_owner }}/trezor-user-env:latest
+      -
+        name: Build and push bitcoin-regtest
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./docker/bitcoin-regtest/Dockerfile
+          platforms: linux/amd64 # blockbook is currently not built to run on arm64. trezor-user-env-regtest available on x86 only
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/trezor-user-env-regtest:latest
