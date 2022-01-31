@@ -10,6 +10,8 @@ then
 else
     echo "Version file is missing - ${version_file}"
 fi
+# Patch trezord after the container starts to prevent flaky behavior with arm version.
+nix-shell -p bash --run "cd ./src/binaries/trezord-go/bin/ && ./download.sh"
 
 echo -n "Python version: "
 nix-shell --run "poetry run python --version"
