@@ -49,6 +49,12 @@ def sort_firmwares(version: str) -> tuple:
     # Having master and url versions as the first one in the list
     if "master" in version or "url" in version:
         return 99, 99, 99
+
+    # Removing the possible ARM-related suffix just for sorting, wont rename the file
+    arm_suffix = "-arm"
+    if version.endswith(arm_suffix):
+        version = version[: -len(arm_suffix)]
+
     return tuple(int(n) for n in version.split("."))
 
 
