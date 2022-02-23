@@ -482,12 +482,9 @@ def apply_settings(
     display_rotation: Optional[int] = None,
     passphrase_always_on_device: Optional[bool] = None,
     safety_checks: Optional[int] = None,
+    experimental_features: Optional[int] = None,
 ) -> None:
-    """Forwards settings fields to be applied on a device.
-
-    NOTE: does not handle the experimental_features argument,
-      seems that it is not yet supported in latest trezorlib
-    """
+    """Forwards settings fields to be applied on a device."""
     # Homescreen needs to be bytes object, so if there,
     #   it should be encoded from the received string
     homescreen_bytes = homescreen.encode() if homescreen else None
@@ -505,6 +502,7 @@ def apply_settings(
         auto_lock_delay_ms=auto_lock_delay_ms,
         display_rotation=display_rotation,
         safety_checks=safety_checks,
+        experimental_features=experimental_features,
     )
     client.close()
 
