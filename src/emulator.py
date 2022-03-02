@@ -255,11 +255,17 @@ def wipe_device() -> None:
     client.close()
 
 
-def reset_device() -> None:
+def reset_device(backup_type: messages.BackupType, strength: int) -> None:
     client = TrezorClientDebugLink(get_device())
     client.open()
     time.sleep(SLEEP)
-    device.reset(client, skip_backup=True, pin_protection=False)
+    device.reset(
+        client,
+        skip_backup=True,
+        pin_protection=False,
+        backup_type=backup_type,
+        strength=strength,
+    )
     client.close()
 
 

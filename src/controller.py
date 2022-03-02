@@ -3,6 +3,7 @@ import json
 import traceback
 from copy import deepcopy
 
+from trezorlib import messages
 from websockets.exceptions import ConnectionClosedError, ConnectionClosedOK
 from websockets.server import serve
 
@@ -211,7 +212,10 @@ class ResponseGetter:
             emulator.apply_settings(**settings_fields)
             return {"response": f"Applied settings on emulator {settings_fields}"}
         elif self.command == "emulator-reset-device":
-            emulator.reset_device()
+            emulator.reset_device(
+                self.request_dict.get("backup_type", messages.BackupType.Bip39),
+                self.request_dict.get("strength"),
+            )
             return {"response": "Device reset"}
         elif self.command == "emulator-get-screenshot":
             screen_base_64 = emulator.get_current_screen()
