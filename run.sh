@@ -1,22 +1,34 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
+set -e -o pipefail
 
-DIR=$(dirname "$0")
-cd "${DIR}"
-
-version_file="docker/version.txt"
-if [ -f "${version_file}" ]
-then
-    cat "${version_file}"
-else
-    echo "Version file is missing - ${version_file}"
+if [ -z "$1" ]
+  then
+    TENV_REGTEST="trezor-user-env-regtest"
+elif [[ $1 == --no-regtest ]]; then
+    TENV_REGTEST=""
 fi
-# Patch trezord after the container starts to prevent flaky behavior with arm version.
-nix-shell -p bash --run "cd ./src/binaries/trezord-go/bin/ && ./download.sh"
 
-echo -n "Python version: "
-nix-shell --run "poetry run python --version"
-echo -n "Trezorctl version: "
-nix-shell --run "poetry run trezorctl version"
+SYSTEM=$(uname)
 
-echo "Starting trezor-user-env server"
-nix-shell --run "poetry run python src/main.py"
+if [[ $SYSTEM == Linux* ]]; then
+
+    echo -e "Setup xhost for video device output"
+    xhost +
+    echo -e "Downloading latest images"
+    docker-compose -f ./docker/compose.yml pull trezor-user-env-unix $TENV_REGTEST
+    echo -e "Starting trezor-user-env"
+    docker-compose -f ./docker/compose.yml up trezor-user-env-unix $TENV_REGTEST
+
+elif [[ $SYSTEM == Darwin* ]]; then
+
+    echo -e "Setup xhost for video device output"
+    xhost +127.0.0.1
+    echo -e "Downloading latest images"
+    docker-compose -f ./docker/compose.yml pull trezor-user-env-mac $TENV_REGTEST
+    echo -e "Starting trezor-user-env"
+    docker-compose -f ./docker/compose.yml up trezor-user-env-mac $TENV_REGTEST
+
+else
+    echo -e "Not a supported system - $SYSTEM"
+    exit 1
+fi
