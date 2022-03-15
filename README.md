@@ -51,21 +51,21 @@ On NixOS, simply enter the `nix-shell`, it is all there. All needed python libra
 #### Run it
 
 1. Clone this repo `git clone git@github.com:trezor/trezor-user-env.git`. If you are new to Github, try `git clone https://github.com/trezor/trezor-user-env.git` instead.
-2. Enter the directory using `cd trezor-user-env`. If on NixOS also enter the Poetry shell by following commands: `nix-shell`, `poetry install` and `poetry shell`.
-3. Run in terminal: `xhost +`
-4. Download the latest docker build: `docker-compose -f ./docker/compose.yml pull trezor-user-env-unix trezor-user-env-regtest`
-5. Run it: `docker-compose -f ./docker/compose.yml up trezor-user-env-unix trezor-user-env-regtest` [^1]
-6. Open http://localhost:9002.
+2. Enter the directory using `cd trezor-user-env`.
+3. Run the script `./run.sh` it will determine your platform and launch trezor-user-env
+   3a. If you wish to launch only trezor-user-env use `--no-regtest` argument with `./run.sh --no-regtest`
+4. Open http://localhost:9002.
 
-For a future use you can omit the second step and run `up` (the third step) directly. **However, you will not have the latest master builds then!**
+[^1][^2]
 
 [^1]: If you get an error with `trezor-user-env-regtest` starting up, you will need to clean container contents by pruning that container or all stopped containers with `docker container prune`
+[^2]: `trezor-user-env-regtest` runs in emulation layer and is not ARM native image, you may experience some slowness or issues when using it on ARM Macs.
 
 ----
 
 ### MacOS
 
-*Supported on Intel Mac devices (ARM Mac's are not supported for now)*
+*Supported on Intel and Apple Silicon Mac devices*
 
 #### Prerequisites
 
@@ -76,19 +76,16 @@ You need:
 Download these as you are used to. We recommend using `nix` or `brew`, but that's your fight.
 
 #### Run it
+1. Clone this repo `git clone git@github.com:trezor/trezor-user-env.git`. If you are new to Github, try `git clone https://github.com/trezor/trezor-user-env.git` instead.
+2. Enter the directory using `cd trezor-user-env`.
+3. Run the script `./run.sh` it will determine your platform and launch trezor-user-env
+   3a. If you wish to launch only trezor-user-env use `--no-regtest` argument with `./run.sh --no-regtest`
+4. Open http://localhost:9002.
 
-1. Run XQuartz and leave it running on the background. Wait till it is launched.
-2. In XQuartz settings go to Preferences > Security and enable "Allow connections from network clients".
-3. Open a new terminal window (not in XQuartz) and add yourself to the X access control list: `xhost +127.0.0.1` (you will probably need to logout/login after XQuartz installation to have `xhost` command available)
-4. Clone this repo `git clone git@github.com:trezor/trezor-user-env.git`. If you are new to Github, try `git clone https://github.com/trezor/trezor-user-env.git` instead.
-5. Enter the directory using `cd trezor-user-env`.
-6. Download the latest docker build: `docker-compose -f ./docker/compose.yml pull trezor-user-env-mac trezor-user-env-regtest`
-7. Run it: `docker-compose -f ./docker/compose.yml up trezor-user-env-mac trezor-user-env-regtest` [^1]
-8. Open http://localhost:9002.
-
-For a future use you can omit the second step and run `up` (the third step) directly. **However, you will not have the latest master builds then!**
+[^1][^2]
 
 [^1]: If you get an error with `trezor-user-env-regtest` starting up, you will need to clean container contents by pruning that container or all stopped containers with `docker container prune`
+[^2]: `trezor-user-env-regtest` runs in emulation layer and is not ARM native image, you may experience some slowness or issues when using it on ARM Macs.
 ----
 
 ### Windows
@@ -107,7 +104,7 @@ This is suitable for smaller changes or things you can check via the HTML dashbo
 
 ### Let CI do it
 
-The simpler but less flexible way is to let the [CI](https://gitlab.com/satoshilabs/trezor/trezor-user-env/pipelines) build it. You can create a branch, commit your changes and then push them. The CI will build it for you and tag the appropriate docker image as `test`. You can then modify all scripts/commands and use `registry.gitlab.com/satoshilabs/trezor/trezor-user-env/trezor-user-env:test` instead of `registry.gitlab.com/satoshilabs/trezor/trezor-user-env/trezor-user-env` which defaults to the `latest` tag which equals trezor-user-env's master. Suite's docker-compose files in the `docker` subdirectory are the place where you want to change this.
+The simpler but less flexible way is to let the GitHub Actions build it. You can create a branch, commit your changes and then push them. The GH Actions will build it for you and tag the appropriate docker image as `test`. You can then modify all scripts/commands and use `ghcr.io/trezor/trezor-user-env:test` instead of `ghcr.io/trezor/trezor-user-env` which defaults to the `latest` tag which equals trezor-user-env's master. Suite's docker-compose files in the `docker` subdirectory are the place where you want to change this.
 
 ## Local development against Suite end-to-end tests
 _NOTE: The steps below are all dependant on Docker containers. It could be even better to be able to avoid the Docker completely - just running trezor-user-env on localhost and connecting Suite tests to it - but hard to say how to do it, all my experiments failed. Please feel free to improve the solution._
