@@ -1,15 +1,19 @@
 import glob
+import os
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, List, Tuple
 
 from termcolor import colored
 
 ROOT_DIR = Path(__file__).parent.parent.resolve()
-FIRMWARES: Dict[str, list] = {
+FIRMWARES: Dict[str, List[str]] = {
     "T1": [],
     "TT": [],
 }
-BRIDGES = []
+BRIDGES: List[str] = []
+
+IS_ARM = os.uname().machine.startswith("aarch64")
+ARM_IDENTIFIER = "-arm"
 
 
 def explore(args: Any) -> None:
@@ -27,6 +31,14 @@ def explore_firmwares(args: Any) -> None:
     identifier_TT = "trezor-emu-core"
     identifier_T1 = "trezor-emu-legacy"
     for fw in glob.glob(firmware_binary_files):
+        # Send only suitable emulators for ARM/non-ARM
+        if IS_ARM and not fw.endswith(ARM_IDENTIFIER):
+            print(f"On ARM, ignoring x86 emulator - {fw}")
+            continue
+        elif not IS_ARM and fw.endswith(ARM_IDENTIFIER):
+            print(f"On x86, ignoring ARM emulator - {fw}")
+            continue
+
         if identifier_TT in fw:
             version = fw.split(identifier_TT + "-v")[-1]
             FIRMWARES["TT"].append(version)
@@ -45,23 +57,25 @@ def explore_firmwares(args: Any) -> None:
         model.sort(key=sort_firmwares, reverse=True)
 
 
-def sort_firmwares(version: str) -> tuple:
+def sort_firmwares(version: str) -> Tuple[int, ...]:
     # Having master and url versions as the first one in the list
     if "master" in version or "url" in version:
         return 99, 99, 99
 
     # Removing the possible ARM-related suffix just for sorting, wont rename the file
-    arm_suffix = "-arm"
-    if version.endswith(arm_suffix):
-        version = version[: -len(arm_suffix)]
+    if version.endswith(ARM_IDENTIFIER):
+        version = version[: -len(ARM_IDENTIFIER)]
 
     return tuple(int(n) for n in version.split("."))
 
 
 def explore_bridges() -> None:
-    BRIDGES.append("2.0.31")
-    BRIDGES.append("2.0.31-arm64")
-    BRIDGES.append("2.0.30-arm64")
-    BRIDGES.append("2.0.27")
-    BRIDGES.append("2.0.26")
-    BRIDGES.append("2.0.19")
+    # Send only suitable bridges for ARM/non-ARM
+    if IS_ARM:
+        BRIDGES.append("2.0.31-arm64")
+        BRIDGES.append("2.0.30-arm64")
+    else:
+        BRIDGES.append("2.0.31")
+        BRIDGES.append("2.0.27")
+        BRIDGES.append("2.0.26")
+        BRIDGES.append("2.0.19")

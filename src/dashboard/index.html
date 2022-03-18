@@ -1,4 +1,5 @@
 <html>
+
 <head>
     <title>Trezor Device Controller client</title>
     <link rel="stylesheet" type="text/css" href="index.css" />
@@ -18,10 +19,8 @@
         <h3>Bridge</h3>
         <div>
             <i>Start Bridge with emulator support.</i><br>
-            <button onclick="bridgeStart('2.0.31')">Start 2.0.31</button>
-            <button onclick="bridgeStart('2.0.31-arm64')">Start 2.0.31-arm64</button>
-            <button onclick="bridgeStart('2.0.30-arm64')">Start 2.0.30-arm64</button>
-            <button onclick="bridgeStart('2.0.27')">Start 2.0.27</button>
+            <select id="bridge-select"></select>
+            <button onclick="bridgeStart('bridge-select')">Start</button>
             <button onclick="bridgeStop()">Stop</button>
             <input id="bridgeUseLogfile" type="checkbox">
             <label for="bridgeUseLogfile">Logs into logfile</label><br>
@@ -68,7 +67,9 @@
             <label for="emulatorSaveScreenshots">Save screenshots</label><br>
         </div>
         <div>
-            <input id="emu-url" type="text" placeholder="Full emulator URL, link to Gitlab job or just job ID - as specified in select. Do not forget to specify model (T1/T2)" style="width:50%;"/>
+            <input id="emu-url" type="text"
+                placeholder="Full emulator URL, link to Gitlab job or just job ID - as specified in select. Do not forget to specify model (T1/T2)"
+                style="width:50%;" />
             <select id="emu-url-format-select"></select>
             <select id="emu-url-model-select"></select>
             <button onclick="emulatorStartFromUrl();">Start from URL</button>
@@ -96,9 +97,9 @@
         </div>
         <div>
             <label for="shares-input">Shares</label>
-            <input id="shares-input" type="number" value="3" size="3" min="1" max="20"/>
+            <input id="shares-input" type="number" value="3" size="3" min="1" max="20" />
             <label for="threshold-input">Threshold</label>
-            <input id="threshold-input" type="number" value="2" size="3" min="1" max="20"/>
+            <input id="threshold-input" type="number" value="2" size="3" min="1" max="20" />
             <button onclick="readAndConfirmMnemonicShamir();">Read and confirm mnemonic Shamir</button>
         </div>
     </section>
@@ -121,4 +122,5 @@
 
     <script type="text/javascript" src="index.js"></script>
 </body>
+
 </html>

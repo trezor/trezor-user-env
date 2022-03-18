@@ -48,6 +48,12 @@ const populateEmulatorSelect = (firmwares) => {
     firmwares['TT'].forEach(version => createOption(t2Select, version));
 };
 
+const populateBridgeSelect = (bridges) => {
+    const bridgeSelect = document.getElementById('bridge-select');
+    clearOptions(bridgeSelect);
+    bridges.forEach(bridge => createOption(bridgeSelect, bridge));
+};
+
 
 const handleMessage = (event) => {
     if (!event.data || typeof event.data !== 'string') {
@@ -79,6 +85,7 @@ const handleMessage = (event) => {
 
     if (dataObject.type === 'client') {
         populateEmulatorSelect(dataObject.firmwares);
+        populateBridgeSelect(dataObject.bridges);
     }
 };
 
@@ -250,7 +257,8 @@ function emulatorGetScreenshot() {
     });
 }
 
-function bridgeStart(version) {
+function bridgeStart(select) {
+    const version = document.getElementById(select).value;
     const output_to_logfile = document.getElementById("bridgeUseLogfile").checked;
     _send({
         type: 'bridge-start',
