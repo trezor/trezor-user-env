@@ -1,4 +1,4 @@
-FROM vdovhanych/nixos
+FROM ghcr.io/trezor/nix:latest
 
 # "fake" dbus address to prevent errors
 # https://github.com/SeleniumHQ/docker-selenium/issues/87
