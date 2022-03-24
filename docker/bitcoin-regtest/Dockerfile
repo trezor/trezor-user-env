@@ -9,8 +9,8 @@ RUN useradd -rG sudo bitcoin \
 # Fetching the binaries from foked blockbook repo unti we introduce building of packages directly in blockbook repo
 # https://github.com/satoshilabs/devops/issues/45
 
-RUN wget https://github.com/vdovhanych/blockbook/releases/download/v0.3.5/backend-bitcoin-regtest_22.0-satoshilabs-1_amd64.deb \
-  && wget https://github.com/vdovhanych/blockbook/releases/download/v0.3.5/blockbook-bitcoin-regtest_0.3.6_amd64.deb \
+RUN wget https://data.trezor.io/dev/blockbook/builds/backend-bitcoin-regtest_22.0-satoshilabs-1_amd64.deb \
+  && wget https://data.trezor.io/dev/blockbook/builds/blockbook-bitcoin-regtest_0.3.6_amd64.deb \
   && dpkg -i backend-bitcoin-regtest_22.0-satoshilabs-1_amd64.deb \
   && dpkg -i blockbook-bitcoin-regtest_0.3.6_amd64.deb \
   && rm blockbook-bitcoin-regtest_0.3.6_amd64.deb \
