@@ -10,6 +10,26 @@ This environment is meant to support Trezor development - both Firmware and Suit
 - Provide a HTML page that communicates with the server. This allows the developers to perform the actions above.
 - To be Nix-native but also offer Docker image to allow non-NixOS developers to use it.
 
+## How to run
+
+_You can also run trezor-user-env "natively" if you are on NixOS but we mainly support the Docker way as described here._
+
+In case you have installed Trezor Bridge previously there will be a port conflict, please make sure it is not running. Either uninstall it completely or stop the service.
+
+Supported platforms are Linux and macOS (both Intel and Silicon).
+
+### Prerequisites
+
+- Docker
+- xhost on Linux
+- [XQuartz](https://www.xquartz.org/) on macOS
+
+### Steps
+
+1. Clone this repo and enter the directory
+2. Run `./run.sh` it will determine your platform and launch trezor-user-env. See `./run.sh --help` for some additional arguments.
+3. Open http://localhost:9002.
+
 ## Basic terminology
 
 - **Controller**
@@ -31,30 +51,6 @@ This environment is meant to support Trezor development - both Firmware and Suit
   - Default credentials for bitcoin backend
     - user and password: `rpc/rpc` and that you can run
   - You can test the connection with `bitcoin-cli -rpcport=18021 -rpcuser=rpc -rpcpassword=rpc -getinfo`
-
-## How to run
-
-_You can also run trezor-user-env "natively" if you are on NixOS but we mainly support the Docker way as described here._
-
-In case you have installed Trezor Bridge previously there will be a port conflict, please make sure it is not running. Either uninstall it completely or stop the service.
-
-### Supported platforms
-
-- Linux
-- Intel Mac
-- Apple Silicon Mac
-
-### Prerequisites
-
-- Docker
-- xhost on Linux
-- [XQuartz](https://www.xquartz.org/) on macOS
-
-### Steps
-
-1. Clone this repo and enter the directory
-2. Run `./run.sh` it will determine your platform and launch trezor-user-env. See `./run.sh --help` for some additional arguments.
-3. Open http://localhost:9002.
 
 ## Development
 
