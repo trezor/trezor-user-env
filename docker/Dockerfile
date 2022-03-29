@@ -19,8 +19,8 @@ COPY ./ ./trezor-user-env
 
 WORKDIR ./trezor-user-env
 
-RUN ls /
-RUN ls /trezor-user-env
+RUN ls -hartl /
+RUN ls -hartl /trezor-user-env
 
 # updates the nix-channel to have latest changes
 RUN nix-channel --update
