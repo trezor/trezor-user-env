@@ -58,7 +58,7 @@ In case you have installed Trezor Bridge previously there will be a port conflic
 
 ## Development
 
-See [docs/development.md](development.md).
+See [docs/development.md](docs/development.md).
 
 ## Troubleshooting
 
