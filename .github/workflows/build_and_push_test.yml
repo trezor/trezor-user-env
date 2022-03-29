@@ -23,6 +23,10 @@ jobs:
           username: ${{ secrets.TREZOR_BOT_USERNAME }}
           password: ${{ secrets.TREZOR_BOT_TOKEN }}
       -
+        name: Unify file's modification times
+        run: find . -not -path "*.git/*" | xargs touch -a -m -t 202202222222.22
+        shell: bash
+      -
         name: Build and push trezor-user-env
         uses: docker/build-push-action@v2
         with:
