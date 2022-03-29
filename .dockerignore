@@ -1,7 +1,5 @@
 src/binaries/firmware/repo/
 src/binaries/trezord-go/repo/
-docker
-!docker/create_version_file.sh
 logs
 .git
 .dockerignore
