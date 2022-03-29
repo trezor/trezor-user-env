@@ -6,6 +6,9 @@
   services:
     - docker:dind
   before_script:
+    # first unifying all the modification times to a constant value, so that docker sees files
+    # unchanged from previous build and will cache them properly
+    - find . -not -path "*.git/*" | xargs touch -a -m -t 202202222222.22
     - docker login $CI_REGISTRY -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD
 
 build and push image:
@@ -16,9 +19,6 @@ build and push image:
     - master
     - /^run\//
   script:
-    # first unifying all the modification times to a constant value, so that docker sees files
-    # unchanged from previous build and will cache them properly
-    - find . -not -path "*.git/*" | xargs touch -a -m -t 202202222222.22
     - docker build --tag $CONTAINER_NAME:$CI_COMMIT_SHA --tag $CONTAINER_NAME:latest -f docker/Dockerfile .
     - docker push $CONTAINER_NAME:$CI_COMMIT_SHA
     - docker push $CONTAINER_NAME:latest
