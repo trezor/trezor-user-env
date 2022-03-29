@@ -1,3 +1,11 @@
 src/binaries/firmware/repo/
 src/binaries/trezord-go/repo/
+docker
+logs
 .git
+.dockerignore
+.gitignore
+.vscode
+**/__pycache__
+**/.mypy_cache
+**/.pytest_cache
