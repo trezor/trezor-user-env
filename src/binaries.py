@@ -72,8 +72,8 @@ def sort_firmwares(version: str) -> Tuple[int, ...]:
 def explore_bridges() -> None:
     # Send only suitable bridges for ARM/non-ARM
     if IS_ARM:
-        BRIDGES.append("2.0.31-arm64")
-        BRIDGES.append("2.0.30-arm64")
+        BRIDGES.append(f"2.0.31{ARM_IDENTIFIER}")
+        BRIDGES.append(f"2.0.30{ARM_IDENTIFIER}")
     else:
         BRIDGES.append("2.0.31")
         BRIDGES.append("2.0.27")
