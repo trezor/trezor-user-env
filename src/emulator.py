@@ -16,6 +16,7 @@ from trezorlib.exceptions import TrezorFailure
 from trezorlib.transport.bridge import BridgeTransport
 from trezorlib.transport.udp import UdpTransport
 
+import binaries
 import bridge
 import helpers
 
@@ -147,6 +148,11 @@ def start(
 ) -> None:
     global version_running
     global EMULATOR
+
+    # When we are on ARM, include appropriate suffix for the version if not there
+    if binaries.IS_ARM and not version.endswith(binaries.ARM_IDENTIFIER):
+        log("ARM detected, adding suffix to emulator version", "yellow")
+        version += binaries.ARM_IDENTIFIER
 
     if EMULATOR is not None:
         log(

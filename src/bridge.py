@@ -5,6 +5,7 @@ import socket
 import time
 from subprocess import Popen
 
+import binaries
 import bridge_proxy
 import helpers
 from bridge_proxy import PORT as BRIDGE_PROXY_PORT
@@ -46,6 +47,11 @@ def start(version: str, proxy: bool = False, output_to_logfile: bool = True) -> 
     log("Starting")
     global proc
     global version_running
+
+    # When we are on ARM, include appropriate suffix for the version if not there
+    if binaries.IS_ARM and not version.endswith(binaries.ARM_IDENTIFIER):
+        log("ARM detected, adding suffix to bridge version", "yellow")
+        version += binaries.ARM_IDENTIFIER
 
     # In case the bridge was killed outside of the stop() function
     #   (for example manually by the user), we need to reflect the situation
