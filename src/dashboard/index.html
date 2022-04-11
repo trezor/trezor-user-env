@@ -61,10 +61,12 @@
         <div>
             <input id="wipeDevice" type="checkbox">
             <label for="wipeDevice">Start with wiped/empty device</label>
+            <br>
             <input id="emulatorUseLogfile" type="checkbox">
             <label for="emulatorUseLogfile">Logs into logfile</label>
+            <br>
             <input id="emulatorSaveScreenshots" type="checkbox">
-            <label for="emulatorSaveScreenshots">Save screenshots</label><br>
+            <label for="emulatorSaveScreenshots">Screenshot mode (no red square in top right corner)</label><br>
         </div>
         <div>
             <input id="emu-url" type="text"
@@ -90,7 +92,6 @@
             <button onclick="emulatorPressYes();">Press yes</button>
             <button onclick="emulatorPressNo();">Press no</button>
             <button onclick="emulatorAllowUnsafe();">Allow unsafe (safety checks)</button>
-            <button onclick="emulatorGetScreenshot();">Get screenshot</button>
         </div>
         <div>
             <button onclick="readAndConfirmMnemonic();">Read and confirm mnemonic</button>

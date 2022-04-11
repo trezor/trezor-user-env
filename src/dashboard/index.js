@@ -251,12 +251,6 @@ function emulatorStop() {
     });
 }
 
-function emulatorGetScreenshot() {
-    _send({
-        type: 'emulator-get-screenshot',
-    });
-}
-
 function bridgeStart(select) {
     const version = document.getElementById(select).value;
     const output_to_logfile = document.getElementById("bridgeUseLogfile").checked;
