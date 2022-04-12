@@ -65,3 +65,7 @@ section {
     font-size: 13px;
     font-style: italic;
 }
+
+.underlined {
+    text-decoration: underline #000 dotted;
+}
