@@ -4,6 +4,7 @@ import stat
 import sys
 import time
 import urllib.request
+from datetime import datetime
 from pathlib import Path
 from subprocess import PIPE
 from typing import Literal, Optional
@@ -202,12 +203,21 @@ def start(
 
     # Optionally saving the screenshots on any screen-change, so we can send the
     # current screen on demand
-    # Only applicable to TT, T1 is not capable of screenshotting
+    # Creating a new directory for each emulator session, so the screens are not being overwritten
+    # Only applicable to TT, T1 does not yet have screenshot support in current trezorlib
     if save_screenshots and version[0] == "2":
         time.sleep(1)
         client = DebugLink(get_device().find_debug())
         client.open()
-        client.start_recording(str(SCREEN_DIR))
+        dir_to_save = get_new_screenshot_dir()
+        client.start_recording(str(dir_to_save))
+
+
+def get_new_screenshot_dir() -> Path:
+    """Creates and returns a new directory to save screenshots in, according to current date"""
+    dir_to_save = SCREEN_DIR / datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    dir_to_save.mkdir(parents=True, exist_ok=True)
+    return dir_to_save
 
 
 def stop() -> None:
@@ -229,7 +239,7 @@ def get_current_screen() -> str:
     """Return the screenshot encoded as base64."""
     # Screenshots are being saved automatically on screen-change,
     # so we take the latest file
-    all_screenshots = list(SCREEN_DIR.glob("*.png"))
+    all_screenshots = list(SCREEN_DIR.rglob("*.png"))
     if not all_screenshots:
         raise RuntimeError(
             "There are no screenshots. Did you start emulator with save_screenshots=True?"
