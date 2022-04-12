@@ -19,3 +19,9 @@ code_check:
 	@mypy .
 	@echo [FLAKE8]
 	@flake8 .
+
+test:
+	pytest -s
+
+test_with_running_controller:
+	pytest -s --controller-already-runs

@@ -4,8 +4,10 @@ variables:
 
 stages:
   - prebuild
+  - test
   - build
 
 include:
   - ci/prebuild.yml
+  - ci/test.yml
   - ci/build.yml

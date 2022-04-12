@@ -216,6 +216,13 @@ function emulatorResetDevice() {
     });
 }
 
+function emulatorResetDeviceShamir() {
+    _send({
+        type: 'emulator-reset-device',
+        use_shamir: true,
+    });
+}
+
 function emulatorSetup() {
     const input = document.getElementById('seed-input');
     _send({
