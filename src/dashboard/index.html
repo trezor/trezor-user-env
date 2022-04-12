@@ -23,7 +23,8 @@
             <button onclick="bridgeStart('bridge-select')">Start</button>
             <button onclick="bridgeStop()">Stop</button>
             <input id="bridgeUseLogfile" type="checkbox">
-            <label for="bridgeUseLogfile">Logs into logfile</label><br>
+            <label class="underlined" title="Save bridge logs into logfile. Otherwise, logs are shown in console."
+                for="bridgeUseLogfile">Logs into logfile</label><br>
         </div>
         <div>
             <div id="bridge-status-line"><b>Status: <span id="bridge-status">unknown</span></b></div>
@@ -60,13 +61,22 @@
         </div>
         <div>
             <input id="wipeDevice" type="checkbox">
-            <label for="wipeDevice">Start with wiped/empty device</label>
+            <label class="underlined" title="Device will be started without seed or any other settings."
+                for="wipeDevice">Start with wiped/empty device</label>
             <br>
             <input id="emulatorUseLogfile" type="checkbox">
-            <label for="emulatorUseLogfile">Logs into logfile</label>
+            <label class="underlined" title="Save emulator logs into logfile. Otherwise, logs are shown in console."
+                for="emulatorUseLogfile">Logs into logfile</label>
             <br>
             <input id="emulatorSaveScreenshots" type="checkbox">
-            <label for="emulatorSaveScreenshots">Screenshot mode (no red square in top right corner)</label><br>
+            <label class="underlined" title="
+No red square in top right corner.
+Screenshots are saved under `logs/screens`.
+NOTE:
+- currently works only for TT
+- the first screen does contain the red square, no way to change it." for="emulatorSaveScreenshots">Screenshot
+                mode</label>
+            <br>
         </div>
         <div>
             <input id="emu-url" type="text"
