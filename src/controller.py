@@ -214,7 +214,8 @@ class ResponseGetter:
         elif self.command == "emulator-reset-device":
             emulator.reset_device(
                 self.request_dict.get("backup_type", messages.BackupType.Bip39),
-                self.request_dict.get("strength"),
+                self.request_dict.get("strength", 128),
+                use_shamir=self.request_dict.get("use_shamir", False),
             )
             return {"response": "Device reset"}
         elif self.command == "emulator-get-screenshot":

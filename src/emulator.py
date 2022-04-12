@@ -5,10 +5,11 @@ import sys
 import time
 import urllib.request
 from pathlib import Path
-from subprocess import PIPE, Popen
+from subprocess import PIPE
 from typing import Literal, Optional
 from urllib.error import HTTPError
 
+from psutil import Popen
 from trezorlib import debuglink, device, messages
 from trezorlib._internal.emulator import CoreEmulator, LegacyEmulator
 from trezorlib.debuglink import DebugLink, TrezorClientDebugLink
@@ -189,6 +190,14 @@ def start(
 
     EMULATOR.start()
 
+    log(f"Emulator spawned. PID: {EMULATOR.process.pid}. CMD: {EMULATOR.process.args}")
+
+    # Verifying if the emulator is really running
+    time.sleep(0.5)
+    if EMULATOR.process.poll() is not None:
+        EMULATOR = None
+        raise RuntimeError(f"Emulator version {version} is unable to run!")
+
     version_running = version
 
     # Optionally saving the screenshots on any screen-change, so we can send the
@@ -209,7 +218,9 @@ def stop() -> None:
     if EMULATOR is None:
         log("WARNING: Attempting to stop emulator, but it is not running", "red")
     else:
+        emu_pid = EMULATOR.process.pid
         EMULATOR.stop()
+        log(f"Emulator killed. PID: {emu_pid}.")
         EMULATOR = None
         version_running = None
 
@@ -261,10 +272,16 @@ def wipe_device() -> None:
     client.close()
 
 
-def reset_device(backup_type: messages.BackupType, strength: int) -> None:
+def reset_device(
+    backup_type: messages.BackupType, strength: int, use_shamir: bool = False
+) -> None:
     client = TrezorClientDebugLink(get_device())
     client.open()
     time.sleep(SLEEP)
+
+    if use_shamir:
+        backup_type = 1
+
     device.reset(
         client,
         skip_backup=True,

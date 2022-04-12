@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 import os
-import signal
 import socket
 import time
-from subprocess import Popen
+
+from psutil import Popen
 
 import binaries
 import bridge_proxy
@@ -13,7 +13,7 @@ from bridge_proxy import PORT as BRIDGE_PROXY_PORT
 BRIDGE_PORT = 21325
 
 # TODO: consider creating a class from this module to avoid these globals
-proc = None
+BRIDGE = None
 version_running = None
 
 LOG_COLOR = "magenta"
@@ -45,7 +45,7 @@ def check_bridge_and_proxy_status() -> None:
 
 def start(version: str, proxy: bool = False, output_to_logfile: bool = True) -> None:
     log("Starting")
-    global proc
+    global BRIDGE
     global version_running
 
     # When we are on ARM, include appropriate suffix for the version if not there
@@ -56,28 +56,40 @@ def start(version: str, proxy: bool = False, output_to_logfile: bool = True) -> 
     # In case the bridge was killed outside of the stop() function
     #   (for example manually by the user), we need to reflect the situation
     #   not to still think the bridge is running
-    if proc is not None and not is_running():
+    if BRIDGE is not None and not is_running():
         log("Bridge was probably killed by user manually, resetting local state")
         stop(proxy=proxy)
 
-    if proc is not None:
+    if BRIDGE is not None:
         log("WARNING: Bridge is already running, not spawning a new one", "red")
         return
 
     # normalize path to be relative to this folder, not pwd
     path = os.path.join(os.path.dirname(__file__), "../src/binaries/trezord-go/bin")
 
-    command = f"{path}/trezord-go-v{version} -ed 21324:21325 -u=false"
+    bridge_location = f"{path}/trezord-go-v{version}"
+    if not os.path.isfile(bridge_location):
+        raise RuntimeError(
+            f"Bridge does not exist for version {version} under {bridge_location}"
+        )
 
+    command = f"{bridge_location} -ed 21324:21325 -u=false"
+
+    # Conditionally redirecting the output to a logfile instead of terminal/stdout
     if output_to_logfile:
-        # Conditionally redirecting the output to a logfile instead of terminal/stdout
         log_file = open(helpers.EMU_BRIDGE_LOG, "a")
         log(f"All the bridge debug output redirected to {helpers.EMU_BRIDGE_LOG}")
-        proc = Popen(
-            command, shell=True, preexec_fn=os.setsid, stdout=log_file, stderr=log_file
-        )
+        BRIDGE = Popen(command, shell=True, stdout=log_file, stderr=log_file)
     else:
-        proc = Popen(command, shell=True, preexec_fn=os.setsid)
+        BRIDGE = Popen(command, shell=True)
+
+    log(f"Bridge spawned: {BRIDGE}. CMD: {BRIDGE.cmdline()}")
+
+    # Verifying if the bridge is really running
+    time.sleep(0.5)
+    if not BRIDGE.is_running():
+        BRIDGE = None
+        raise RuntimeError(f"Bridge version {version} is unable to run!")
 
     version_running = version
 
@@ -90,14 +102,15 @@ def start(version: str, proxy: bool = False, output_to_logfile: bool = True) -> 
 
 def stop(proxy: bool = True) -> None:
     log("Stopping")
-    global proc
+    global BRIDGE
     global version_running
 
-    if proc is None:
+    if BRIDGE is None:
         log("WARNING: Attempting to stop a brige, but it is not running", "red")
     else:
-        os.killpg(os.getpgid(proc.pid), signal.SIGTERM)
-        proc = None
+        BRIDGE.kill()
+        log(f"Bridge killed: {BRIDGE}")
+        BRIDGE = None
         version_running = None
 
     if proxy:

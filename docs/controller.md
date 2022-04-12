@@ -110,6 +110,9 @@
 
 - **emulator-reset-device**
   - **action**: reset the device
+  - **arguments**:
+    - **use_shamir**: `bool` (optional) - whether to use Shamir backup (SLIP39) - default is False (BIP39 will be used)
+
 
 - **emulator-get-screenshot**
   - **action**: get current screen encoded as base64
