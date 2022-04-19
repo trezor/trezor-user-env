@@ -5,7 +5,7 @@ services:
     image: ghcr.io/trezor/trezor-user-env
     network_mode: "host"
     environment:
-      - DISPLAY=:0
+      - DISPLAY=$DISPLAY
     volumes:
       - ./../logs/screens:/trezor-user-env/logs/screens
 
