@@ -93,9 +93,7 @@ class ResponseGetter:
             exit(1)
         elif self.command.startswith("bridge"):
             return self.run_bridge_command()
-        elif (
-            self.command.startswith("emulator") or self.command == "select-num-of-words"
-        ):
+        elif self.command.startswith("emulator"):
             return self.run_emulator_command()
         elif self.command.startswith("regtest"):
             return self.run_regtest_command()
@@ -191,7 +189,7 @@ class ResponseGetter:
         elif self.command == "emulator-allow-unsafe-paths":
             emulator.allow_unsafe()
             return {"response": "Allowed unsafe path"}
-        elif self.command == "select-num-of-words":
+        elif self.command == "emulator-select-num-of-words":
             num = self.request_dict["num"]
             emulator.select_num_of_words(num)
             return {"response": f"Selected {num} words"}
