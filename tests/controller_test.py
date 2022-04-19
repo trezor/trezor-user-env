@@ -45,7 +45,7 @@ commands_success = [
     {"type": "emulator-input", "value": "all all all..."},
     {"type": "emulator-click", "x": 123, "y": 121},
     {"type": "emulator-allow-unsafe-paths"},
-    {"type": "select-num-of-words", "num": 12},
+    {"type": "emulator-select-num-of-words", "num": 12},
     {"type": "emulator-swipe", "direction": "down"},
     {"type": "emulator-wipe"},
     {"type": "emulator-reset-device"},

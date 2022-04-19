@@ -82,7 +82,7 @@
 - **emulator-allow-unsafe-paths**
   - **action**: allow unsafe path on emulator
 
-- **select-num-of-words**
+- **emulator-select-num-of-words**
   - **action**: set the number of seed words
   - **arguments**:
     - **num**: `int`
