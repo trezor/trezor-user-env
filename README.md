@@ -58,5 +58,4 @@ See [docs/development.md](docs/development.md).
 
 ## Troubleshooting
 
-- If you get an error with `trezor-user-env-regtest` starting up, you will need to clean container contents by pruning that container or all stopped containers with `docker container prune`.
 - On Apple Silicon Macs, `trezor-user-env-regtest` runs in an emulation layer as there is no arm native image. You may experience some slowness or issues when using it on arm Macs.
