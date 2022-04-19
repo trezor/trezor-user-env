@@ -72,4 +72,4 @@ fi
 (while ! $(curl $DASHBOARD_URL -s -o /dev/null); do sleep 1; done; $OPEN $DASHBOARD_URL)&
 
 # launch trezor-user-env
-docker-compose -f ./docker/compose.yml up $SERVICE_NAME $TENV_REGTEST
+docker-compose -f ./docker/compose.yml up --force-recreate $SERVICE_NAME $TENV_REGTEST
