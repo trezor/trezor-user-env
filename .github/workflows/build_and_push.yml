@@ -1,5 +1,4 @@
-name: Build and push images to registry
-
+name: Build and push trezor-user-env image
 on:
   push:
     branches:
@@ -8,8 +7,9 @@ on:
     - cron: "0 1 * * *"
 
 jobs:
-  build_images:
+  build_and_push_tenv_image:
     runs-on: ubuntu-latest
+    if: ${{ github.repository_owner == 'trezor' }}
     steps:
       -
         name: Checkout
@@ -38,13 +38,4 @@ jobs:
           tags: |
             ghcr.io/${{ github.repository_owner }}/trezor-user-env:${{ github.sha }}
             ghcr.io/${{ github.repository_owner }}/trezor-user-env:latest
-      -
-        name: Build and push bitcoin-regtest
-        uses: docker/build-push-action@v2
-        with:
-          context: .
-          file: ./docker/bitcoin-regtest/Dockerfile
-          platforms: linux/amd64 # blockbook is currently not built to run on arm64. trezor-user-env-regtest available on x86 only
-          push: true
-          tags: |
-            ghcr.io/${{ github.repository_owner }}/trezor-user-env-regtest:latest
+
