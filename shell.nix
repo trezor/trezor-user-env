@@ -22,6 +22,7 @@ stdenv.mkDerivation {
     xorg.xhost
     wget
     git
+    unzip
   ];
   # NIX_PATH needed for autoPatchelfHook nix-shells in download.sh scripts
   NIX_PATH = "nixpkgs=${nixpkgsUrl}";
