@@ -124,8 +124,20 @@ class ResponseGetter:
             }
 
     def run_emulator_command(self) -> dict:
+        # The versions are sorted, the first one is the current master
+        # build and then the rest by version number.
+        # Not supplying any version will result in "2-master",
+        # "X-latest" will get the latest release of X.
         if self.command == "emulator-start":
-            version = self.request_dict.get("version", binaries.FIRMWARES["TT"][0])
+            if "version" in self.request_dict:
+                if self.request_dict["version"] == "1-latest":
+                    version = binaries.FIRMWARES["T1"][1]
+                elif self.request_dict["version"] == "2-latest":
+                    version = binaries.FIRMWARES["TT"][1]
+                else:
+                    version = self.request_dict["version"]
+            else:
+                version = binaries.FIRMWARES["TT"][0]
             wipe = self.request_dict.get("wipe", False)
             output_to_logfile = self.request_dict.get("output_to_logfile", True)
             save_screenshots = self.request_dict.get("save_screenshots", False)

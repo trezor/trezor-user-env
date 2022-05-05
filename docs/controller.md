@@ -26,7 +26,8 @@
 - **emulator-start**
   - **action**: start the specified version of emulator (and if one already runs, kills it)
   - **arguments**:
-    - **version**: `str` (1.9.4, 2.4.0., etc.) - default is the latest TT
+    - **version**: `str` (1.9.4, 2.4.0., etc.) - default is the latest TT (`2-master`)
+      - `1-latest` and `2-latest` can be used to get the latest released version of that model
     - **wipe**: `bool` (default=False) whether to delete the emulator profile before starting it
     - **output_to_logfile**: `bool` (default=True) whether the debug output should go to a logfile - otherwise it goes to stdout
     - **save_screenshots**: `bool` (default=False) whether to save screenshots to enable calling **emulator-get-screenshot**
