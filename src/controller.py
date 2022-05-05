@@ -231,6 +231,9 @@ class ResponseGetter:
         elif self.command == "emulator-get-screenshot":
             screen_base_64 = emulator.get_current_screen()
             return {"response": screen_base_64}
+        elif self.command == "emulator-get-debug-state":
+            debug_state = emulator.get_debug_state()
+            return {"response": debug_state}
         else:
             return {
                 "success": False,

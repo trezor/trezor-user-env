@@ -7,7 +7,7 @@ import urllib.request
 from datetime import datetime
 from pathlib import Path
 from subprocess import PIPE
-from typing import Literal, Optional
+from typing import Any, Dict, Literal, Optional
 from urllib.error import HTTPError
 
 from psutil import Popen
@@ -572,3 +572,27 @@ def allow_unsafe() -> None:
         else:
             raise
     client.close()
+
+
+def get_debug_state() -> Dict[str, Any]:
+    # We need to connect on UDP not to interrupt any bridge sessions
+    client = DebugLink(wait_for_udp_device().find_debug())
+    client.open()
+
+    time.sleep(SLEEP)
+
+    debug_state = client.state()
+    debug_state_dict = {}
+    for key in dir(debug_state):
+        val = getattr(debug_state, key)
+        # Not interested in private attributes and non-JSON fields (bytes)
+        if key.startswith("__") or key[0].isupper():
+            continue
+        if val is not None and not isinstance(val, (list, str, bool, int)):
+            continue
+
+        debug_state_dict[key] = val
+
+    client.close()
+
+    return debug_state_dict
