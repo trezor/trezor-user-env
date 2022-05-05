@@ -49,6 +49,7 @@ commands_success = [
     {"type": "emulator-swipe", "direction": "down"},
     {"type": "emulator-wipe"},
     {"type": "emulator-reset-device"},
+    {"type": "emulator-get-debug-state"},
     {"type": "emulator-stop"},
     {"type": "bridge-stop"},
 ]

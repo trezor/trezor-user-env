@@ -114,10 +114,18 @@
   - **arguments**:
     - **use_shamir**: `bool` (optional) - whether to use Shamir backup (SLIP39) - default is False (BIP39 will be used)
 
-
 - **emulator-get-screenshot**
   - **action**: get current screen encoded as base64
   - **response**: `{"response": str}`
+
+- **emulator-get-debug-state**
+  - **action**: get current debug state, for example to check what is on the screen
+  - **response**: `{"response": dict}`
+  - **example responses**:
+    - T1: `{... "recovery_fake_word": "", "recovery_word_pos": 18, ...}`
+      - situation while doing T1 recovery - `recovery_word_pos` says that 18th word is currently requested
+    - TT: ` { ... "layout_lines": ["RecoveryHomescreen", "Select number of words", ""], ...}`
+      - `layout_lines` showing the current content of the screen
 
 - **bridge-start**
   - **action**: start the specified version of bridge (only if it is not already running)
