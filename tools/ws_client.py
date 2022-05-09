@@ -1,3 +1,7 @@
+"""
+Connects to the controller websocket and sends it the payload.
+"""
+
 import asyncio
 import json
 
