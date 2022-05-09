@@ -23,6 +23,8 @@ stdenv.mkDerivation {
     wget
     git
     unzip
+    curl
+    procps
   ];
   # NIX_PATH needed for autoPatchelfHook nix-shells in download.sh scripts
   NIX_PATH = "nixpkgs=${nixpkgsUrl}";
