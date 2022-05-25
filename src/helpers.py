@@ -4,7 +4,7 @@ from pathlib import Path
 
 from termcolor import colored
 
-ROOT_DIR = Path(__file__).parent.parent.resolve()
+ROOT_DIR = Path(__file__).resolve().parent.parent
 LOG_DIR = ROOT_DIR / "logs"
 
 # Creating log dir here, so it does not need to be included in repository

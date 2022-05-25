@@ -26,12 +26,8 @@ import helpers
 version_running = None
 EMULATOR = None
 
-ROOT_DIR = Path(__file__).parent.parent.resolve()
-FIRMWARE_DIR = ROOT_DIR / "src/binaries/firmware/bin"
-
-FW_PATH = ROOT_DIR / "src/binaries/firmware/bin"
-IDENTIFIER_T1 = "trezor-emu-legacy-v"
-IDENTIFIER_TT = "trezor-emu-core-v"
+ROOT_DIR = Path(__file__).resolve().parent.parent
+FIRMWARE_BIN_DIR = ROOT_DIR / "src/binaries/firmware/bin"
 
 SCREEN_DIR = ROOT_DIR / "logs/screens"
 SCREEN_DIR.mkdir(exist_ok=True)
@@ -107,7 +103,7 @@ def get_url_identifier(url: str) -> str:
 
 def start_from_url(
     url: str,
-    model: Literal["1", "2"],
+    model: Literal["1", "2", "R"],
     wipe: bool,
     output_to_logfile: bool = True,
     save_screenshots: bool = False,
@@ -116,14 +112,16 @@ def start_from_url(
     # download it only once and can reuse it any time later
     emu_name = f"{model}-url-{get_url_identifier(url)}"
 
-    # Deciding the location to save depending on being T1/TT
+    # Deciding the location to save depending on being T1/TT/TR
     # (to be compatible with already existing emulators)
     if model == "1":
-        emu_path = FW_PATH / f"{IDENTIFIER_T1}{emu_name}"
+        emu_path = FIRMWARE_BIN_DIR / f"{binaries.IDENTIFIER_T1}{emu_name}"
     elif model == "2":
-        emu_path = FW_PATH / f"{IDENTIFIER_TT}{emu_name}"
+        emu_path = FIRMWARE_BIN_DIR / f"{binaries.IDENTIFIER_TT}{emu_name}"
+    elif model == "R":
+        emu_path = FIRMWARE_BIN_DIR / f"{binaries.IDENTIFIER_TR}{emu_name}"
     else:
-        raise RuntimeError("Only 1 and 2 are supported Trezor versions")
+        raise RuntimeError("Only 1, 2 and R are supported Trezor versions")
 
     # Downloading only if it does not yet exist
     if not emu_path.is_file():
@@ -139,17 +137,27 @@ def start_from_url(
     else:
         log(f"Emulator from {url} already exists under {emu_path}")
 
-    return start(emu_name, wipe, output_to_logfile, save_screenshots)
+    return start(
+        version=emu_name,
+        model=model,
+        wipe=wipe,
+        output_to_logfile=output_to_logfile,
+        save_screenshots=save_screenshots,
+    )
 
 
 def start(
     version: str,
+    model: Literal["1", "2", "R"],
     wipe: bool,
     output_to_logfile: bool = True,
     save_screenshots: bool = False,
 ) -> None:
     global version_running
     global EMULATOR
+
+    def version_model() -> str:
+        return f"{version} ({model})"
 
     # When we are on ARM, include appropriate suffix for the version if not there
     if binaries.IS_ARM and not version.endswith(binaries.ARM_IDENTIFIER):
@@ -158,8 +166,8 @@ def start(
 
     if EMULATOR is not None:
         log(
-            f"Before starting a new emulator - version {version}, "
-            f"killing the already running one - version {version_running}",
+            f"Before starting a new emulator - {version_model()}, "
+            f"killing the already running one - {version_running}",
             "red",
         )
         stop()
@@ -170,21 +178,27 @@ def start(
     else:
         logfile = sys.stdout
 
-    if version[0] == "2":
+    if model == "2":
         EMULATOR = CoreEmulator(
-            FIRMWARE_DIR / f"trezor-emu-core-v{version}",
-            profile_dir=FIRMWARE_DIR,
+            FIRMWARE_BIN_DIR / f"{binaries.IDENTIFIER_TT}{version}",
+            profile_dir=FIRMWARE_BIN_DIR,
             logfile=logfile,
         )
-    elif version[0] == "1":
+    elif model == "R":
+        EMULATOR = CoreEmulator(
+            FIRMWARE_BIN_DIR / f"{binaries.IDENTIFIER_TR}{version}",
+            profile_dir=FIRMWARE_BIN_DIR,
+            logfile=logfile,
+        )
+    elif model == "1":
         os.environ["TREZOR_OLED_SCALE"] = str(TREZOR_ONE_OLED_SCALE)
         EMULATOR = LegacyEmulator(
-            FIRMWARE_DIR / f"trezor-emu-legacy-v{version}",
-            profile_dir=FIRMWARE_DIR,
+            FIRMWARE_BIN_DIR / f"{binaries.IDENTIFIER_T1}{version}",
+            profile_dir=FIRMWARE_BIN_DIR,
             logfile=logfile,
         )
     else:
-        raise RuntimeError("Version can start only with 1 or 2")
+        raise RuntimeError("Model can only be 1, 2 or R")
 
     if wipe and EMULATOR.storage.exists():
         EMULATOR.storage.unlink()
@@ -199,7 +213,7 @@ def start(
         EMULATOR = None
         raise RuntimeError(f"Emulator version {version} is unable to run!")
 
-    version_running = version
+    version_running = version_model()
 
     # Optionally saving the screenshots on any screen-change, so we can send the
     # current screen on demand
@@ -210,6 +224,7 @@ def start(
         client = DebugLink(get_device().find_debug())
         client.open()
         dir_to_save = get_new_screenshot_dir()
+        log(f"Saving screenshots to {dir_to_save}")
         client.start_recording(str(dir_to_save))
 
 

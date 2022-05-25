@@ -60,6 +60,11 @@
             <button onclick="emulatorStart('t2-select');">Start</button>
         </div>
         <div>
+            <h4>Trezor R</h4>
+            <select id="tr-select"></select>
+            <button onclick="emulatorStart('tr-select');">Start</button>
+        </div>
+        <div>
             <input id="wipeDevice" type="checkbox">
             <label class="underlined" title="Device will be started without seed or any other settings."
                 for="wipeDevice">Start with wiped/empty device</label>
@@ -70,17 +75,16 @@
             <br>
             <input id="emulatorSaveScreenshots" type="checkbox">
             <label class="underlined" title="
-No red square in top right corner.
+No square in top right corner.
 Screenshots are saved under `logs/screens`.
 NOTE:
-- currently works only for TT
-- the first screen does contain the red square, no way to change it." for="emulatorSaveScreenshots">Screenshot
+- the first screen does contain the square, no way to change it." for="emulatorSaveScreenshots">Screenshot
                 mode</label>
             <br>
         </div>
         <div>
             <input id="emu-url" type="text"
-                placeholder="Full emulator URL, link to Gitlab job or just job ID - as specified in select. Do not forget to specify model (T1/T2)"
+                placeholder="Full emulator URL, link to Gitlab job or just job ID - as specified in select. Do not forget to specify model (T1/T2/TR)"
                 style="width:50%;" />
             <select id="emu-url-format-select"></select>
             <select id="emu-url-model-select"></select>
