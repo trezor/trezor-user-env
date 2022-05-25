@@ -42,10 +42,13 @@ const clearOptions = (select) => {
 const populateEmulatorSelect = (firmwares) => {
     const t1Select = document.getElementById('t1-select');
     const t2Select = document.getElementById('t2-select');
+    const trSelect = document.getElementById('tr-select');
     clearOptions(t1Select);
     clearOptions(t2Select);
+    clearOptions(trSelect);
     firmwares['T1'].forEach(version => createOption(t1Select, version));
     firmwares['TT'].forEach(version => createOption(t2Select, version));
+    firmwares['TR'].forEach(version => createOption(trSelect, version));
 };
 
 const populateBridgeSelect = (bridges) => {
@@ -145,12 +148,14 @@ function onCloseClick() {
 
 function emulatorStart(select) {
     const version = document.getElementById(select).value;
+    const model = select.substring(1, 2).toUpperCase();  // t1-select, t2-select, tr-select
     const wipe = document.getElementById("wipeDevice").checked;
     const output_to_logfile = document.getElementById("emulatorUseLogfile").checked;
     const save_screenshots = document.getElementById("emulatorSaveScreenshots").checked;
     _send({
         type: 'emulator-start',
         version,
+        model,
         wipe,
         output_to_logfile,
         save_screenshots,
@@ -164,7 +169,7 @@ function emulatorStartFromUrl() {
         return
     }
 
-    // Taking the last character - "1" or "2" from the model
+    // Taking the last character - "1", "2" or "R" from the model
     const model = document.getElementById("emu-url-model-select").value.substr(-1);
     const urlFormat = document.getElementById("emu-url-format-select").value;
     const wipe = document.getElementById("wipeDevice").checked;
@@ -172,6 +177,7 @@ function emulatorStartFromUrl() {
 
     const gitlabJobPrefix = "https://gitlab.com/satoshilabs/trezor/trezor-firmware/-/jobs"
     const T1PathSuffix = "artifacts/raw/legacy/firmware/trezor.elf"
+    // TR shares things with T2 here
     const T2PathSuffix = "artifacts/raw/core/build/unix/trezor-emu-core"
 
     // URL might need some processing in case it is not complete
@@ -357,9 +363,10 @@ window.onload = function () {
     watchBackgroundStatus();
     document.getElementById('raw-input').value = templateJSON;
 
-    const t1orT2Select = document.getElementById('emu-url-model-select');
-    createOption(t1orT2Select, "T2")
-    createOption(t1orT2Select, "T1")
+    const urlModelSelect = document.getElementById('emu-url-model-select');
+    createOption(urlModelSelect, "T2")
+    createOption(urlModelSelect, "T1")
+    createOption(urlModelSelect, "TR")
 
     const urlFormatSelect = document.getElementById('emu-url-format-select');
     createOption(urlFormatSelect, "Gitlab job link")

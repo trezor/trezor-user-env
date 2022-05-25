@@ -9,7 +9,7 @@ import pytest
 import websockets
 from psutil import Popen
 
-ROOT_DIR = Path(__file__).absolute().parent.parent.resolve()
+ROOT_DIR = Path(__file__).resolve().absolute().parent.parent
 
 PORT = 9001
 HOST = "localhost"
@@ -115,7 +115,9 @@ def shutdown_controller() -> None:
     asyncio.get_event_loop().run_until_complete(_shutdown_controller())
 
 
-async def _test_start_stop(websocket, component: str, version: str) -> None:
+async def _test_start_stop(
+    websocket, component: str, version: str, model: str = ""
+) -> None:
     """Making sure emulator/bridge can be successfully started and stopped."""
     background_check_payload = {"type": "background-check"}
     if component == "bridge":
@@ -124,7 +126,7 @@ async def _test_start_stop(websocket, component: str, version: str) -> None:
         stop_payload = {"type": "bridge-stop"}
     elif component == "emulator":
         status_key = "emulator_status"
-        start_payload = {"type": "emulator-start", "version": version}
+        start_payload = {"type": "emulator-start", "version": version, "model": model}
         stop_payload = {"type": "emulator-stop"}
     else:
         raise RuntimeError(f"Only emulator and bridge are supported, not {component}")
@@ -148,7 +150,8 @@ async def _test_start_stop(websocket, component: str, version: str) -> None:
     print(response)
     assert response["success"]
     assert response[status_key]["is_running"]
-    assert response[status_key]["version"] == version
+    version_to_check = f"{version} ({model})" if model else version
+    assert response[status_key]["version"] == version_to_check
 
     # Stopping it
     await websocket.send(json.dumps(stop_payload))
@@ -176,11 +179,15 @@ async def test_bridge_start_stop(websocket) -> None:
 
 
 async def test_emulator_tt_start_stop(websocket) -> None:
-    await _test_start_stop(websocket, component="emulator", version=EMU_TO_TEST_TT)
+    await _test_start_stop(
+        websocket, component="emulator", version=EMU_TO_TEST_TT, model="2"
+    )
 
 
 async def test_emulator_t1_start_stop(websocket) -> None:
-    await _test_start_stop(websocket, component="emulator", version=EMU_TO_TEST_T1)
+    await _test_start_stop(
+        websocket, component="emulator", version=EMU_TO_TEST_T1, model="1"
+    )
 
 
 @pytest.mark.parametrize("payload", commands_success)

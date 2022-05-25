@@ -138,11 +138,22 @@ class ResponseGetter:
                     version = self.request_dict["version"]
             else:
                 version = binaries.FIRMWARES["TT"][0]
+            # Model is not compulsory for backwards compatibility purposes
+            # Is needed now, because TR and TT are sharing the same versions
+            # (default to the first character in version, which works fine for
+            # "legacy" T1 and TT setup - `2.5.0`, `2-master`, `1.10.1`, etc.)
+            model = self.request_dict.get("model", version[0])
             wipe = self.request_dict.get("wipe", False)
             output_to_logfile = self.request_dict.get("output_to_logfile", True)
             save_screenshots = self.request_dict.get("save_screenshots", False)
-            emulator.start(version, wipe, output_to_logfile, save_screenshots)
-            response_text = f"Emulator version {version} started"
+            emulator.start(
+                version=version,
+                model=model,
+                wipe=wipe,
+                output_to_logfile=output_to_logfile,
+                save_screenshots=save_screenshots,
+            )
+            response_text = f"Emulator version {version} ({model}) started"
             if wipe:
                 response_text += " and wiped to be empty"
             return {"response": response_text}
@@ -153,7 +164,11 @@ class ResponseGetter:
             output_to_logfile = self.request_dict.get("output_to_logfile", True)
             save_screenshots = self.request_dict.get("save_screenshots", False)
             emulator.start_from_url(
-                url, model, wipe, output_to_logfile, save_screenshots
+                url=url,
+                model=model,
+                wipe=wipe,
+                output_to_logfile=output_to_logfile,
+                save_screenshots=save_screenshots,
             )
             response_text = f"Emulator downloaded from {url} and started"
             if wipe:
