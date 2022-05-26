@@ -189,7 +189,12 @@ def start(
     if wipe and EMULATOR.storage.exists():
         EMULATOR.storage.unlink()
 
-    EMULATOR.start()
+    try:
+        EMULATOR.start()
+    except Exception:
+        # When emulators fails to start, setting it to empty state not to cause issues
+        EMULATOR = None
+        raise
 
     log(f"Emulator spawned. PID: {EMULATOR.process.pid}. CMD: {EMULATOR.process.args}")
 
