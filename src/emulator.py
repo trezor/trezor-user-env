@@ -223,8 +223,7 @@ def start(
     # Optionally saving the screenshots on any screen-change, so we can send the
     # current screen on demand
     # Creating a new directory for each emulator session, so the screens are not being overwritten
-    # Only applicable to TT, T1 does not yet have screenshot support in current trezorlib
-    if save_screenshots and version[0] == "2":
+    if save_screenshots:
         time.sleep(1)
         client = DebugLink(get_device().find_debug())
         client.open()
