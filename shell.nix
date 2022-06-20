@@ -13,6 +13,7 @@ with import
 stdenv.mkDerivation {
   name = "trezor-user-env-controller";
   buildInputs = [
+    autoPatchelfHook
     python39
     poetry
     SDL2
@@ -26,6 +27,4 @@ stdenv.mkDerivation {
     curl
     procps
   ];
-  # NIX_PATH needed for autoPatchelfHook nix-shells in download.sh scripts
-  NIX_PATH = "nixpkgs=${nixpkgsUrl}";
 }
