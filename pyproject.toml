@@ -13,7 +13,7 @@ psutil = "^5.8.0"
 Pillow = "^9.1.0"
 
 [tool.poetry.dev-dependencies]
-black = "^21.12b0"
+black = ">=22.3"
 isort = "^5.10.1"
 mypy = "^0.910"
 flake8 = "^4.0.1"
