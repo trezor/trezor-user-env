@@ -46,9 +46,9 @@ const populateEmulatorSelect = (firmwares) => {
     clearOptions(t1Select);
     clearOptions(t2Select);
     clearOptions(trSelect);
-    firmwares['T1'].forEach(version => createOption(t1Select, version));
-    firmwares['TT'].forEach(version => createOption(t2Select, version));
-    firmwares['TR'].forEach(version => createOption(trSelect, version));
+    firmwares['1'].forEach(version => createOption(t1Select, version));
+    firmwares['2'].forEach(version => createOption(t2Select, version));
+    firmwares['R'].forEach(version => createOption(trSelect, version));
 };
 
 const populateBridgeSelect = (bridges) => {
@@ -210,6 +210,8 @@ function emulatorStartFromUrl() {
         output_to_logfile,
         save_screenshots,
     });
+
+    alert('Emulator started downloading, it may take a while...');
 }
 
 function emulatorWipe() {
