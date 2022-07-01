@@ -14,7 +14,7 @@ from urllib.error import HTTPError
 from psutil import Popen
 from trezorlib import debuglink, device, messages
 from trezorlib._internal.emulator import CoreEmulator, LegacyEmulator
-from trezorlib.debuglink import DebugLink, TrezorClientDebugLink
+from trezorlib.debuglink import TrezorClientDebugLink
 from trezorlib.exceptions import TrezorFailure
 from trezorlib.transport import Transport
 from trezorlib.transport.bridge import BridgeTransport
@@ -225,13 +225,16 @@ def start(
     # Optionally saving the screenshots on any screen-change, so we can send the
     # current screen on demand
     # Creating a new directory for each emulator session, so the screens are not being overwritten
-    if save_screenshots:
-        time.sleep(1)
-        client = DebugLink(get_device().find_debug())
-        client.open()
-        dir_to_save = get_new_screenshot_dir()
-        log(f"Saving screenshots to {dir_to_save}")
-        client.start_recording(str(dir_to_save))
+    # NOT supported for T1, as it needs Debuglink for screenshot creation, and therefore
+    # it would not save screenshots for example from Suite and other interaction.
+    if save_screenshots and model != "1":
+        time.sleep(SLEEP)
+        with connect_to_trezor() as client:
+            # Need to set model info (both TT and TR are under same category)
+            client.debug.model = "T"
+            dir_to_save = get_new_screenshot_dir()
+            log(f"Saving screenshots to {dir_to_save}")
+            client.debug.start_recording(str(dir_to_save))
 
 
 def get_new_screenshot_dir() -> Path:
