@@ -353,6 +353,14 @@ socks = ["PySocks (>=1.5.6,!=1.5.7)"]
 use_chardet_on_py3 = ["chardet (>=3.0.2,<6)"]
 
 [[package]]
+name = "simple-rlp"
+version = "0.1.2"
+description = "RLP (Recursive Length Prefix) - Encode and decode data structures"
+category = "main"
+optional = false
+python-versions = ">=3.6"
+
+[[package]]
 name = "six"
 version = "1.16.0"
 description = "Python 2 and 3 compatibility utilities"
@@ -386,25 +394,26 @@ python-versions = ">=3.7"
 
 [[package]]
 name = "trezor"
-version = "0.13.0"
+version = "0.13.2"
 description = "Python library for communicating with Trezor Hardware Wallet"
 category = "main"
 optional = false
 python-versions = ">=3.6"
 
 [package.dependencies]
-click = ">=7,<9"
-construct = ">=2.9"
+click = ">=7,<8.2"
+construct = ">=2.9,<2.10.55 || >2.10.55"
 ecdsa = ">=0.9"
 libusb1 = ">=1.6.4"
 mnemonic = ">=0.20"
 requests = ">=2.4.0"
+simple-rlp = {version = ">=0.1.2", markers = "python_version >= \"3.7\""}
 typing-extensions = ">=3.10"
 
 [package.extras]
-ethereum = ["rlp (>=1.1.0)", "web3 (>=4.8)"]
+ethereum = ["web3 (>=4.8)", "rlp (>=1.1.0)"]
 extra = ["pillow"]
-full = ["hidapi (>=0.7.99.post20)", "rlp (>=1.1.0)", "web3 (>=4.8)", "pyqt5", "pillow", "stellar-sdk (>=4.0.0,<6.0.0)"]
+full = ["hidapi (>=0.7.99.post20)", "web3 (>=4.8)", "pyqt5", "pillow", "stellar-sdk (>=4.0.0,<6.0.0)", "rlp (>=1.1.0)"]
 hidapi = ["hidapi (>=0.7.99.post20)"]
 qt-widgets = ["pyqt5"]
 stellar = ["stellar-sdk (>=4.0.0,<6.0.0)"]
@@ -441,7 +450,7 @@ python-versions = ">=3.7"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "0b5abb09040ef5e859a2f388abefc345c3e7c59503be76e52df9671635247d9e"
+content-hash = "5c0cf15f637ec22f29c0ad7e130a5044e62930ac9e1750311be6b725f3023795"
 
 [metadata.files]
 atomicwrites = [
@@ -677,6 +686,9 @@ requests = [
     {file = "requests-2.28.1-py3-none-any.whl", hash = "sha256:8fefa2a1a1365bf5520aac41836fbee479da67864514bdb821f31ce07ce65349"},
     {file = "requests-2.28.1.tar.gz", hash = "sha256:7c5599b102feddaa661c826c56ab4fee28bfd17f5abca1ebbe3e7f19d7c97983"},
 ]
+simple-rlp = [
+    {file = "simple-rlp-0.1.2.tar.gz", hash = "sha256:5c4a9c58f1b742f7fa8af0fe4ea6ff9fb02294ae041912f771570dfaf339d2b9"},
+]
 six = [
     {file = "six-1.16.0-py2.py3-none-any.whl", hash = "sha256:8abb2f1d86890a2dfb989f9a77cfcfd3e47c2a354b01111771326f8aa26e0254"},
     {file = "six-1.16.0.tar.gz", hash = "sha256:1e61c37477a1626458e36f7b1d82aa5c9b094fa4802892072e49de9c60c4c926"},
@@ -693,8 +705,8 @@ tomli = [
     {file = "tomli-2.0.1.tar.gz", hash = "sha256:de526c12914f0c550d15924c62d72abc48d6fe7364aa87328337a31007fe8a4f"},
 ]
 trezor = [
-    {file = "trezor-0.13.0-py3-none-any.whl", hash = "sha256:8c79aab2ea30440a4c6a1380c0373a848f11730bcde43b3de5280a927a8e82cc"},
-    {file = "trezor-0.13.0.tar.gz", hash = "sha256:4571aa09dbfe88b31eb2f16c7c359b4809621b75a04b7b5bc9dbffe17046c99a"},
+    {file = "trezor-0.13.2-py3-none-any.whl", hash = "sha256:32410690e756c0a37bf59eb087298366afa9cb8930cb450a766320e8d972d455"},
+    {file = "trezor-0.13.2.tar.gz", hash = "sha256:cdb696fd01dad6a0cb23b61ea3a4867bb51cecda5cb2a77366fb6a53bff58ac4"},
 ]
 typing-extensions = [
     {file = "typing_extensions-4.2.0-py3-none-any.whl", hash = "sha256:6657594ee297170d19f67d55c05852a874e7eb634f4f753dbd667855e07c1708"},
