@@ -8,7 +8,7 @@ from contextlib import contextmanager
 from datetime import datetime
 from pathlib import Path
 from subprocess import PIPE
-from typing import Any, Dict, Generator, Literal, Optional
+from typing import Any, Dict, Generator, Optional
 from urllib.error import HTTPError
 
 from psutil import Popen
@@ -105,11 +105,13 @@ def get_url_identifier(url: str) -> str:
 
 def start_from_url(
     url: str,
-    model: Literal["1", "2", "R"],
+    model: binaries.Model,
     wipe: bool,
     output_to_logfile: bool = True,
     save_screenshots: bool = False,
 ) -> None:
+    binaries.check_model(model)
+
     # Creating an identifier of emulator from this URL, so we have to
     # download it only once and can reuse it any time later
     emu_name = f"{model}-url-{get_url_identifier(url)}"
@@ -122,8 +124,6 @@ def start_from_url(
         emu_path = FIRMWARE_BIN_DIR / f"{binaries.IDENTIFIER_TT}{emu_name}"
     elif model == "R":
         emu_path = FIRMWARE_BIN_DIR / f"{binaries.IDENTIFIER_TR}{emu_name}"
-    else:
-        raise RuntimeError("Only 1, 2 and R are supported Trezor versions")
 
     # Downloading only if it does not yet exist
     if not emu_path.is_file():
@@ -140,6 +140,8 @@ def start_from_url(
         # so there will be no problems even for machines without Nix)
         emu_path.chmod(emu_path.stat().st_mode | stat.S_IEXEC)
         binaries.patch_emulators_for_nix()
+        # Registering the new emulator so we know its locations
+        binaries.register_new_firmware(model, emu_name, str(emu_path))
     else:
         log(f"Emulator from {url} already exists under {emu_path}")
 
@@ -154,13 +156,15 @@ def start_from_url(
 
 def start(
     version: str,
-    model: Literal["1", "2", "R"],
+    model: binaries.Model,
     wipe: bool,
     output_to_logfile: bool = True,
     save_screenshots: bool = False,
 ) -> None:
     global version_running
     global EMULATOR
+
+    binaries.check_model(model)
 
     def version_model() -> str:
         return f"{version} ({model})"
@@ -184,27 +188,23 @@ def start(
     else:
         logfile = sys.stdout
 
-    if model == "2":
+    emu_location = Path(binaries.get_firmware_location(model, version))
+
+    if model in ("2", "R"):
         EMULATOR = CoreEmulator(
-            FIRMWARE_BIN_DIR / f"{binaries.IDENTIFIER_TT}{version}",
-            profile_dir=FIRMWARE_BIN_DIR,
-            logfile=logfile,
-        )
-    elif model == "R":
-        EMULATOR = CoreEmulator(
-            FIRMWARE_BIN_DIR / f"{binaries.IDENTIFIER_TR}{version}",
+            emu_location,
             profile_dir=FIRMWARE_BIN_DIR,
             logfile=logfile,
         )
     elif model == "1":
         os.environ["TREZOR_OLED_SCALE"] = str(TREZOR_ONE_OLED_SCALE)
         EMULATOR = LegacyEmulator(
-            FIRMWARE_BIN_DIR / f"{binaries.IDENTIFIER_T1}{version}",
-            profile_dir=FIRMWARE_BIN_DIR,
+            emu_location,
+            profile_dir=str(FIRMWARE_BIN_DIR),
             logfile=logfile,
         )
-    else:
-        raise RuntimeError("Model can only be 1, 2 or R")
+
+    assert EMULATOR is not None
 
     if wipe and EMULATOR.storage.exists():
         EMULATOR.storage.unlink()

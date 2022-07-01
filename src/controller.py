@@ -130,14 +130,14 @@ class ResponseGetter:
         # "X-latest" will get the latest release of X.
         if self.command == "emulator-start":
             if "version" in self.request_dict:
-                if self.request_dict["version"] == "1-latest":
-                    version = binaries.FIRMWARES["T1"][1]
-                elif self.request_dict["version"] == "2-latest":
-                    version = binaries.FIRMWARES["TT"][1]
+                requested_version = self.request_dict["version"]
+                if requested_version.endswith("-latest"):
+                    model = requested_version[0]
+                    version = binaries.get_latest_release_version(model)
                 else:
-                    version = self.request_dict["version"]
+                    version = requested_version
             else:
-                version = binaries.FIRMWARES["TT"][0]
+                version = binaries.get_master_version("2")
             # Model is not compulsory for backwards compatibility purposes
             # Is needed now, because TR and TT are sharing the same versions
             # (default to the first character in version, which works fine for
@@ -307,7 +307,7 @@ async def welcome(websocket) -> None:
     intro = {
         "type": "client",
         "id": "TODO",
-        "firmwares": binaries.FIRMWARES,
+        "firmwares": binaries.get_all_firmware_versions(),
         "bridges": binaries.BRIDGES,
     }
     await websocket.send(json.dumps(intro))
