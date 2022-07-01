@@ -1,11 +1,13 @@
-import glob
 import os
+import subprocess
 from pathlib import Path
 from typing import Any, Dict, List, Tuple
 
 from termcolor import colored
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
+FIRMWARE_BIN_DIR = ROOT_DIR / "src/binaries/firmware/bin"
+
 FIRMWARES: Dict[str, List[str]] = {
     "T1": [],
     "TT": [],
@@ -32,12 +34,13 @@ def explore(args: Any) -> None:
 
 
 def explore_firmwares(args: Any) -> None:
-    firmware_binary_files = str(ROOT_DIR / "src/binaries/firmware/bin/*")
-    _print_in_verbose(f"Scanning {colored(firmware_binary_files, 'yellow')}", args)
+    _print_in_verbose(f"Scanning {colored(str(FIRMWARE_BIN_DIR), 'yellow')}", args)
 
     # Analyzing all potential emulator files and gathering their versions
     #   (version is located at the end, after emulator identifier)
-    for fw in glob.glob(firmware_binary_files):
+    for fw_file in FIRMWARE_BIN_DIR.glob("*"):
+        fw = fw_file.name
+
         # Send only suitable emulators for ARM/non-ARM
         if IS_ARM and not fw.endswith(ARM_IDENTIFIER):
             _print_in_verbose(f"On ARM, ignoring x86 emulator - {fw}", args)
@@ -96,3 +99,14 @@ def explore_bridges() -> None:
         BRIDGES.append("2.0.27")
         BRIDGES.append("2.0.26")
         BRIDGES.append("2.0.19")
+
+
+def patch_emulators_for_nix() -> None:
+    """Make sure all the emulators can be run in Nix environment.
+
+    When for some reason the script fails, it does not raise
+    any python exception.
+    That is on purpose, because it might be run in a non-Nix
+    environment.
+    """
+    subprocess.run("./patch_emulators.sh", cwd=ROOT_DIR)

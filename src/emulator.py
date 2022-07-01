@@ -134,8 +134,12 @@ def start_from_url(
             err = f"HTTP error when downloading emulator from {url}, err: {e}"
             log(err, "red")
             raise RuntimeError(err)
-        # We need to run chmod +x on the newly downloaded file
+        # Running chmod +x on the newly downloaded emulator and
+        # patching it so it can run in Nix
+        # (patching fail will not cause any python error,
+        # so there will be no problems even for machines without Nix)
         emu_path.chmod(emu_path.stat().st_mode | stat.S_IEXEC)
+        binaries.patch_emulators_for_nix()
     else:
         log(f"Emulator from {url} already exists under {emu_path}")
 
