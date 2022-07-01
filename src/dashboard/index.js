@@ -174,6 +174,7 @@ function emulatorStartFromUrl() {
     const urlFormat = document.getElementById("emu-url-format-select").value;
     const wipe = document.getElementById("wipeDevice").checked;
     const output_to_logfile = document.getElementById("emulatorUseLogfile").checked;
+    const save_screenshots = document.getElementById("emulatorSaveScreenshots").checked;
 
     const gitlabJobPrefix = "https://gitlab.com/satoshilabs/trezor/trezor-firmware/-/jobs"
     const T1PathSuffix = "artifacts/raw/legacy/firmware/trezor.elf"
@@ -207,6 +208,7 @@ function emulatorStartFromUrl() {
         model,
         wipe,
         output_to_logfile,
+        save_screenshots,
     });
 }
 
