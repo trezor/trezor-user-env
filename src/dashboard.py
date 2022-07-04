@@ -33,6 +33,15 @@ class Dashboard(SimpleHTTPRequestHandler):
             % (self.address_string(), self.log_date_time_string(), format % args)
         )
 
+    def end_headers(self):
+        self.send_my_headers()
+        SimpleHTTPRequestHandler.end_headers(self)
+
+    def send_my_headers(self):
+        self.send_header("Cache-Control", "no-cache, no-store, must-revalidate")
+        self.send_header("Pragma", "no-cache")
+        self.send_header("Expires", "0")
+
 
 class ThreadingServer(ThreadingMixIn, HTTPServer):
     pass
