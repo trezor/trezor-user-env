@@ -90,6 +90,12 @@ const handleMessage = (event) => {
         populateEmulatorSelect(dataObject.firmwares);
         populateBridgeSelect(dataObject.bridges);
     }
+
+    // When emulator got successfully downloaded, remove its message
+    if ('response' in dataObject && dataObject.response.includes("Emulator downloaded")) {
+        document.getElementById("emu_url_info").innerHTML = "";
+        document.getElementById("emu_url_info").style.visibility = 'hidden';
+    }
 };
 
 function init() {
@@ -211,7 +217,8 @@ function emulatorStartFromUrl() {
         save_screenshots,
     });
 
-    alert('Emulator started downloading, it may take a while...');
+    document.getElementById("emu_url_info").innerHTML = "Emulator started downloading, it may take a while...";
+    document.getElementById("emu_url_info").style.visibility = 'visible';
 }
 
 function emulatorWipe() {
