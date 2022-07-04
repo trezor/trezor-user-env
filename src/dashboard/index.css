@@ -3,13 +3,16 @@
     padding: 0;
 }
 
-html, body {
+html,
+body {
     width: 100%;
     height: 100%;
     background: #f4f4f4;
 }
 
-button, select, input[type=submit] {
+button,
+select,
+input[type=submit] {
     padding: 2px;
     cursor: pointer;
     min-width: 170px;
@@ -68,4 +71,10 @@ section {
 
 .underlined {
     text-decoration: underline #000 dotted;
+}
+
+.user-info {
+    font-weight: bold;
+    color: red;
+    font-size: 32px;
 }
