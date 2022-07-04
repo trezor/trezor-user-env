@@ -29,7 +29,6 @@ version_running = None
 EMULATOR = None
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
-FIRMWARE_BIN_DIR = ROOT_DIR / "src/binaries/firmware/bin"
 
 SCREEN_DIR = ROOT_DIR / "logs/screens"
 SCREEN_DIR.mkdir(exist_ok=True)
@@ -119,11 +118,11 @@ def start_from_url(
     # Deciding the location to save depending on being T1/TT/TR
     # (to be compatible with already existing emulators)
     if model == "1":
-        emu_path = FIRMWARE_BIN_DIR / f"{binaries.IDENTIFIER_T1}{emu_name}"
+        emu_path = binaries.USER_DOWNLOADED_DIR / f"{binaries.IDENTIFIER_T1}{emu_name}"
     elif model == "2":
-        emu_path = FIRMWARE_BIN_DIR / f"{binaries.IDENTIFIER_TT}{emu_name}"
+        emu_path = binaries.USER_DOWNLOADED_DIR / f"{binaries.IDENTIFIER_TT}{emu_name}"
     elif model == "R":
-        emu_path = FIRMWARE_BIN_DIR / f"{binaries.IDENTIFIER_TR}{emu_name}"
+        emu_path = binaries.USER_DOWNLOADED_DIR / f"{binaries.IDENTIFIER_TR}{emu_name}"
 
     # Downloading only if it does not yet exist
     if not emu_path.is_file():
@@ -139,7 +138,7 @@ def start_from_url(
         # (patching fail will not cause any python error,
         # so there will be no problems even for machines without Nix)
         emu_path.chmod(emu_path.stat().st_mode | stat.S_IEXEC)
-        binaries.patch_emulators_for_nix()
+        binaries.patch_emulators_for_nix(str(binaries.USER_DOWNLOADED_DIR))
         # Registering the new emulator so we know its locations
         binaries.register_new_firmware(model, emu_name, str(emu_path))
     else:
@@ -193,14 +192,14 @@ def start(
     if model in ("2", "R"):
         EMULATOR = CoreEmulator(
             emu_location,
-            profile_dir=FIRMWARE_BIN_DIR,
+            profile_dir=binaries.FIRMWARE_BIN_DIR,
             logfile=logfile,
         )
     elif model == "1":
         os.environ["TREZOR_OLED_SCALE"] = str(TREZOR_ONE_OLED_SCALE)
         EMULATOR = LegacyEmulator(
             emu_location,
-            profile_dir=str(FIRMWARE_BIN_DIR),
+            profile_dir=str(binaries.FIRMWARE_BIN_DIR),
             logfile=logfile,
         )
 

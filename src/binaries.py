@@ -8,6 +8,8 @@ from termcolor import colored
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
 FIRMWARE_BIN_DIR = ROOT_DIR / "src/binaries/firmware/bin"
+USER_DOWNLOADED_DIR = FIRMWARE_BIN_DIR / "user_downloaded"
+USER_DOWNLOADED_DIR.mkdir(exist_ok=True)
 
 Model = Literal["1", "2", "R"]
 FIRMWARES: Dict[Model, Dict[str, str]] = {
@@ -141,7 +143,7 @@ def explore_bridges() -> None:
         BRIDGES.append("2.0.19")
 
 
-def patch_emulators_for_nix() -> None:
+def patch_emulators_for_nix(dir_to_patch: str = "") -> None:
     """Make sure all the emulators can be run in Nix environment.
 
     When for some reason the script fails, it does not raise
@@ -149,4 +151,5 @@ def patch_emulators_for_nix() -> None:
     That is on purpose, because it might be run in a non-Nix
     environment.
     """
-    subprocess.run("./patch_emulators.sh", cwd=ROOT_DIR)
+    cmd = ["./patch_emulators.sh", dir_to_patch]
+    subprocess.run(cmd, cwd=ROOT_DIR)

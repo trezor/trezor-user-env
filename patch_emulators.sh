@@ -3,4 +3,8 @@
 FILE_DIR="$(dirname "${0}")"
 cd ${FILE_DIR}
 
-nix-shell --run "autoPatchelf src/binaries/firmware/bin"
+DIR_TO_PATCH="${1:-src/binaries/firmware/bin}"
+
+echo "Patching ${DIR_TO_PATCH}"
+
+nix-shell --run "autoPatchelf ${DIR_TO_PATCH}"

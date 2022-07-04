@@ -23,8 +23,7 @@ RUN ls /
 RUN ls /trezor-user-env
 
 RUN nix-shell --run "./src/binaries/firmware/bin/download.sh"
-# patch emulator binaries for nix
-RUN nix-shell --run "autoPatchelf src/binaries/firmware/bin"
+RUN nix-shell --run "./patch_emulators.sh src/binaries/firmware/bin"
 RUN nix-shell --run "./src/binaries/trezord-go/bin/download.sh"
 
 RUN nix-shell --run "./docker/create_version_file.sh"
