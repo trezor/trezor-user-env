@@ -8,6 +8,7 @@ services:
       - DISPLAY=$DISPLAY
     volumes:
       - ./../logs/screens:/trezor-user-env/logs/screens
+      - ./../src/binaries/firmware/bin/user_downloaded:/trezor-user-env/src/binaries/firmware/bin/user_downloaded
 
   trezor-user-env-mac:
     container_name: trezor-user-env.mac
@@ -21,6 +22,7 @@ services:
       - DISPLAY=docker.for.mac.host.internal:0
     volumes:
       - ./../logs/screens:/trezor-user-env/logs/screens
+      - ./../src/binaries/firmware/bin/user_downloaded:/trezor-user-env/src/binaries/firmware/bin/user_downloaded
 
   trezor-user-env-regtest:
     container_name: trezor-user-env-regtest
