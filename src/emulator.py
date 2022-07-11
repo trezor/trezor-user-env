@@ -14,7 +14,7 @@ from urllib.error import HTTPError
 from psutil import Popen
 from trezorlib import debuglink, device, messages
 from trezorlib._internal.emulator import CoreEmulator, LegacyEmulator
-from trezorlib.debuglink import TrezorClientDebugLink
+from trezorlib.debuglink import DebugLink, TrezorClientDebugLink
 from trezorlib.exceptions import TrezorFailure
 from trezorlib.transport import Transport
 from trezorlib.transport.bridge import BridgeTransport
@@ -232,12 +232,12 @@ def start(
     # it would not save screenshots for example from Suite and other interaction.
     if save_screenshots and model != "1":
         time.sleep(SLEEP)
-        with connect_to_trezor() as client:
+        with connect_to_debuglink() as debug:
             # Need to set model info (both TT and TR are under same category)
-            client.debug.model = "T"
+            debug.model = "T"
             dir_to_save = get_new_screenshot_dir()
             log(f"Saving screenshots to {dir_to_save}")
-            client.debug.start_recording(str(dir_to_save))
+            debug.start_recording(str(dir_to_save))
 
 
 def get_new_screenshot_dir() -> Path:
@@ -279,7 +279,7 @@ def get_current_screen() -> str:
 
 
 @contextmanager
-def connect_to_trezor(
+def connect_to_client(
     needs_udp: bool = False,
 ) -> Generator[TrezorClientDebugLink, None, None]:
     """Connect to the emulator and yield a client instance.
@@ -294,9 +294,32 @@ def connect_to_trezor(
     client.open()
     time.sleep(SLEEP)
 
-    yield client
+    try:
+        yield client
+    finally:
+        client.close()
 
-    client.close()
+
+@contextmanager
+def connect_to_debuglink(
+    needs_udp: bool = False,
+) -> Generator[DebugLink, None, None]:
+    """Connect to the emulator and yield a debuglink instance.
+    Disconnect after the action is done.
+    """
+    # Some functionalities might need UDP, not to mess with bridge
+    if needs_udp:
+        client = DebugLink(wait_for_udp_device().find_debug())
+    else:
+        client = DebugLink(get_device().find_debug())
+
+    client.open()
+    time.sleep(SLEEP)
+
+    try:
+        yield client
+    finally:
+        client.close()
 
 
 def setup_device(
@@ -308,7 +331,7 @@ def setup_device(
 ) -> None:
     # TODO: check if device is acquired, otherwise throws
     #   "wrong previous session" from bridge
-    with connect_to_trezor() as client:
+    with connect_to_client() as client:
         debuglink.load_device(
             client,
             mnemonic,
@@ -320,7 +343,7 @@ def setup_device(
 
 
 def wipe_device() -> None:
-    with connect_to_trezor() as client:
+    with connect_to_client() as client:
         device.wipe(client)
 
 
@@ -330,7 +353,7 @@ def reset_device(
     if use_shamir:
         backup_type = messages.BackupType(1)
 
-    with connect_to_trezor() as client:
+    with connect_to_client() as client:
         device.reset(
             client,
             skip_backup=True,
@@ -341,72 +364,72 @@ def reset_device(
 
 
 def press_yes() -> None:
-    with connect_to_trezor() as client:
-        client.debug.press_yes()
+    with connect_to_debuglink() as debug:
+        debug.press_yes()
 
 
 def press_no() -> None:
-    with connect_to_trezor() as client:
-        client.debug.press_no()
+    with connect_to_debuglink() as debug:
+        debug.press_no()
 
 
 # enter recovery word or pin
 # enter pin not possible for T2, it is locked, for T1 it is possible
 # change pin possible, use input(word=pin-string)
 def input(value: str) -> None:
-    with connect_to_trezor() as client:
-        client.debug.input(value)
+    with connect_to_debuglink() as debug:
+        debug.input(value)
 
 
 def click(x: int, y: int) -> None:
-    with connect_to_trezor() as client:
-        client.debug.click((x, y))
+    with connect_to_debuglink() as debug:
+        debug.click((x, y))
 
 
 def swipe(direction: str) -> None:
-    with connect_to_trezor() as client:
+    with connect_to_debuglink() as debug:
         if direction == "up":
-            client.debug.swipe_up()
+            debug.swipe_up()
         elif direction == "right":
-            client.debug.swipe_right()
+            debug.swipe_right()
         elif direction == "down":
-            client.debug.swipe_down()
+            debug.swipe_down()
         elif direction == "left":
-            client.debug.swipe_left()
+            debug.swipe_left()
 
 
 def read_and_confirm_mnemonic() -> None:
-    with connect_to_trezor() as client:
+    with connect_to_debuglink() as debug:
         # Clicking continue button
-        client.debug.press_yes()
+        debug.press_yes()
         time.sleep(SLEEP)
 
         # Scrolling through all the 12 words on next three pages
         for _ in range(3):
-            client.debug.swipe_up()
+            debug.swipe_up()
             time.sleep(SLEEP)
 
         # Confirming that I have written the seed down
-        client.debug.press_yes()
+        debug.press_yes()
         time.sleep(SLEEP)
 
         # Retrieving the seed words for next "quiz"
-        mnem = client.debug.state().mnemonic_secret.decode("utf-8")
+        mnem = debug.state().mnemonic_secret.decode("utf-8")
         mnemonic = mnem.split()
         time.sleep(SLEEP)
 
         # Answering 3 questions asking for a specific word
         for _ in range(3):
-            index = client.debug.read_reset_word_pos()
-            client.debug.input(mnemonic[index])
+            index = debug.read_reset_word_pos()
+            debug.input(mnemonic[index])
             time.sleep(SLEEP)
 
         # Click Continue to finish the quiz
-        client.debug.press_yes()
+        debug.press_yes()
         time.sleep(SLEEP)
 
         # Click Continue to finish the backup
-        client.debug.press_yes()
+        debug.press_yes()
         time.sleep(SLEEP)
 
 
@@ -428,9 +451,9 @@ def read_and_confirm_shamir_mnemonic(shares: int = 1, threshold: int = 1) -> Non
     MINUS_BUTTON_COORDS = (60, 70)
     PLUS_BUTTON_COORDS = (180, 70)
 
-    with connect_to_trezor() as client:
+    with connect_to_debuglink() as debug:
         # Click Continue to begin Shamir setup process
-        client.debug.press_yes()
+        debug.press_yes()
         time.sleep(SLEEP)
 
         # Clicking the minus/plus button to set right number of shares (it starts at 5)
@@ -443,15 +466,15 @@ def read_and_confirm_shamir_mnemonic(shares: int = 1, threshold: int = 1) -> Non
                 button_coords_to_click = PLUS_BUTTON_COORDS
 
             for _ in range(needed_clicks):
-                client.debug.click(button_coords_to_click)
+                debug.click(button_coords_to_click)
                 time.sleep(SLEEP)
 
         # Click Continue to confirm the number of shares
-        client.debug.press_yes()
+        debug.press_yes()
         time.sleep(SLEEP)
 
         # Click Continue to set threshold
-        client.debug.press_yes()
+        debug.press_yes()
         time.sleep(SLEEP)
 
         # When we have 1 or 2 shares, the threshold is set and cannot be changed
@@ -468,19 +491,19 @@ def read_and_confirm_shamir_mnemonic(shares: int = 1, threshold: int = 1) -> Non
                     button_coords_to_click = PLUS_BUTTON_COORDS
 
                 for _ in range(needed_clicks):
-                    client.debug.click(button_coords_to_click)
+                    debug.click(button_coords_to_click)
                     time.sleep(SLEEP)
 
         # Click Continue to confirm our chosen threshold
-        client.debug.press_yes()
+        debug.press_yes()
         time.sleep(SLEEP)
 
         # Click Continue to continue
-        client.debug.press_yes()
+        debug.press_yes()
         time.sleep(SLEEP)
 
         # Click I understand
-        client.debug.press_yes()
+        debug.press_yes()
         time.sleep(SLEEP)
 
         # Loop through all the shares and fulfill all checks
@@ -489,35 +512,35 @@ def read_and_confirm_shamir_mnemonic(shares: int = 1, threshold: int = 1) -> Non
             # While doing so, saving all the words on the screen for the "quiz" later
             mnemonic = []
             for _ in range(5):
-                mnemonic.extend(client.debug.read_reset_word().split())
-                client.debug.swipe_up()
+                mnemonic.extend(debug.read_reset_word().split())
+                debug.swipe_up()
                 time.sleep(SLEEP)
 
-            mnemonic.extend(client.debug.read_reset_word().split())
+            mnemonic.extend(debug.read_reset_word().split())
             assert len(mnemonic) == 20
 
             # Confirming that I have written the seed down
-            client.debug.press_yes()
+            debug.press_yes()
             time.sleep(SLEEP)
 
             # Answering 3 questions asking for a specific word
             for _ in range(3):
-                index = client.debug.read_reset_word_pos()
-                client.debug.input(mnemonic[index])
+                index = debug.read_reset_word_pos()
+                debug.input(mnemonic[index])
                 time.sleep(SLEEP)
 
             # Click Continue to finish this quiz
-            client.debug.press_yes()
+            debug.press_yes()
             time.sleep(SLEEP)
 
         # Click Continue to finish the backup
-        client.debug.press_yes()
+        debug.press_yes()
         time.sleep(SLEEP)
 
 
 def select_num_of_words(num_of_words: int = 12) -> None:
-    with connect_to_trezor() as client:
-        client.debug.input(str(num_of_words))
+    with connect_to_debuglink() as debug:
+        debug.input(str(num_of_words))
 
 
 def apply_settings(
@@ -536,7 +559,7 @@ def apply_settings(
     #   it should be encoded from the received string
     homescreen_bytes = homescreen.encode() if homescreen else None
 
-    with connect_to_trezor() as client:
+    with connect_to_client() as client:
         device.apply_settings(
             client,
             label=label,
@@ -552,7 +575,7 @@ def apply_settings(
 
 
 def allow_unsafe() -> None:
-    with connect_to_trezor() as client:
+    with connect_to_client() as client:
         # T1 does not support PromptAlways
         if client.features.major_version == 1:
             safety_checks = messages.SafetyCheckLevel.PromptTemporarily
@@ -577,8 +600,8 @@ def allow_unsafe() -> None:
 
 def get_debug_state() -> Dict[str, Any]:
     # We need to connect on UDP not to interrupt any bridge sessions
-    with connect_to_trezor(needs_udp=True) as client:
-        debug_state = client.debug.state()
+    with connect_to_debuglink(needs_udp=True) as debug:
+        debug_state = debug.state()
         debug_state_dict = {}
         for key in dir(debug_state):
             val = getattr(debug_state, key)
