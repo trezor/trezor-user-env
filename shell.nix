@@ -18,8 +18,6 @@ stdenv.mkDerivation {
     poetry
     SDL2
     SDL2_image
-    docker
-    docker-compose
     xorg.xhost
     wget
     git
