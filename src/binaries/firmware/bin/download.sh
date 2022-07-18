@@ -9,7 +9,7 @@ if [[ $SYSTEM_ARCH == x86_64* ]]; then
     # WARNING: just temporary
     # It should get the build from master branch, but it does not
     # have all the needed functionality. Using custom branch for now.
-    R_LATEST_BUILD="https://gitlab.com/satoshilabs/trezor/trezor-firmware/-/jobs/2498092190/artifacts/raw/core/build/unix/trezor-emu-core"
+    R_LATEST_BUILD="https://gitlab.com/satoshilabs/trezor/trezor-firmware/-/jobs/2727705686/artifacts/raw/core/build/unix/trezor-emu-core"
     LEGACY_LATEST_BUILD="https://gitlab.com/satoshilabs/trezor/trezor-firmware/-/jobs/artifacts/master/download?job=legacy%20emu%20regular%20debug%20build"
     CUT_DIRS=4
 
@@ -19,7 +19,7 @@ elif [[ $SYSTEM_ARCH == aarch64* ]]; then
     # WARNING: just temporary
     # It should get the build from master branch, but it does not
     # have all the needed functionality. Using custom branch for now.
-    R_LATEST_BUILD="https://gitlab.com/satoshilabs/trezor/trezor-firmware/-/jobs/2510249260/artifacts/raw/core/build/unix/trezor-emu-core-arm"
+    R_LATEST_BUILD="https://gitlab.com/satoshilabs/trezor/trezor-firmware/-/jobs/2727705693/artifacts/raw/core/build/unix/trezor-emu-core-arm"
     LEGACY_LATEST_BUILD="https://gitlab.com/satoshilabs/trezor/trezor-firmware/-/jobs/artifacts/master/download?job=legacy%20emu%20regular%20debug%20build%20arm"
     CUT_DIRS=5
 
