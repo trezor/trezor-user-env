@@ -6,6 +6,10 @@ services:
     network_mode: "host"
     environment:
       - DISPLAY=$DISPLAY
+      # NOTE: it is possible to combine docker container and hardware device,
+      # but only for Linux, and only if the Trezor bridge is running locally.
+      # Second option of running with HW device is running the whole `tenv` locally.
+      - PHYSICAL_TREZOR=$PHYSICAL_TREZOR
     volumes:
       - ./../logs/screens:/trezor-user-env/logs/screens
       - ./../src/binaries/firmware/bin/user_downloaded:/trezor-user-env/src/binaries/firmware/bin/user_downloaded

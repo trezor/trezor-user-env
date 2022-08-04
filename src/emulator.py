@@ -95,7 +95,10 @@ def is_running() -> bool:
 
 
 def get_status() -> dict[str, Any]:
-    return {"is_running": is_running(), "version": version_running}
+    if helpers.physical_trezor():
+        return {"is_running": True, "version": "PHYSICAL_TREZOR"}
+    else:
+        return {"is_running": is_running(), "version": version_running}
 
 
 def get_url_identifier(url: str) -> str:

@@ -28,7 +28,13 @@ def is_running() -> bool:
 
 
 def get_status() -> dict:
-    return {"is_running": is_running(), "version": version_running}
+    if helpers.physical_trezor():
+        return {
+            "is_running": is_running(),
+            "version": f"{version_running} - PHYSICAL_TREZOR",
+        }
+    else:
+        return {"is_running": is_running(), "version": version_running}
 
 
 def is_port_in_use(port: int) -> bool:
@@ -73,7 +79,13 @@ def start(version: str, proxy: bool = False, output_to_logfile: bool = True) -> 
             f"Bridge does not exist for version {version} under {bridge_location}"
         )
 
-    command = f"{bridge_location} -ed 21324:21325 -u=false"
+    # In case user wants to use a physical device, not adding any arguments
+    # to the bridge. These arguments make the bridge optimized for emulators.
+    command = (
+        bridge_location
+        if helpers.physical_trezor()
+        else f"{bridge_location} -ed 21324:21325 -u=false"
+    )
 
     # Conditionally redirecting the output to a logfile instead of terminal/stdout
     if output_to_logfile:

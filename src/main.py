@@ -56,4 +56,12 @@ if __name__ == "__main__":
         log("Will create bridge proxy when spawning a bridge.")
         controller.BRIDGE_PROXY = True
 
+    if helpers.physical_trezor():
+        log("Will support physical Trezor.")
+    else:
+        log(
+            f"Will support emulator. Set {helpers.PHYSICAL_TREZOR_ENV}={helpers.TRUE_VAL} "
+            "env var to enable physical Trezor support."
+        )
+
     controller.start()
