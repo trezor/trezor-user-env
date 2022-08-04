@@ -11,6 +11,7 @@ XHOST_ADDRESS=""
 SERVICE_NAME=""
 OPEN=""
 PULL=1
+PHYSICAL_TREZOR=0
 BRANCH=$(git rev-parse --abbrev-ref HEAD)
 
 function usage() {
@@ -20,6 +21,7 @@ function usage() {
   echo "Usage: $0 [-r --no-regtest] [-p --no-pull]"
   echo "  -r, --no-regtest      Run tenv only, no regtest"
   echo "  -p, --no-pull         Do not pull changes, neither git nor docker. Automatically set to True when not on 'master'"
+  echo "  -t, --trezor          Support for physical Trezor instead of an emulator. WARNING: only forks for Linux, not MacOS."
   echo ""
 }
 
@@ -27,6 +29,7 @@ function usage() {
 while [[ "$#" > 0 ]]; do case $1 in
   -r|--no-regtest) TENV_REGTEST=""; shift;;
   -p|--no-pull) PULL=0; shift;;
+  -t|--trezor) PHYSICAL_TREZOR=1; shift;;
   -h|--help) usage; exit 0; shift;;
   *) usage "${RED}Unknown parameter passed: $1${CLEAR}\n"; exit 1; shift;;
 esac; done
@@ -70,6 +73,12 @@ fi
 
 # open localhost:9002 in web browser after the controller is launched
 (while ! $(curl $DASHBOARD_URL -s -o /dev/null); do sleep 1; done; $OPEN $DASHBOARD_URL)&
+
+if [[ $PHYSICAL_TREZOR -eq 1 ]]; then
+    echo "Will support physical Trezor instead of emulator."
+    # this env variable is being passed to the docker environment
+    export PHYSICAL_TREZOR=1
+fi
 
 # launch trezor-user-env
 docker-compose -f ./docker/compose.yml up --force-recreate $SERVICE_NAME $TENV_REGTEST
