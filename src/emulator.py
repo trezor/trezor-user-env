@@ -194,6 +194,7 @@ def start(
             emu_location,
             profile_dir=binaries.FIRMWARE_BIN_DIR,
             logfile=logfile,
+            disable_animation=False,
         )
     elif model == "1":
         os.environ["TREZOR_OLED_SCALE"] = str(TREZOR_ONE_OLED_SCALE)
