@@ -33,7 +33,7 @@ jobs:
         with:
           context: .
           file: ./docker/bitcoin-regtest/Dockerfile
-          platforms: linux/amd64 # blockbook is currently not built to run on arm64. trezor-user-env-regtest available on x86 only
+          platforms: linux/amd64,linux/arm64
           push: true
           tags: |
             ghcr.io/${{ github.repository_owner }}/trezor-user-env-regtest:latest
