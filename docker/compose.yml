@@ -24,6 +24,7 @@ services:
       - "127.0.0.1:21325:21326" # macos needs proxy to override the "origin" of the trezord request
     environment:
       - DISPLAY=docker.for.mac.host.internal:0
+      - REGTEST_RPC_URL="http://host.docker.internal:18021"
     volumes:
       - ./../logs/screens:/trezor-user-env/logs/screens
       - ./../src/binaries/firmware/bin/user_downloaded:/trezor-user-env/src/binaries/firmware/bin/user_downloaded
