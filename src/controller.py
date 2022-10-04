@@ -1,5 +1,6 @@
 import asyncio
 import json
+import os
 import traceback
 from copy import deepcopy
 
@@ -18,7 +19,7 @@ PORT = 9001
 LOG_COLOR = "blue"
 BRIDGE_PROXY = False  # is being set in main.py (when not disabled, will be True)
 REGTEST_RPC = BTCJsonRPC(
-    url="http://0.0.0.0:18021",
+    url=os.getenv("REGTEST_RPC_URL") or "http://0.0.0.0:18021",
     user="rpc",
     passwd="rpc",
 )
