@@ -5,21 +5,25 @@ SYSTEM_ARCH=$(uname -m)
 
 if [[ $SYSTEM_ARCH == x86_64* ]]; then
     SITE="https://data.trezor.io/dev/firmware/releases/emulators/"
+    # WARNING: this will download the emulator from the latest SUCCESSFULLY run pipeline from trezor-firmware. If the pipeline fails, it will download from the previous successful run.
     CORE_LATEST_BUILD="https://gitlab.com/satoshilabs/trezor/trezor-firmware/-/jobs/artifacts/master/download?job=core%20unix%20frozen%20debug%20build"
     # WARNING: just temporary
     # It should get the build from master branch, but it does not
     # have all the needed functionality. Using custom branch for now.
     R_LATEST_BUILD="https://gitlab.com/satoshilabs/trezor/trezor-firmware/-/jobs/2807989927/artifacts/raw/core/build/unix/trezor-emu-core"
+    # WARNING: this will download the emulator from the latest SUCCESSFULLY run pipeline from trezor-firmware. If the pipeline fails, it will download from the previous successful run.
     LEGACY_LATEST_BUILD="https://gitlab.com/satoshilabs/trezor/trezor-firmware/-/jobs/artifacts/master/download?job=legacy%20emu%20regular%20debug%20build"
     CUT_DIRS=4
 
 elif [[ $SYSTEM_ARCH == aarch64* ]]; then
     SITE="https://data.trezor.io/dev/firmware/releases/emulators/arm/"
+    # WARNING: this will download the emulator from the latest SUCCESSFULLY run pipeline from trezor-firmware. If the pipeline fails, it will download from the previous successful run.
     CORE_LATEST_BUILD="https://gitlab.com/satoshilabs/trezor/trezor-firmware/-/jobs/artifacts/master/download?job=core%20unix%20frozen%20debug%20build%20arm"
     # WARNING: just temporary
     # It should get the build from master branch, but it does not
     # have all the needed functionality. Using custom branch for now.
     R_LATEST_BUILD="https://gitlab.com/satoshilabs/trezor/trezor-firmware/-/jobs/2807989930/artifacts/raw/core/build/unix/trezor-emu-core-arm"
+    # WARNING: this will download the emulator from the latest SUCCESSFULLY run pipeline from trezor-firmware. If the pipeline fails, it will download from the previous successful run.
     LEGACY_LATEST_BUILD="https://gitlab.com/satoshilabs/trezor/trezor-firmware/-/jobs/artifacts/master/download?job=legacy%20emu%20regular%20debug%20build%20arm"
     CUT_DIRS=5
 
