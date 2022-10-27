@@ -319,12 +319,35 @@ function readAndConfirmMnemonicShamir() {
     });
 }
 
+function regtestMine() {
+    const block_amount = parseInt(document.getElementById("regtest-mine-blocks").value);
+    const address = document.getElementById("regtest-mine-address").value;
+    _send({
+        type: 'regtest-mine-blocks',
+        block_amount,
+        address,
+    });
+}
+
+function regtestSend() {
+    const btc_amount = parseFloat(document.getElementById("regtest-send-amount").value);
+    const address = document.getElementById("regtest-send-address").value;
+    _send({
+        type: 'regtest-send-to-address',
+        btc_amount,
+        address,
+    });
+}
+
 function reflectBackgroundSituationInGUI(dataObject) {
     if ('bridge_status' in dataObject) {
         reflectBridgeSituation(dataObject.bridge_status);
     }
     if ('emulator_status' in dataObject) {
         reflectEmulatorSituation(dataObject.emulator_status);
+    }
+    if ('regtest_status' in dataObject) {
+        reflectRegtestSituation(dataObject.regtest_status);
     }
 }
 
@@ -349,6 +372,14 @@ function reflectEmulatorSituation(status) {
     }
 }
 
+function reflectRegtestSituation(is_running) {
+    if (is_running) {
+        writeRegtestStatus(`Running`, 'green');
+    } else {
+        writeRegtestStatus('Stopped', 'red');
+    }
+}
+
 function getBackgroundStatus() {
     _sendOnBackground({
         type: 'background-check',
@@ -363,6 +394,11 @@ function writeBridgeStatus(status, color = 'black') {
 function writeEmulatorStatus(status, color = 'black') {
     document.getElementById('emu-status').innerHTML = status;
     document.getElementById('emu-status-line').style["color"] = color;
+}
+
+function writeRegtestStatus(status, color = 'black') {
+    document.getElementById('regtest-status').innerHTML = status;
+    document.getElementById('regtest-status-line').style["color"] = color;
 }
 
 function watchBackgroundStatus() {

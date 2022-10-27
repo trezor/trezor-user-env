@@ -126,6 +126,32 @@ NOTE:
     </section>
 
     <section>
+        <h3>Regtest</h3>
+
+        <div id="regtest-status-line">
+            <b>Status: <span id="regtest-status">unknown</span></b>
+        </div>
+
+        <label for="regtest-mine-blocks">Blocks</label>
+        <input id="regtest-mine-blocks" type="number" value="1" size="5" min="1" max="10000" />
+        <br />
+        <label for="regtest-mine-address">Optional address of a miner</label>
+        <input id="regtest-mine-address" size="62" />
+        <br />
+        <button onclick="regtestMine();">Mine regtest block(s)</button>
+
+        <hr />
+
+        <label for="regtest-send-amount">BTC amount</label>
+        <input id="regtest-send-amount" type="number" value="10" size="10" step="any"/>
+        <br />
+        <label for="regtest-send-address">Regtest address</label>
+        <input id="regtest-send-address" size="62" />
+        <br />
+        <button onclick="regtestSend();">Send regtest BTC to address</button>
+    </section>
+
+    <section>
         <h3>Server</h3>
         <textarea id="raw-input" rows="3"></textarea>
         <br />
