@@ -25,6 +25,15 @@ REGTEST_RPC = BTCJsonRPC(
 )
 
 
+def is_regtest_active() -> bool:
+    """Finds out whether the regtest backend is running."""
+    try:
+        REGTEST_RPC.getblockchaininfo()
+        return True
+    except Exception:
+        return False
+
+
 def log(text: str, color: str = LOG_COLOR) -> None:
     helpers.log(f"CONTROLLER: {text}", color)
 
@@ -81,10 +90,12 @@ class ResponseGetter:
         elif self.command == "background-check":
             bridge_status = bridge.get_status()
             emulator_status = emulator.get_status()
+            regtest_status = is_regtest_active()
             return {
                 "response": "Background check done",
                 "bridge_status": bridge_status,
                 "emulator_status": emulator_status,
+                "regtest_status": regtest_status,
                 "background_check": True,
             }
         elif self.command == "exit":
@@ -259,7 +270,7 @@ class ResponseGetter:
     def run_regtest_command(self) -> dict:
         if self.command == "regtest-mine-blocks":
             block_amount = self.request_dict["block_amount"]
-            address = self.request_dict.get("address", REGTEST_RPC.getnewaddress())
+            address = self.request_dict.get("address") or REGTEST_RPC.getnewaddress()
             REGTEST_RPC.generatetoaddress(block_amount, address)
             return {"response": f"Mined {block_amount} blocks by address {address}"}
         elif self.command == "regtest-send-to-address":
