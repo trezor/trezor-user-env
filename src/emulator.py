@@ -400,6 +400,10 @@ def swipe(direction: str) -> None:
         elif direction == "left":
             debug.swipe_left()
 
+def lock() -> None:
+    with connect_to_client() as client:
+        client.lock()
+        time.sleep(SLEEP)
 
 def read_and_confirm_mnemonic() -> None:
     with connect_to_debuglink() as debug:
