@@ -377,7 +377,6 @@ def press_no() -> None:
 
 
 # enter recovery word or pin
-# enter pin not possible for T2, it is locked, for T1 it is possible
 # change pin possible, use input(word=pin-string)
 def input(value: str) -> None:
     with connect_to_debuglink() as debug:
@@ -399,6 +398,11 @@ def swipe(direction: str) -> None:
             debug.swipe_down()
         elif direction == "left":
             debug.swipe_left()
+
+def use_pin_sequence(sequence) -> None:
+    with connect_to_client() as client:
+        client.use_pin_sequence(sequence)
+        time.sleep(SLEEP)
 
 def lock() -> None:
     with connect_to_client() as client:
