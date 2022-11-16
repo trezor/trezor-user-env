@@ -1,10 +1,10 @@
 name: "[Build] test trezor-user-env image"
 
 on:
-  workflow_call:
+  workflow_dispatch:
 
 jobs:
-  build_and_push_tenv_test_image:
+  build-tenv-test:
     runs-on: ubuntu-latest
     if: ${{ github.repository_owner == 'trezor' }}
     steps:
