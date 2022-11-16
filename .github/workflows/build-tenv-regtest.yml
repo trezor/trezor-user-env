@@ -1,0 +1,40 @@
+name: "[Build] trezor-user-env-regtest image"
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'docker/bitcoin-regtest/**'
+
+jobs:
+  build-tenv-regtest:
+    runs-on: ubuntu-latest
+    if: ${{ github.repository_owner == 'trezor' }}
+    steps:
+      -
+        name: Checkout
+        uses: actions/checkout@v3
+      -
+        name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+      -
+        name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      -
+        name: Login to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ secrets.TREZOR_BOT_USERNAME }}
+          password: ${{ secrets.TREZOR_BOT_TOKEN }}
+      -
+        name: Build and push bitcoin-regtest
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          file: ./docker/bitcoin-regtest/Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/trezor-user-env-regtest:latest

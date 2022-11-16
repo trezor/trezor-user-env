@@ -1,0 +1,41 @@
+name: "[Check] validate trezor-user-env"
+
+on: [pull_request]
+
+jobs:
+  # Run code validattion
+  validation-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Nix
+        uses: cachix/install-nix-action@v18
+        with:
+          nix_path: nixpkgs=channel:nixos-unstable
+
+      - name: "Install poetry"
+        run: nix-shell --run "poetry install"
+      - name: Run style check
+        run: nix-shell --run "poetry run make style_check"
+      - name: Run code check
+        run: nix-shell --run "poetry run make code_check"
+
+  # Run controller test
+  controller-test:
+    needs: validation-check
+    runs-on: ubuntu-latest
+    env:
+      SDL_VIDEODRIVER: "dummy"
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Nix
+        uses: cachix/install-nix-action@v18
+        with:
+          nix_path: nixpkgs=channel:nixos-unstable
+
+      - name: Download emulator and bridge binaries
+        run: nix-shell --run "./src/binaries/firmware/bin/download.sh && ./src/binaries/trezord-go/bin/download.sh"
+      - name: "Install poetry"
+        run: nix-shell --run "poetry install"
+      - name: Run the tests
+        run: nix-shell --run "poetry run make test"
