@@ -1,4 +1,4 @@
-FROM nixos/nix:2.8.0
+FROM nixos/nix:2.12.0
 
 # "fake" dbus address to prevent errors
 # https://github.com/SeleniumHQ/docker-selenium/issues/87
