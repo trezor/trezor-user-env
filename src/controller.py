@@ -280,6 +280,11 @@ class ResponseGetter:
             REGTEST_RPC.sendtoaddress(address, btc_amount)
             REGTEST_RPC.generatetoaddress(1, REGTEST_RPC.getnewaddress())
             return {"response": f"{btc_amount} BTC sent to {address}."}
+        elif self.command == "regtest-generateblock":
+            address = self.request_dict["address"]
+            txids = self.request_dict["txids"]
+            REGTEST_RPC.generateblock(address, txids)
+            return {"response": f"block to {address} mined."}
         else:
             return {
                 "success": False,
