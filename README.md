@@ -23,6 +23,7 @@ Supported platforms are Linux and macOS (both Intel and Silicon).
 - Docker
 - xhost on Linux
 - [XQuartz](https://www.xquartz.org/) on macOS. Configure > Preferences > Security > Allow connections from network clients
+- Reboot (sign out/sign in might work)
 
 ### Steps
 
