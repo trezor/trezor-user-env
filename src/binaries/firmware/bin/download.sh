@@ -7,10 +7,8 @@ if [[ $SYSTEM_ARCH == x86_64* ]]; then
     SITE="https://data.trezor.io/dev/firmware/releases/emulators/"
     # WARNING: this will download the emulator from the latest SUCCESSFULLY run pipeline from trezor-firmware. If the pipeline fails, it will download from the previous successful run.
     CORE_LATEST_BUILD="https://gitlab.com/satoshilabs/trezor/trezor-firmware/-/jobs/artifacts/master/download?job=core%20unix%20frozen%20debug%20build"
-    # WARNING: just temporary
-    # It should get the build from master branch, but it does not
-    # have all the needed functionality. Using custom branch for now.
-    R_LATEST_BUILD="https://gitlab.com/satoshilabs/trezor/trezor-firmware/-/jobs/2807989927/artifacts/raw/core/build/unix/trezor-emu-core"
+    # WARNING: this will download the emulator from the latest SUCCESSFULLY run pipeline from trezor-firmware. If the pipeline fails, it will download from the previous successful run.
+    R_LATEST_BUILD="https://gitlab.com/satoshilabs/trezor/trezor-firmware/-/jobs/artifacts/master/download?job=core%20unix%20frozen%20R%20debug%20build"
     # WARNING: this will download the emulator from the latest SUCCESSFULLY run pipeline from trezor-firmware. If the pipeline fails, it will download from the previous successful run.
     LEGACY_LATEST_BUILD="https://gitlab.com/satoshilabs/trezor/trezor-firmware/-/jobs/artifacts/master/download?job=legacy%20emu%20regular%20debug%20build"
     CUT_DIRS=4
@@ -19,10 +17,8 @@ elif [[ $SYSTEM_ARCH == aarch64* ]]; then
     SITE="https://data.trezor.io/dev/firmware/releases/emulators/arm/"
     # WARNING: this will download the emulator from the latest SUCCESSFULLY run pipeline from trezor-firmware. If the pipeline fails, it will download from the previous successful run.
     CORE_LATEST_BUILD="https://gitlab.com/satoshilabs/trezor/trezor-firmware/-/jobs/artifacts/master/download?job=core%20unix%20frozen%20debug%20build%20arm"
-    # WARNING: just temporary
-    # It should get the build from master branch, but it does not
-    # have all the needed functionality. Using custom branch for now.
-    R_LATEST_BUILD="https://gitlab.com/satoshilabs/trezor/trezor-firmware/-/jobs/2807989930/artifacts/raw/core/build/unix/trezor-emu-core-arm"
+    # WARNING: this will download the emulator from the latest SUCCESSFULLY run pipeline from trezor-firmware. If the pipeline fails, it will download from the previous successful run.
+    R_LATEST_BUILD="https://gitlab.com/satoshilabs/trezor/trezor-firmware/-/jobs/artifacts/master/download?job=core%20unix%20frozen%20R%20debug%20build%20arm"
     # WARNING: this will download the emulator from the latest SUCCESSFULLY run pipeline from trezor-firmware. If the pipeline fails, it will download from the previous successful run.
     LEGACY_LATEST_BUILD="https://gitlab.com/satoshilabs/trezor/trezor-firmware/-/jobs/artifacts/master/download?job=legacy%20emu%20regular%20debug%20build%20arm"
     CUT_DIRS=5
@@ -54,35 +50,35 @@ trap cleanup EXIT
 
 cd "$TMP_DIR"
 
+# NOTE: when unziping, using -o to overwrite existing files,
+# otherwise extracting TR into already existing TT will ask for confirmation
+
 if [[ $SYSTEM_ARCH == x86_64* ]]; then
     wget --no-config -O trezor-emu-core-master.zip "$CORE_LATEST_BUILD"
-    unzip -q trezor-emu-core-master.zip
+    unzip -o -q trezor-emu-core-master.zip
     mv core/build/unix/trezor-emu-core ../trezor-emu-core-v2-master
 
-    wget --no-config -O trezor-emu-legacy-master.zip "$LEGACY_LATEST_BUILD"
-    unzip -q trezor-emu-legacy-master.zip
-    mv legacy/firmware/trezor.elf ../trezor-emu-legacy-v1-master
+    wget --no-config -O trezor-emu-core-R-master.zip "$R_LATEST_BUILD"
+    unzip -o -q trezor-emu-core-R-master.zip
+    mv core/build/unix/trezor-emu-core ../trezor-emu-core-R-v2-master
 
-    # TODO: revert after model R is build in master branch
-    # NOTE: the expiration set to 10 weeks
-    wget --no-config -O trezor_r_master_emu "$R_LATEST_BUILD" \
-        && mv trezor_r_master_emu ../trezor-emu-core-R-v2-master \
-        || echo "Could not download the model R emulator. Artifacts have already expired."
+    wget --no-config -O trezor-emu-legacy-master.zip "$LEGACY_LATEST_BUILD"
+    unzip -o -q trezor-emu-legacy-master.zip
+    mv legacy/firmware/trezor.elf ../trezor-emu-legacy-v1-master
 
 elif [[ $SYSTEM_ARCH == aarch64* ]]; then
     wget --no-config -O trezor-emu-core-arm-master.zip "$CORE_LATEST_BUILD"
-    unzip -q trezor-emu-core-arm-master.zip -d arm/
+    unzip -o -q trezor-emu-core-arm-master.zip -d arm/
     mv arm/core/build/unix/trezor-emu-core-arm ../trezor-emu-core-v2-master-arm
 
+    wget --no-config -O trezor-emu-core-R-arm-master.zip "$R_LATEST_BUILD"
+    unzip -o -q trezor-emu-core-R-arm-master.zip -d arm/
+    mv arm/core/build/unix/trezor-emu-core-arm ../trezor-emu-core-R-v2-master-arm
+
     wget --no-config -O trezor-emu-legacy-arm-master.zip "$LEGACY_LATEST_BUILD"
-    unzip -q trezor-emu-legacy-arm-master.zip -d arm/
+    unzip -o -q trezor-emu-legacy-arm-master.zip -d arm/
     mv arm/legacy/firmware/trezor-arm.elf ../trezor-emu-legacy-v1-master-arm
 
-    # TODO: revert after model R is build in master branch
-    # NOTE: the expiration set to 10 weeks
-    wget --no-config -O trezor_r_master_emu_arm "$R_LATEST_BUILD" \
-        && mv trezor_r_master_emu_arm ../trezor-emu-core-R-v2-master-arm \
-        || echo "Could not download the model R emulator. Artifacts have already expired."
 fi
 
 cd "$BIN_DIR"
