@@ -10,7 +10,7 @@ RUN useradd -rG sudo bitcoin \
 # https://github.com/satoshilabs/devops/issues/45
 ARG TARGETPLATFORM
 RUN if [ "$TARGETPLATFORM" = "linux/amd64" ]; then ARCHITECTURE=amd64; elif [ "$TARGETPLATFORM" = "linux/arm64" ]; then ARCHITECTURE=arm64; else ARCHITECTURE=amd64; fi \
-  && wget https://data.trezor.io/dev/blockbook/builds/backend-bitcoin-regtest_24.0.1-satoshilabs-1_${ARCHITECTURE}.deb \
+  && wget https://data.trezor.io/dev/blockbook/builds/backend-bitcoin-regtest_25.0-satoshilabs-1_${ARCHITECTURE}.deb \
   && wget https://data.trezor.io/dev/blockbook/builds/blockbook-bitcoin-regtest_0.4.0_${ARCHITECTURE}.deb \
   && dpkg -i backend-bitcoin-regtest_24.0.1-satoshilabs-1_${ARCHITECTURE}.deb \
   && dpkg -i blockbook-bitcoin-regtest_0.4.0_${ARCHITECTURE}.deb \
