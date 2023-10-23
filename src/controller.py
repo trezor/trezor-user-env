@@ -23,6 +23,7 @@ REGTEST_RPC = BTCJsonRPC(
     user="rpc",
     passwd="rpc",
 )
+PREV_RUNNING_MODEL: str = ""
 
 
 def is_regtest_active() -> bool:
@@ -136,6 +137,8 @@ class ResponseGetter:
             }
 
     def run_emulator_command(self) -> dict:
+        global PREV_RUNNING_MODEL
+
         # The versions are sorted, the first one is the current master
         # build and then the rest by version number.
         # Not supplying any version will result in "2-master",
@@ -158,6 +161,9 @@ class ResponseGetter:
             wipe = self.request_dict.get("wipe", False)
             output_to_logfile = self.request_dict.get("output_to_logfile", True)
             save_screenshots = self.request_dict.get("save_screenshots", False)
+            if model != PREV_RUNNING_MODEL:
+                wipe = True
+            PREV_RUNNING_MODEL = model  # type: ignore
             emulator.start(
                 version=version,
                 model=model,
@@ -175,6 +181,9 @@ class ResponseGetter:
             wipe = self.request_dict.get("wipe", False)
             output_to_logfile = self.request_dict.get("output_to_logfile", True)
             save_screenshots = self.request_dict.get("save_screenshots", False)
+            if model != PREV_RUNNING_MODEL:
+                wipe = True
+            PREV_RUNNING_MODEL = model  # type: ignore
             emulator.start_from_url(
                 url=url,
                 model=model,
