@@ -78,6 +78,8 @@ if [[ $PHYSICAL_TREZOR -eq 1 ]]; then
     echo "Will support physical Trezor instead of emulator."
     # this env variable is being passed to the docker environment
     export PHYSICAL_TREZOR=1
+else
+    export PHYSICAL_TREZOR=""
 fi
 
 # launch trezor-user-env
