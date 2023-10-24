@@ -405,6 +405,9 @@ def swipe(direction: str) -> None:
 
 def read_and_confirm_mnemonic() -> None:
     with connect_to_debuglink() as debug:
+        # So that we can wait layout
+        debug.watch_layout(True)
+
         # Clicking continue button
         debug.press_yes()
         time.sleep(SLEEP)
@@ -425,8 +428,12 @@ def read_and_confirm_mnemonic() -> None:
 
         # Answering 3 questions asking for a specific word
         for _ in range(3):
-            index = debug.read_reset_word_pos()
-            debug.input(mnemonic[index])
+            layout = debug.wait_layout()
+            # "Select word 3 of 20"
+            #              ^
+            word_pos = int(layout.text_content().split()[2])
+            wanted_word = mnemonic[word_pos - 1].lower()
+            debug.input(wanted_word)
             time.sleep(SLEEP)
 
         # Click Continue to finish the quiz
@@ -455,8 +462,12 @@ def read_and_confirm_shamir_mnemonic(shares: int = 1, threshold: int = 1) -> Non
     # For setting the right amount of shares/thresholds, we need location of buttons
     MINUS_BUTTON_COORDS = (60, 70)
     PLUS_BUTTON_COORDS = (180, 70)
+    OK_BUTTON_COORDS = (200, 200)
 
     with connect_to_debuglink() as debug:
+        # So that we can wait layout
+        debug.watch_layout(True)
+
         # Click Continue to begin Shamir setup process
         debug.press_yes()
         time.sleep(SLEEP)
@@ -475,7 +486,7 @@ def read_and_confirm_shamir_mnemonic(shares: int = 1, threshold: int = 1) -> Non
                 time.sleep(SLEEP)
 
         # Click Continue to confirm the number of shares
-        debug.press_yes()
+        debug.click(OK_BUTTON_COORDS)
         time.sleep(SLEEP)
 
         # Click Continue to set threshold
@@ -515,13 +526,14 @@ def read_and_confirm_shamir_mnemonic(shares: int = 1, threshold: int = 1) -> Non
         for _ in range(shares):
             # Scrolling through all the 20 words on next 5 pages
             # While doing so, saving all the words on the screen for the "quiz" later
-            mnemonic = []
-            for _ in range(5):
-                mnemonic.extend(debug.read_reset_word().split())
-                debug.swipe_up()
-                time.sleep(SLEEP)
+            mnemonic: list[str] = []
+            layout = debug.read_layout()
+            for _ in range(layout.page_count() - 1):
+                mnemonic.extend(layout.seed_words())
+                layout = debug.swipe_up(wait=True)
+                assert layout is not None
+            mnemonic.extend(layout.seed_words())
 
-            mnemonic.extend(debug.read_reset_word().split())
             assert len(mnemonic) == 20
 
             # Confirming that I have written the seed down
@@ -530,8 +542,12 @@ def read_and_confirm_shamir_mnemonic(shares: int = 1, threshold: int = 1) -> Non
 
             # Answering 3 questions asking for a specific word
             for _ in range(3):
-                index = debug.read_reset_word_pos()
-                debug.input(mnemonic[index])
+                layout = debug.wait_layout()
+                # "Select word 3 of 20"
+                #              ^
+                word_pos = int(layout.text_content().split()[2])
+                wanted_word = mnemonic[word_pos - 1].lower()
+                debug.input(wanted_word)
                 time.sleep(SLEEP)
 
             # Click Continue to finish this quiz
