@@ -3,6 +3,7 @@ import json
 import os
 import traceback
 from copy import deepcopy
+from typing import TYPE_CHECKING, Union
 
 from trezorlib import messages
 from websockets.exceptions import ConnectionClosedError, ConnectionClosedOK
@@ -13,6 +14,26 @@ import bridge
 import emulator
 import helpers
 from bitcoin_regtest.rpc import BTCJsonRPC
+
+if TYPE_CHECKING:
+    from typing_extensions import TypedDict
+
+    class ErrorResponse(TypedDict):
+        success: bool
+        error: str
+
+    class SuccessResponse(TypedDict):
+        response: str
+
+    class BackgroundCheckResponse(TypedDict):
+        response: str
+        bridge_status: bool
+        emulator_status: bool
+        regtest_status: bool
+        background_check: bool
+
+    ResponseType = Union[SuccessResponse, ErrorResponse, BackgroundCheckResponse]
+
 
 IP = "0.0.0.0"
 PORT = 9001
@@ -49,7 +70,7 @@ class ResponseGetter:
     def __init__(self) -> None:
         pass
 
-    def get_response(self, request: str) -> dict:
+    def get_response(self, request: str) -> "ResponseType":
         """Handles the whole process of translating request into response."""
         try:
             self.request_dict = json.loads(request)
@@ -80,7 +101,7 @@ class ResponseGetter:
         except Exception as e:
             return self.generate_exception_response(e)
 
-    def run_command_and_get_its_response(self) -> dict:
+    def run_command_and_get_its_response(self) -> "ResponseType":
         """Performs wanted action and returns details of what happened."""
         if self.command == "ping":
             return {"response": "pong"}
@@ -136,7 +157,7 @@ class ResponseGetter:
                 "error": f"Unknown bridge command - {self.command}",
             }
 
-    def run_emulator_command(self) -> dict:
+    def run_emulator_command(self) -> "ResponseType":
         global PREV_RUNNING_MODEL
 
         # The versions are sorted, the first one is the current master
@@ -276,10 +297,12 @@ class ResponseGetter:
                 "error": f"Unknown emulator command - {self.command}",
             }
 
-    def run_regtest_command(self) -> dict:
+    def run_regtest_command(self) -> "ResponseType":
         if self.command == "regtest-mine-blocks":
             block_amount = self.request_dict["block_amount"]
-            address = self.request_dict.get("address") or REGTEST_RPC.getnewaddress()
+            address: str = (
+                self.request_dict.get("address") or REGTEST_RPC.getnewaddress()
+            )
             REGTEST_RPC.generatetoaddress(block_amount, address)
             return {"response": f"Mined {block_amount} blocks by address {address}"}
         elif self.command == "regtest-send-to-address":

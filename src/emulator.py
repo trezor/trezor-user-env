@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import base64
 import os
 import stat
@@ -25,8 +27,8 @@ import bridge
 import helpers
 
 # TODO: consider creating a class from this module to avoid these globals
-version_running = None
-EMULATOR = None
+VERSION_RUNNING: str | None = None
+EMULATOR: CoreEmulator | LegacyEmulator | None = None
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
 
@@ -98,7 +100,7 @@ def get_status() -> dict[str, Any]:
     if helpers.physical_trezor():
         return {"is_running": True, "version": "PHYSICAL_TREZOR"}
     else:
-        return {"is_running": is_running(), "version": version_running}
+        return {"is_running": is_running(), "version": VERSION_RUNNING}
 
 
 def get_url_identifier(url: str) -> str:
@@ -163,7 +165,7 @@ def start(
     output_to_logfile: bool = True,
     save_screenshots: bool = False,
 ) -> None:
-    global version_running
+    global VERSION_RUNNING
     global EMULATOR
 
     binaries.check_model(model)
@@ -179,7 +181,7 @@ def start(
     if EMULATOR is not None:
         log(
             f"Before starting a new emulator - {version_model()}, "
-            f"killing the already running one - {version_running}",
+            f"killing the already running one - {VERSION_RUNNING}",
             "red",
         )
         stop()
@@ -226,7 +228,7 @@ def start(
         EMULATOR = None
         raise RuntimeError(f"Emulator version {version} is unable to run!")
 
-    version_running = version_model()
+    VERSION_RUNNING = version_model()
 
     # Optionally saving the screenshots on any screen-change, so we can send the
     # current screen on demand
@@ -252,7 +254,7 @@ def get_new_screenshot_dir() -> Path:
 
 def stop() -> None:
     log("Stopping")
-    global version_running
+    global VERSION_RUNNING
     global EMULATOR
 
     if EMULATOR is None:
@@ -262,7 +264,7 @@ def stop() -> None:
         EMULATOR.stop()
         log(f"Emulator killed. PID: {emu_pid}.")
         EMULATOR = None
-        version_running = None
+        VERSION_RUNNING = None
 
 
 def get_current_screen() -> str:

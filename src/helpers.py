@@ -2,7 +2,7 @@ import logging
 import os
 from pathlib import Path
 
-from termcolor import colored
+from termcolor import colored  # type: ignore
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
 LOG_DIR = ROOT_DIR / "logs"
