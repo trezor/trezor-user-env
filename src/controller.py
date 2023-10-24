@@ -1,9 +1,11 @@
+from __future__ import annotations
+
 import asyncio
 import json
 import os
 import traceback
 from copy import deepcopy
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Any, Union
 
 from trezorlib import messages
 from websockets.exceptions import ConnectionClosedError, ConnectionClosedOK
@@ -18,21 +20,21 @@ from bitcoin_regtest.rpc import BTCJsonRPC
 if TYPE_CHECKING:
     from typing_extensions import TypedDict
 
-    class ErrorResponse(TypedDict):
+    class NormalResponse(TypedDict, total=False):
         success: bool
+        response: str | dict[str, Any]
+        id: str
         error: str
-
-    class SuccessResponse(TypedDict):
-        response: str
+        traceback: str
 
     class BackgroundCheckResponse(TypedDict):
         response: str
-        bridge_status: bool
-        emulator_status: bool
-        regtest_status: bool
+        bridge_status: bool | Any
+        emulator_status: bool | Any
+        regtest_status: bool | Any
         background_check: bool
 
-    ResponseType = Union[SuccessResponse, ErrorResponse, BackgroundCheckResponse]
+    ResponseType = Union[NormalResponse, BackgroundCheckResponse]
 
 
 IP = "0.0.0.0"
@@ -134,7 +136,7 @@ class ResponseGetter:
         else:
             return {"success": False, "error": f"Unknown command - {self.command}"}
 
-    def run_bridge_command(self) -> dict:
+    def run_bridge_command(self) -> "ResponseType":
         if self.command == "bridge-start":
             version = self.request_dict.get("version", binaries.BRIDGES[0])
             output_to_logfile = self.request_dict.get("output_to_logfile", True)
@@ -184,7 +186,7 @@ class ResponseGetter:
             save_screenshots = self.request_dict.get("save_screenshots", False)
             if model != PREV_RUNNING_MODEL:
                 wipe = True
-            PREV_RUNNING_MODEL = model  # type: ignore
+            PREV_RUNNING_MODEL = model
             emulator.start(
                 version=version,
                 model=model,
@@ -204,7 +206,7 @@ class ResponseGetter:
             save_screenshots = self.request_dict.get("save_screenshots", False)
             if model != PREV_RUNNING_MODEL:
                 wipe = True
-            PREV_RUNNING_MODEL = model  # type: ignore
+            PREV_RUNNING_MODEL = model
             emulator.start_from_url(
                 url=url,
                 model=model,
@@ -323,20 +325,22 @@ class ResponseGetter:
                 "error": f"Unknown regtest command - {self.command}",
             }
 
-    def generate_websocket_response(self, command_response: dict) -> dict:
+    def generate_websocket_response(
+        self, command_response: "ResponseType"
+    ) -> "ResponseType":
         """Modifies the response before sending to websocket.
 
         Can conditionaly send more details according to each client's needs.
         """
         websocket_response = deepcopy(command_response)
         # Relaying request ID and filling success, if not there already
-        websocket_response["id"] = self.request_id
+        websocket_response["id"] = self.request_id  # type: ignore
         if "success" not in websocket_response:
-            websocket_response["success"] = True
+            websocket_response["success"] = True  # type: ignore
 
         return websocket_response
 
-    def generate_exception_response(self, e: Exception) -> dict:
+    def generate_exception_response(self, e: Exception) -> "ResponseType":
         """Creates response for exception case."""
         traceback_string = traceback.format_exc()
         log(traceback_string, "red")
@@ -348,7 +352,7 @@ class ResponseGetter:
             "traceback": traceback_string,
         }
         log(f"ERROR response: {response}", "red")
-        return response
+        return response  # type: ignore
 
 
 # Welcome new clients with info

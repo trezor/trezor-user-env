@@ -220,10 +220,11 @@ def start(
         EMULATOR = None
         raise
 
-    log(f"Emulator spawned. PID: {EMULATOR.process.pid}. CMD: {EMULATOR.process.args}")
+    log(f"Emulator spawned. PID: {EMULATOR.process.pid}. CMD: {EMULATOR.process.args}")  # type: ignore
 
     # Verifying if the emulator is really running
     time.sleep(0.5)
+    assert EMULATOR.process is not None
     if EMULATOR.process.poll() is not None:
         EMULATOR = None
         raise RuntimeError(f"Emulator version {version} is unable to run!")
@@ -260,6 +261,7 @@ def stop() -> None:
     if EMULATOR is None:
         log("WARNING: Attempting to stop emulator, but it is not running", "red")
     else:
+        assert EMULATOR.process is not None
         emu_pid = EMULATOR.process.pid
         EMULATOR.stop()
         log(f"Emulator killed. PID: {emu_pid}.")
@@ -422,7 +424,9 @@ def read_and_confirm_mnemonic() -> None:
         time.sleep(SLEEP)
 
         # Retrieving the seed words for next "quiz"
-        mnem = debug.state().mnemonic_secret.decode("utf-8")
+        secret_bytes = debug.state().mnemonic_secret
+        assert secret_bytes is not None
+        mnem = secret_bytes.decode("utf-8")
         mnemonic = mnem.split()
         time.sleep(SLEEP)
 
@@ -530,7 +534,7 @@ def read_and_confirm_shamir_mnemonic(shares: int = 1, threshold: int = 1) -> Non
             layout = debug.read_layout()
             for _ in range(layout.page_count() - 1):
                 mnemonic.extend(layout.seed_words())
-                layout = debug.swipe_up(wait=True)
+                layout = debug.swipe_up(wait=True)  # type: ignore
                 assert layout is not None
             mnemonic.extend(layout.seed_words())
 
