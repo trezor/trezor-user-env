@@ -15,9 +15,10 @@ PORT = 9001
 HOST = "localhost"
 URL = f"ws://{HOST}:{PORT}"
 
-BRIDGE_TO_TEST = "2.0.31"
+BRIDGE_TO_TEST = "2.0.33"
 EMU_TO_TEST_TT = "2-master"
 EMU_TO_TEST_T1 = "1-master"
+EMU_TO_TEST_TR = "2-master"
 
 # So that the async tests are understood by pytest
 pytestmark = pytest.mark.asyncio
@@ -187,6 +188,12 @@ async def test_emulator_tt_start_stop(websocket) -> None:
 async def test_emulator_t1_start_stop(websocket) -> None:
     await _test_start_stop(
         websocket, component="emulator", version=EMU_TO_TEST_T1, model="1"
+    )
+
+
+async def test_emulator_tr_start_stop(websocket) -> None:
+    await _test_start_stop(
+        websocket, component="emulator", version=EMU_TO_TEST_TR, model="R"
     )
 
 

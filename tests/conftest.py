@@ -2,13 +2,18 @@
 Pytest configuration file defining some useful functionality.
 """
 
+from typing import TYPE_CHECKING
+
 import pytest
 import websockets
 
 from . import controller_test
 
+if TYPE_CHECKING:
+    from _pytest.config.argparsing import Parser
 
-def pytest_addoption(parser):
+
+def pytest_addoption(parser: "Parser"):
     """Adding CLI options."""
     parser.addoption(
         "--controller-already-runs",
@@ -18,7 +23,7 @@ def pytest_addoption(parser):
     )
 
 
-def pytest_sessionstart(session):
+def pytest_sessionstart(session: pytest.Session):
     """What should run before all the tests start."""
     # When the controller is not running, spawning it
     if session.config.getoption("controller_already_runs"):
@@ -28,7 +33,7 @@ def pytest_sessionstart(session):
         controller_test.start_controller()
 
 
-def pytest_sessionfinish(session, exitstatus):
+def pytest_sessionfinish(session: pytest.Session, exitstatus: pytest.ExitCode):
     """What should run after all the tests are finished."""
     # When the controller was spawned by us, killing it
     if session.config.getoption("controller_already_runs"):
