@@ -176,6 +176,11 @@ class ResponseGetter:
                     version = requested_version
             else:
                 version = binaries.get_main_version("2")
+
+            # TEMPORARY: translating `-master` to `-main` because of the firmware branch change
+            # TODO: revert this after some time
+            version = version.replace("-master", "-main")
+
             # Model is not compulsory for backwards compatibility purposes
             # Is needed now, because TR and TT are sharing the same versions
             # (default to the first character in version, which works fine for
