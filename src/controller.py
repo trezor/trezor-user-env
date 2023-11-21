@@ -162,9 +162,9 @@ class ResponseGetter:
     def run_emulator_command(self) -> "ResponseType":
         global PREV_RUNNING_MODEL
 
-        # The versions are sorted, the first one is the current master
+        # The versions are sorted, the first one is the current main
         # build and then the rest by version number.
-        # Not supplying any version will result in "2-master",
+        # Not supplying any version will result in "2-main",
         # "X-latest" will get the latest release of X.
         if self.command == "emulator-start":
             if "version" in self.request_dict:
@@ -175,11 +175,11 @@ class ResponseGetter:
                 else:
                     version = requested_version
             else:
-                version = binaries.get_master_version("2")
+                version = binaries.get_main_version("2")
             # Model is not compulsory for backwards compatibility purposes
             # Is needed now, because TR and TT are sharing the same versions
             # (default to the first character in version, which works fine for
-            # "legacy" T1 and TT setup - `2.5.0`, `2-master`, `1.10.1`, etc.)
+            # "legacy" T1 and TT setup - `2.5.0`, `2-main`, `1.10.1`, etc.)
             model = self.request_dict.get("model", version[0])
             wipe = self.request_dict.get("wipe", False)
             output_to_logfile = self.request_dict.get("output_to_logfile", True)

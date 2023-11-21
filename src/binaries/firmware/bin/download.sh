@@ -37,7 +37,7 @@ if ! wget --no-config -e robots=off --no-verbose --no-clobber --no-parent --cut-
     echo
   fi
 
-# download emulator from master
+# download emulator from main
 TMP_DIR="$BIN_DIR/tmp"
 rm -rf "$TMP_DIR"
 mkdir "$TMP_DIR"
@@ -54,30 +54,30 @@ cd "$TMP_DIR"
 # otherwise extracting TR into already existing TT will ask for confirmation
 
 if [[ $SYSTEM_ARCH == x86_64* ]]; then
-    wget --no-config -O trezor-emu-core-master.zip "$CORE_LATEST_BUILD"
-    unzip -o -q trezor-emu-core-master.zip
-    mv core/build/unix/trezor-emu-core ../trezor-emu-core-v2-master
+    wget --no-config -O trezor-emu-core-main.zip "$CORE_LATEST_BUILD"
+    unzip -o -q trezor-emu-core-main.zip
+    mv core/build/unix/trezor-emu-core ../trezor-emu-core-v2-main
 
-    wget --no-config -O trezor-emu-core-R-master.zip "$R_LATEST_BUILD"
-    unzip -o -q trezor-emu-core-R-master.zip
-    mv core/build/unix/trezor-emu-core ../trezor-emu-core-R-v2-master
+    wget --no-config -O trezor-emu-core-R-main.zip "$R_LATEST_BUILD"
+    unzip -o -q trezor-emu-core-R-main.zip
+    mv core/build/unix/trezor-emu-core ../trezor-emu-core-R-v2-main
 
-    wget --no-config -O trezor-emu-legacy-master.zip "$LEGACY_LATEST_BUILD"
-    unzip -o -q trezor-emu-legacy-master.zip
-    mv legacy/firmware/trezor.elf ../trezor-emu-legacy-v1-master
+    wget --no-config -O trezor-emu-legacy-main.zip "$LEGACY_LATEST_BUILD"
+    unzip -o -q trezor-emu-legacy-main.zip
+    mv legacy/firmware/trezor.elf ../trezor-emu-legacy-v1-main
 
 elif [[ $SYSTEM_ARCH == aarch64* ]]; then
-    wget --no-config -O trezor-emu-core-arm-master.zip "$CORE_LATEST_BUILD"
-    unzip -o -q trezor-emu-core-arm-master.zip -d arm/
-    mv arm/core/build/unix/trezor-emu-core-arm ../trezor-emu-core-v2-master-arm
+    wget --no-config -O trezor-emu-core-arm-main.zip "$CORE_LATEST_BUILD"
+    unzip -o -q trezor-emu-core-arm-main.zip -d arm/
+    mv arm/core/build/unix/trezor-emu-core-arm ../trezor-emu-core-v2-main-arm
 
-    wget --no-config -O trezor-emu-core-R-arm-master.zip "$R_LATEST_BUILD"
-    unzip -o -q trezor-emu-core-R-arm-master.zip -d arm/
-    mv arm/core/build/unix/trezor-emu-core-arm ../trezor-emu-core-R-v2-master-arm
+    wget --no-config -O trezor-emu-core-R-arm-main.zip "$R_LATEST_BUILD"
+    unzip -o -q trezor-emu-core-R-arm-main.zip -d arm/
+    mv arm/core/build/unix/trezor-emu-core-arm ../trezor-emu-core-R-v2-main-arm
 
-    wget --no-config -O trezor-emu-legacy-arm-master.zip "$LEGACY_LATEST_BUILD"
-    unzip -o -q trezor-emu-legacy-arm-master.zip -d arm/
-    mv arm/legacy/firmware/trezor-arm.elf ../trezor-emu-legacy-v1-master-arm
+    wget --no-config -O trezor-emu-legacy-arm-main.zip "$LEGACY_LATEST_BUILD"
+    unzip -o -q trezor-emu-legacy-arm-main.zip -d arm/
+    mv arm/legacy/firmware/trezor-arm.elf ../trezor-emu-legacy-v1-main-arm
 
 fi
 
