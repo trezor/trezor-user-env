@@ -20,7 +20,7 @@ Supported platforms are Linux and macOS (both Intel and Silicon).
 
 ### Prerequisites
 
-- Docker
+- Docker (on Linux, you need to be able to run it as non-root user, follow [those steps](https://docs.docker.com/engine/install/linux-postinstall/#manage-docker-as-a-non-root-user))
 - xhost on Linux
 - [XQuartz](https://www.xquartz.org/) on macOS. Configure > Preferences > Security > Allow connections from network clients
 - Reboot (sign out/sign in might work)
