@@ -356,7 +356,7 @@ function reflectBridgeSituation(status) {
         // Can happen that bridge is already running on the background, but
         //   was not spawned by the GUI (causing confusion)
         if (!status.version) {
-            alert('It seems you already have an instance of bridge running - please kill it.');
+            alert('It seems you already have an instance of bridge running - please kill it. `ps -ef | grep trezor` ... `kill <pid>`');
         }
         writeBridgeStatus(`Running - ${status.version}`, 'green');
     } else {
