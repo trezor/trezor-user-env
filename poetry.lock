@@ -680,14 +680,12 @@ files = [
 
 [[package]]
 name = "trezor"
-version = "0.13.8"
+version = "0.13.9"
 description = "Python library for communicating with Trezor Hardware Wallet"
 optional = false
 python-versions = ">=3.6"
-files = [
-    {file = "trezor-0.13.8-py3-none-any.whl", hash = "sha256:0bd22f761622199df99f8dada3327a94e68542d0b4b5ccfdfaca133308616c86"},
-    {file = "trezor-0.13.8.tar.gz", hash = "sha256:634d4eddf35603257c321618d8548c6a35b27384657b65e3b0bdbad635a57cff"},
-]
+files = []
+develop = false
 
 [package.dependencies]
 click = ">=7,<8.2"
@@ -697,7 +695,7 @@ ecdsa = ">=0.9"
 libusb1 = ">=1.6.4"
 mnemonic = ">=0.20"
 requests = ">=2.4.0"
-typing-extensions = ">=3.10"
+typing_extensions = ">=3.10"
 
 [package.extras]
 ethereum = ["rlp (>=1.1.0)", "web3 (>=5)"]
@@ -706,6 +704,13 @@ full = ["Pillow", "PyQt5", "hidapi (>=0.7.99.post20)", "rlp (>=1.1.0)", "stellar
 hidapi = ["hidapi (>=0.7.99.post20)"]
 qt-widgets = ["PyQt5"]
 stellar = ["stellar-sdk (>=6)"]
+
+[package.source]
+type = "git"
+url = "https://github.com/trezor/trezor-firmware.git"
+reference = "main"
+resolved_reference = "45a4a1da993710584a4da02337bcf8e3176dc2ec"
+subdirectory = "python"
 
 [[package]]
 name = "typing-extensions"
@@ -816,4 +821,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "a1830d7e199bddefa1f448613992fd4cfbdd20dedaaae69cbb4bdac6fc81776d"
+content-hash = "b9a33c4905cd19f3b1748b3a33d3e42e715edf3feee7730d748e26edf21226ba"
