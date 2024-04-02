@@ -1,7 +1,7 @@
 let
-  # the last successful build of nixpkgs-unstable as of 2022-06-20
-  nixpkgsCommit = "e0a42267f73ea52adc061a64650fddc59906fc99";
-  nixpkgsSha256 = "0r1dsj51x2rm016xwvdnkm94v517jb1rpn4rk63k6krc4d0n3kh9";
+  # the last commit from master as of 2024-04-02
+  nixpkgsCommit = "0b1fa3a2a11c334cfe3c44bcf285599e34018799";
+  nixpkgsSha256 = "12vjrwysfwyk7chplx57vq010f1vdz6sy94ai0kc90kkbvblgr6d";
 
   nixpkgsUrl = "https://github.com/NixOS/nixpkgs/archive/${nixpkgsCommit}.tar.gz";
 in
