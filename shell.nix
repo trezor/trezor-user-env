@@ -14,7 +14,7 @@ stdenv.mkDerivation {
   name = "trezor-user-env-controller";
   buildInputs = [
     autoPatchelfHook
-    python39
+    python311
     poetry
     SDL2
     SDL2_image
