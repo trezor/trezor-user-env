@@ -19,19 +19,15 @@ COPY ./ ./trezor-user-env
 
 WORKDIR ./trezor-user-env
 
-RUN ls /
-RUN ls /trezor-user-env
+ENV POETRY_NO_INTERACTION=1 \
+    POETRY_CACHE_DIR="/tmp/poetry_cache" \
+    POETRY_VIRTUALENVS_CREATE=false
 
-RUN nix-shell --run "./src/binaries/firmware/bin/download.sh"
-RUN nix-shell --run "./patch_emulators.sh src/binaries/firmware/bin"
-RUN nix-shell --run "./src/binaries/trezord-go/bin/download.sh"
-
-RUN nix-shell --run "./docker/create_version_file.sh"
-
-RUN rm -rf /var/tmp/trezor.flash
-
-RUN nix-shell --run "echo deps pre-installed"
-
-RUN nix-shell --run "poetry install"
+RUN nix-shell --run "poetry install --without dev --no-root && rm -rf $POETRY_CACHE_DIR" \
+  && nix-shell --run "./src/binaries/firmware/bin/download.sh" \
+  && nix-shell --run "./patch_emulators.sh src/binaries/firmware/bin" \
+  && nix-shell --run "./src/binaries/trezord-go/bin/download.sh" \
+  && nix-shell --run "./docker/create_version_file.sh" \
+  && rm -rf /var/tmp/trezor.flash
 
 CMD nix-shell --run "./run-nix.sh"
