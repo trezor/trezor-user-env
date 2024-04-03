@@ -4,18 +4,19 @@ from collections import OrderedDict
 from pathlib import Path
 from typing import Any, Dict, List, Literal, Tuple
 
-from termcolor import colored
+from termcolor import colored  # type: ignore
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
 FIRMWARE_BIN_DIR = ROOT_DIR / "src/binaries/firmware/bin"
 USER_DOWNLOADED_DIR = FIRMWARE_BIN_DIR / "user_downloaded"
 USER_DOWNLOADED_DIR.mkdir(exist_ok=True)
 
-Model = Literal["1", "2", "R"]
+Model = Literal["1", "2", "R", "T3T1"]
 FIRMWARES: Dict[Model, Dict[str, str]] = {
     "1": OrderedDict(),
     "2": OrderedDict(),
     "R": OrderedDict(),
+    "T3T1": OrderedDict(),
 }
 
 BRIDGES: List[str] = []
@@ -26,6 +27,7 @@ ARM_IDENTIFIER = "-arm"
 IDENTIFIER_T1 = "trezor-emu-legacy-v"
 IDENTIFIER_TT = "trezor-emu-core-v"
 IDENTIFIER_TR = "trezor-emu-core-R-v"
+IDENTIFIER_T3T1 = "trezor-emu-core-T3T1-v"
 
 
 def register_new_firmware(model: Model, version: str, location: str) -> None:
@@ -81,15 +83,15 @@ def explore_firmwares(args: Any) -> None:
             _print_in_verbose(f"On x86, ignoring ARM emulator - {fw}", args)
             continue
 
-        if IDENTIFIER_TR in fw:
-            model: Model = "R"
-            version = fw.split(IDENTIFIER_TR)[-1]
-        elif IDENTIFIER_TT in fw:
-            model = "2"
-            version = fw.split(IDENTIFIER_TT)[-1]
-        elif IDENTIFIER_T1 in fw:
-            model = "1"
-            version = fw.split(IDENTIFIER_T1)[-1]
+        for identifier, model in [
+            (IDENTIFIER_T1, "1"),
+            (IDENTIFIER_TT, "2"),
+            (IDENTIFIER_TR, "R"),
+            (IDENTIFIER_T3T1, "T3T1"),
+        ]:
+            if identifier in fw:
+                version = fw.split(identifier)[-1]
+                break
         else:
             _print_in_verbose(f"  skipping {colored(fw, 'yellow')}", args)
             continue

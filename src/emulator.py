@@ -194,7 +194,7 @@ def start(
 
     emu_location = Path(binaries.get_firmware_location(model, version))
 
-    if model in ("2", "R"):
+    if model in ("2", "R", "T3T1"):
         EMULATOR = CoreEmulator(
             emu_location,
             profile_dir=binaries.FIRMWARE_BIN_DIR,
@@ -207,6 +207,8 @@ def start(
             profile_dir=str(binaries.FIRMWARE_BIN_DIR),
             logfile=logfile,
         )
+    else:
+        raise RuntimeError(f"Unknown model {model}")
 
     assert EMULATOR is not None
 

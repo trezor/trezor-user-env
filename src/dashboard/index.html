@@ -65,6 +65,11 @@
             <button onclick="emulatorStart('tr-select');">Start</button>
         </div>
         <div>
+            <h4>Trezor T3T1</h4>
+            <select id="t3t1-select"></select>
+            <button onclick="emulatorStart('t3t1-select');">Start</button>
+        </div>
+        <div>
             <input id="wipeDevice" type="checkbox">
             <label class="underlined" title="Device will be started without seed or any other settings."
                 for="wipeDevice">Start with wiped/empty device</label>
@@ -143,7 +148,7 @@ NOTE:
         <hr />
 
         <label for="regtest-send-amount">BTC amount</label>
-        <input id="regtest-send-amount" type="number" value="10" size="10" step="any"/>
+        <input id="regtest-send-amount" type="number" value="10" size="10" step="any" />
         <br />
         <label for="regtest-send-address">Regtest address</label>
         <input id="regtest-send-address" size="62" />

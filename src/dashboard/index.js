@@ -43,12 +43,15 @@ const populateEmulatorSelect = (firmwares) => {
     const t1Select = document.getElementById('t1-select');
     const t2Select = document.getElementById('t2-select');
     const trSelect = document.getElementById('tr-select');
+    const t3t1Select = document.getElementById('t3t1-select');
     clearOptions(t1Select);
     clearOptions(t2Select);
     clearOptions(trSelect);
+    clearOptions(t3t1Select);
     firmwares['1'].forEach(version => createOption(t1Select, version));
     firmwares['2'].forEach(version => createOption(t2Select, version));
     firmwares['R'].forEach(version => createOption(trSelect, version));
+    firmwares['T3T1'].forEach(version => createOption(t3t1Select, version));
 };
 
 const populateBridgeSelect = (bridges) => {
@@ -154,7 +157,12 @@ function onCloseClick() {
 
 function emulatorStart(select) {
     const version = document.getElementById(select).value;
-    const model = select.substring(1, 2).toUpperCase();  // t1-select, t2-select, tr-select
+    let model;
+    if (select === 't3t1-select') {
+        model = 'T3T1';
+    } else {
+        model = select.substring(1, 2).toUpperCase();  // t1-select, t2-select, tr-select
+    }
     const wipe = document.getElementById("wipeDevice").checked;
     const output_to_logfile = document.getElementById("emulatorUseLogfile").checked;
     const save_screenshots = document.getElementById("emulatorSaveScreenshots").checked;
@@ -414,6 +422,7 @@ window.onload = function () {
     createOption(urlModelSelect, "T2")
     createOption(urlModelSelect, "T1")
     createOption(urlModelSelect, "TR")
+    createOption(urlModelSelect, "T3T1")
 
     const urlFormatSelect = document.getElementById('emu-url-format-select');
     createOption(urlFormatSelect, "Gitlab job link")
