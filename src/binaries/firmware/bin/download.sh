@@ -86,5 +86,8 @@ cd "$BIN_DIR"
 # mark as executable
 chmod u+x trezor-emu-*
 
+# strip debug symbols to save space
+strip trezor-emu-*
+
 # no need for Mac builds
 rm -rf macos
