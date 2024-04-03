@@ -25,3 +25,5 @@ test:
 
 test_with_running_controller:
 	pytest -s --controller-already-runs
+
+.PHONY: check style_check style code_check test test_with_running_controller

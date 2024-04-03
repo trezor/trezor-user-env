@@ -2,3 +2,10 @@ src/binaries/firmware/repo/
 src/binaries/trezord-go/repo/
 docker/Dockerfile
 docker/compose.yml
+.git
+.dockerignore
+.gitignore
+.vscode
+**/__pycache__
+**/.mypy_cache
+**/.pytest_cache
