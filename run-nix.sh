@@ -3,13 +3,6 @@
 DIR=$(dirname "$0")
 cd "${DIR}"
 
-version_file="docker/version.txt"
-if [ -f "${version_file}" ]
-then
-    cat "${version_file}"
-else
-    echo "Version file is missing - ${version_file}"
-fi
 # Patch trezord after the container starts to prevent flaky behavior with arm version.
 nix-shell -p bash --run "cd ./src/binaries/trezord-go/bin/ && ./download.sh"
 
