@@ -10,7 +10,6 @@ body {
     background: #f4f4f4;
 }
 
-button,
 select,
 input[type=submit] {
     padding: 2px;
@@ -19,6 +18,20 @@ input[type=submit] {
     margin: 4px 4px 4px 0px;
     padding: 4px 12px;
     font-weight: 500;
+}
+
+button {
+    border: none;
+    color: white;
+    padding: 5px 10px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: large;
+    border-radius: 5px;
+    margin: 2px 2px;
+    cursor: pointer;
+    background-color: #3968ab;
 }
 
 input[type=text] {
@@ -35,6 +48,8 @@ textarea {
 }
 
 h3 {
+    font-weight: bold;
+    font-size: x-large;
     margin-bottom: 10px;
 }
 
@@ -43,7 +58,6 @@ hr {
 }
 
 #ws-status {
-    display: none;
     position: fixed;
     top: 0;
     left: 0;
@@ -77,4 +91,70 @@ section {
     font-weight: bold;
     color: red;
     font-size: 32px;
+}
+
+/* POPUP */
+
+.popup {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.75);
+    z-index: 1000;
+}
+
+.popup-content {
+    position: relative;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 20px;
+    background: white;
+    border-radius: 20px;
+    text-align: center;
+    overflow-y: auto;
+}
+
+.whole-page-margins {
+    width: 95%;
+    height: 95%;
+}
+
+.half-page-margins {
+    width: 50%;
+}
+
+.close-button {
+    position: absolute;
+    top: -30px;
+    right: 0px;
+    font-size: 100px;
+    cursor: pointer;
+    font-weight: bold;
+    padding-right: 30px;
+    padding-bottom: 30px;
+    padding-left: 30px;
+}
+
+.red-border {
+    border: 15px solid red;
+}
+
+.green-border {
+    border: 15px solid green;
+}
+
+.waiting-for-response {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    background-color: #333;
+    color: green;
+    font-size: xx-large;
+    font-weight: bold;
+    text-align: center;
+    padding: 10px 0;
+    z-index: 1000;
 }
