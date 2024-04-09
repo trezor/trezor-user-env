@@ -2,177 +2,212 @@
 
 <head>
     <title>Trezor Device Controller client</title>
-    <link rel="stylesheet" type="text/css" href="index.css" />
     <meta charset="utf-8">
-    <link rel="shortcut icon" href="favicon.ico">
+    <link rel="shortcut icon" href="static/favicon.ico">
+    <link rel="stylesheet" type="text/css" href="css/index.css" />
 </head>
 
 <body>
-    <div id="ws-status">
-        <div>
-            Websocket server not connected.
-            <button onclick="init()">Connect</button>
-        </div>
-    </div>
-
-    <section>
-        <h3>Bridge</h3>
-        <div>
-            <i>Start Bridge with emulator support.</i><br>
-            <select id="bridge-select"></select>
-            <button onclick="bridgeStart('bridge-select')">Start</button>
-            <button onclick="bridgeStop()">Stop</button>
-            <input id="bridgeUseLogfile" type="checkbox">
-            <label class="underlined" title="Save bridge logs into logfile. Otherwise, logs are shown in console."
-                for="bridgeUseLogfile">Logs into logfile</label><br>
-        </div>
-        <div>
-            <div id="bridge-status-line"><b>Status: <span id="bridge-status">unknown</span></b></div>
-            <div class="explain-note">
-                You may also check bridge status page on
-                <a href="http://0.0.0.0:21325/status/" target="_blank">
-                    http://0.0.0.0:21325/status/
-                </a>
-                when the bridge is running
+    <div id="app" style="display: none">
+        <div v-if="notifications.showPopup" id="notifications-popup" class="popup">
+            <div :class="[
+                        'popup-content',
+                        'half-page-margins',
+                        {'red-border': notifications.isError},
+                        {'green-border': !notifications.isError}
+                    ]">
+                <span class="close-button" @click="notifications.showPopup = false">&times;</span>
+                <h1>{{ notifications.header }}</h1>
+                <div style="font-size: xx-large;">
+                    {{ notifications.text }}
+                </div>
             </div>
         </div>
-    </section>
 
-    <section>
-        <h3>Emulator</h3>
-        <div class="explain-note">
-            Use left and right arrow keys to emulate the Trezor One buttons. Mouse clicks for Trezor T.
+        <div class="waiting-for-response" v-if="isWaitingForResponse">
+            WAITING FOR RESPONSE (ignoring all inputs)
         </div>
 
-        <br>
+        <div v-if="!ws" id="ws-status">
+            <div>
+                Websocket server not connected.
+                <button @click="setupWebSocket()">Connect</button>
+            </div>
+        </div>
 
-        <div id="emu-status-line">
-            <b>Status: <span id="emu-status">unknown</span></b>
-        </div>
-        <div>
-            <h4>Trezor One</h4>
-            <select id="t1-select"></select>
-            <button onclick="emulatorStart('t1-select');">Start</button>
-        </div>
-        <div>
-            <h4>Trezor T</h4>
-            <select id="t2-select"></select>
-            <button onclick="emulatorStart('t2-select');">Start</button>
-        </div>
-        <div>
-            <h4>Trezor R</h4>
-            <select id="tr-select"></select>
-            <button onclick="emulatorStart('tr-select');">Start</button>
-        </div>
-        <div>
-            <h4>Trezor T3T1</h4>
-            <select id="t3t1-select"></select>
-            <button onclick="emulatorStart('t3t1-select');">Start</button>
-        </div>
-        <div>
-            <input id="wipeDevice" type="checkbox">
-            <label class="underlined" title="Device will be started without seed or any other settings."
-                for="wipeDevice">Start with wiped/empty device</label>
+        <section>
+            <h3>Bridge</h3>
+            <div>
+                <i>Start Bridge with emulator support.</i><br>
+                <select v-model="bridges.selected">
+                    <option v-for="option in bridges.versions" :key="option" :value="option">
+                        {{ option }}
+                    </option>
+                </select>
+                <button @click="bridgeStart()">Start</button>
+                <button @click="bridgeStop()">Stop</button>
+                <input id="bridgeUseLogfile" type="checkbox" v-model="bridges.outputToLogfile">
+                <label class="underlined" title="Save bridge logs into logfile. Otherwise, logs are shown in console."
+                    for="bridgeUseLogfile">Logs into logfile</label><br>
+            </div>
+            <div>
+                <div :style="{ color: bridges.statusColor }"><b>Status: <span>{{ bridges.status }}</span></b>
+                </div>
+                <div class="explain-note">
+                    You may also check bridge status page on
+                    <a href="http://0.0.0.0:21325/status/" target="_blank">
+                        http://0.0.0.0:21325/status/
+                    </a>
+                    when the bridge is running
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <h3>Emulator</h3>
+            <div class="explain-note">
+                Use left and right arrow keys to emulate the Trezor One/Safe3 buttons. Mouse clicks for other models.
+            </div>
+
             <br>
-            <input id="emulatorUseLogfile" type="checkbox">
-            <label class="underlined" title="Save emulator logs into logfile. Otherwise, logs are shown in console."
-                for="emulatorUseLogfile">Logs into logfile</label>
-            <br>
-            <input id="emulatorSaveScreenshots" type="checkbox">
-            <label class="underlined" title="
+
+            <div :style="{ color: emulators.statusColor }"><b>Status: <span>{{ emulators.status }}</span></b>
+            </div>
+
+            <div v-for="(details, model) in emulators.versions" :key="model">
+                <h4>{{details.header}} ({{ model }})</h4>
+                <select v-model="details.selected">
+                    <option v-for="option in details.versions" :key="option" :value="option">
+                        {{ option }}
+                    </option>
+                </select>
+                <button @click="emulatorStart(model);">Start</button>
+            </div>
+
+            <div>
+                <input id="wipeDevice" type="checkbox" v-model="emulators.wipeDevice">
+                <label class="underlined" title="Device will be started without seed or any other settings."
+                    for="wipeDevice">Start with wiped/empty device</label>
+                <br>
+                <input id="emulatorUseLogfile" type="checkbox" v-model="emulators.outputToLogfile">
+                <label class="underlined" title="Save emulator logs into logfile. Otherwise, logs are shown in console."
+                    for="emulatorUseLogfile">Logs into logfile</label>
+                <br>
+                <input id="emulatorSaveScreenshots" type="checkbox" v-model="emulators.screenshotMode">
+                <label class="underlined" title="
 No square in top right corner.
 Screenshots are saved under `logs/screens`.
 NOTE:
 - does not work for T1
 - the first screen does contain the square, no way to change it." for="emulatorSaveScreenshots">Screenshot
-                mode</label>
-            <br>
-        </div>
-        <div>
-            <input id="emu-url" type="text"
-                placeholder="Full emulator URL, link to Gitlab job or just job ID - as specified in select. Do not forget to specify model (T1/T2/TR)"
-                style="width:50%;" />
-            <select id="emu-url-format-select"></select>
-            <select id="emu-url-model-select"></select>
-            <button onclick="emulatorStartFromUrl();">Start from URL</button>
-        </div>
+                    mode</label>
+                <br>
+            </div>
 
-        <div id="emu_url_info" class="user-info">
-            <!-- Filled when downloading from URL, which takes long time -->
-        </div>
+            <hr>
 
-        <hr>
+            <div>
+                <input type="text"
+                    placeholder="Full emulator URL, link to Gitlab job or just job ID - as specified in select. Do not forget to specify correct model"
+                    style="width:50%;" v-model="emulatorUrl.url" />
+                <select v-model="emulatorUrl.type">
+                    <option v-for="option in emulatorUrl.typeChoices" :key="option" :value="option">
+                        {{ option }}
+                    </option>
+                </select>
+                <select v-model="emulatorUrl.model">
+                    <option v-for="(details, model) in emulators.versions" :value="model" :key="model">
+                        {{ details.header }}
+                    </option>
+                </select>
+                <button @click="emulatorStartFromUrl();">Start from URL</button>
+            </div>
 
-        <h3>Emulator commands</h3>
-        <div class="explain-note">These commands are auto-confirmed using the emulator's debug link.</div><br>
-        <div>
-            <button onclick="emulatorWipe();">Wipe</button>
-            <input id="seed-input" type="text" placeholder="default seed: all all" />
-            <button onclick="emulatorSetup();">Load seed</button>
-            <button onclick="emulatorResetDevice();">Reset</button>
-            <button onclick="emulatorResetDeviceShamir();">Reset with Shamir</button>
-            <button onclick="emulatorStop();">Stop</button>
-        </div>
-        <div>
-            <button onclick="emulatorPressYes();">Press yes</button>
-            <button onclick="emulatorPressNo();">Press no</button>
-            <button onclick="emulatorAllowUnsafe();">Allow unsafe (safety checks)</button>
-        </div>
-        <div>
-            <button onclick="readAndConfirmMnemonic();">Read and confirm mnemonic</button>
-        </div>
-        <div>
-            <label for="shares-input">Shares</label>
-            <input id="shares-input" type="number" value="3" size="3" min="1" max="20" />
-            <label for="threshold-input">Threshold</label>
-            <input id="threshold-input" type="number" value="2" size="3" min="1" max="20" />
-            <button onclick="readAndConfirmMnemonicShamir();">Read and confirm mnemonic Shamir</button>
-        </div>
-    </section>
+            <div class="user-info" v-if="emulatorUrl.downloadMessage">
+                {{ emulatorUrl.downloadMessage }}
+            </div>
 
-    <section>
-        <h3>Regtest</h3>
+            <hr>
 
-        <div id="regtest-status-line">
-            <b>Status: <span id="regtest-status">unknown</span></b>
-        </div>
+            <h3>Emulator commands</h3>
+            <div class="explain-note">These commands are auto-confirmed using the emulator's debug link.</div><br>
+            <div>
+                <button @click="emulatorWipe();">Wipe</button>
+                <input type="text" placeholder="default seed: all all" v-model="emulatorCommands.seed" />
+                <button @click="emulatorSetup();">Load seed</button>
+                <button @click="emulatorResetDevice();">Reset</button>
+                <button @click="emulatorResetDeviceShamir();">Reset with Shamir</button>
+                <button @click="emulatorStop();">Stop</button>
+            </div>
+            <div>
+                <button @click="emulatorPressYes();">Press yes</button>
+                <button @click="emulatorPressNo();">Press no</button>
+                <button @click="emulatorAllowUnsafe();">Allow unsafe (safety checks)</button>
+            </div>
+            <div>
+                <button @click="readAndConfirmMnemonic();">Read and confirm mnemonic</button>
+            </div>
+            <div>
+                <label for="shares-input">Shares</label>
+                <input id="shares-input" type="number" value="3" size="3" min="1" max="20"
+                    v-model="emulatorCommands.shamirShares" />
+                <label for="threshold-input">Threshold</label>
+                <input id="threshold-input" type="number" value="2" size="3" min="1" max="20"
+                    v-model="emulatorCommands.shamirThreshold" />
+                <button @click="readAndConfirmMnemonicShamir();">Read and confirm mnemonic Shamir</button>
+            </div>
+        </section>
 
-        <label for="regtest-mine-blocks">Blocks</label>
-        <input id="regtest-mine-blocks" type="number" value="1" size="5" min="1" max="10000" />
-        <br />
-        <label for="regtest-mine-address">Optional address of a miner</label>
-        <input id="regtest-mine-address" size="62" />
-        <br />
-        <button onclick="regtestMine();">Mine regtest block(s)</button>
+        <section>
+            <h3>Regtest</h3>
+
+            <div :style="{ color: regtest.statusColor }"><b>Status: <span>{{ regtest.status }}</span></b>
+            </div>
+
+            <label for="regtest-mine-blocks">Blocks</label>
+            <input id="regtest-mine-blocks" type="number" value="1" size="5" min="1" max="10000"
+                v-model="regtest.mineBlocks" />
+            <br />
+            <label for="regtest-mine-address">Optional address of a miner</label>
+            <input id="regtest-mine-address" size="62" v-model="regtest.mineAddress" />
+            <br />
+            <button @click="regtestMine();">Mine regtest block(s)</button>
+
+            <hr />
+
+            <label for="regtest-send-amount">BTC amount</label>
+            <input id="regtest-send-amount" type="number" value="10" size="10" step="any"
+                v-model="regtest.sendAmount" />
+            <br />
+            <label for="regtest-send-address">Regtest address</label>
+            <input id="regtest-send-address" size="62" v-model="regtest.sendAddress" />
+            <br />
+            <button @click="regtestSend();">Send regtest BTC to address</button>
+        </section>
+
+        <section>
+            <h3>Server</h3>
+            <textarea id="server-input" rows="3" v-model="server.command"></textarea>
+            <br />
+            <button @click="sendServerCommand();">Send JSON</button>
+            <hr />
+            <button @click="ping();">Ping server</button>
+            <button @click="exit();">Exit server</button>
+            <button @click="closeWebsocket();">Close websocket</button>
+        </section>
 
         <hr />
 
-        <label for="regtest-send-amount">BTC amount</label>
-        <input id="regtest-send-amount" type="number" value="10" size="10" step="any" />
-        <br />
-        <label for="regtest-send-address">Regtest address</label>
-        <input id="regtest-send-address" size="62" />
-        <br />
-        <button onclick="regtestSend();">Send regtest BTC to address</button>
-    </section>
+        <section>
+            <h3>Event Log</h3>
+            <p v-for="log in logs" :key="log.text" :style="{ color: log.color }">
+                {{ log.text }} <br>
+            </p>
+        </section>
+    </div>
 
-    <section>
-        <h3>Server</h3>
-        <textarea id="raw-input" rows="3"></textarea>
-        <br />
-        <button onclick="onSubmit();">Send JSON</button>
-        <hr />
-        <button onclick="ping();">Ping server</button>
-        <button onclick="exit();">Exit server</button>
-        <button onclick="onCloseClick();">Close websocket</button>
-    </section>
-    <hr />
-    <section>
-        <h3>Log</h3>
-        <div id="log"></div>
-    </section>
-
-    <script type="text/javascript" src="index.js"></script>
+    <script src="js/vue.global.js"></script>
+    <script type="text/javascript" src="js/index.js"></script>
 </body>
 
 </html>
