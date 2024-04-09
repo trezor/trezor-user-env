@@ -3,8 +3,11 @@
 DIR=$(dirname "$0")
 cd "${DIR}"
 
-# Patch trezord after the container starts to prevent flaky behavior with arm version.
-nix-shell -p bash --run "cd ./src/binaries/trezord-go/bin/ && ./download.sh"
+SYSTEM_ARCH=$(uname -m)
+if [[ $SYSTEM_ARCH == aarch64* ]]; then
+    # Patch trezord after the container starts to prevent flaky behavior with arm version.
+    nix-shell -p bash --run "cd ./src/binaries/trezord-go/bin/ && ./download.sh"
+fi
 
 echo -n "Python version: "
 nix-shell --run "poetry run python --version"
