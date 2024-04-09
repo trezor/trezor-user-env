@@ -9,10 +9,5 @@ if [[ $SYSTEM_ARCH == aarch64* ]]; then
     nix-shell -p bash --run "cd ./src/binaries/trezord-go/bin/ && ./download.sh"
 fi
 
-echo -n "Python version: "
-nix-shell --run "poetry run python --version"
-echo -n "Trezorctl version: "
-nix-shell --run "poetry run trezorctl version"
-
 echo "Starting trezor-user-env server"
 nix-shell --run "poetry run python src/main.py"
