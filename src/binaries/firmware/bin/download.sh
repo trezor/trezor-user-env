@@ -74,9 +74,11 @@ elif [[ $SYSTEM_ARCH == aarch64* ]]; then
     unzip -o -q trezor-emu-core-R-arm-main.zip -d arm/
     mv arm/core/build/unix/trezor-emu-core-arm ../trezor-emu-core-R-v2-main-arm
 
-    wget --no-config -O trezor-emu-core-T3T1-arm-main.zip "$T3T1_LATEST_BUILD"
-    unzip -o -q trezor-emu-core-T3T1-arm-main.zip -d arm/
-    mv arm/core/build/unix/trezor-emu-core-arm ../trezor-emu-core-T3T1-v2-main-arm
+    # TEMPORARILY replaced by baking the emulators into the image
+    # wget --no-config -O trezor-emu-core-T3T1-arm-main.zip "$T3T1_LATEST_BUILD"
+    # unzip -o -q trezor-emu-core-T3T1-arm-main.zip -d arm/
+    # mv arm/core/build/unix/trezor-emu-core-arm ../trezor-emu-core-T3T1-v2-main-arm
+    mv ../arm/trezor-emu-core-T3T1-v2-main-arm ../trezor-emu-core-T3T1-v2-main-arm
 
     wget --no-config -O trezor-emu-legacy-arm-main.zip "$LEGACY_LATEST_BUILD"
     unzip -o -q trezor-emu-legacy-arm-main.zip -d arm/
