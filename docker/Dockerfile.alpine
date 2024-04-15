@@ -1,0 +1,47 @@
+# Start with a base Alpine image
+FROM alpine:3.19
+
+# Set environment variables
+ENV TERM=xterm \
+    XDG_RUNTIME_DIR="/var/tmp" \
+    LC_ALL=C.UTF-8 \
+    LANG=C.UTF-8 \
+    GIT_SSL_CAINFO=/etc/ssl/certs/ca-certificates.crt \
+    NIX_SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt
+
+# Install required packages
+RUN apk update && apk add --no-cache \
+    openssl \
+    bash \
+    git \
+    python3 \
+    python3-dev \
+    py3-pip \
+    poetry \
+    sdl2 \
+    sdl2_image \
+    xhost \
+    wget \
+    unzip \
+    curl \
+    procps \
+    build-base \
+    linux-headers \
+    gcompat \
+    libstdc++ \
+    patchelf \
+    && rm -rf /var/cache/apk/*
+
+# Add basic files
+COPY ./ /trezor-user-env
+WORKDIR /trezor-user-env
+
+# Install Python dependencies using poetry
+RUN poetry install --no-dev --no-root
+
+# Execute scripts and clean up
+RUN ./src/binaries/firmware/bin/download.sh
+RUN ./src/binaries/trezord-go/bin/download.sh
+
+# Command to run on container start
+CMD poetry run python src/main.py
