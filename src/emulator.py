@@ -122,12 +122,15 @@ def start_from_url(
 
     # Deciding the location to save depending on being T1/TT/TR
     # (to be compatible with already existing emulators)
-    if model == "1":
-        emu_path = binaries.USER_DOWNLOADED_DIR / f"{binaries.IDENTIFIER_T1}{emu_name}"
-    elif model == "2":
-        emu_path = binaries.USER_DOWNLOADED_DIR / f"{binaries.IDENTIFIER_TT}{emu_name}"
-    elif model == "R":
-        emu_path = binaries.USER_DOWNLOADED_DIR / f"{binaries.IDENTIFIER_TR}{emu_name}"
+    model_identifier = {
+        "1": binaries.IDENTIFIER_T1,
+        "2": binaries.IDENTIFIER_TT,
+        "R": binaries.IDENTIFIER_TR,
+        "T3T1": binaries.IDENTIFIER_T3T1,
+    }.get(model)
+    if not model_identifier:
+        raise RuntimeError(f"Unknown model {model}")
+    emu_path = binaries.USER_DOWNLOADED_DIR / f"{model_identifier}{emu_name}"
 
     # Downloading only if it does not yet exist
     if not emu_path.is_file():
