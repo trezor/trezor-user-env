@@ -138,9 +138,23 @@ def start_from_url(
         try:
             urllib.request.urlretrieve(url, emu_path)
         except HTTPError as e:
-            err = f"HTTP error when downloading emulator from {url}, err: {e}"
-            log(err, "red")
-            raise RuntimeError(err)
+            if binaries.IS_ARM and not url.endswith(binaries.ARM_IDENTIFIER):
+                log(
+                    "ARM detected, trying to download the ARM version of the emulator",
+                    "yellow",
+                )
+                url = f"{url}{binaries.ARM_IDENTIFIER}"
+                log(f"Trying to download ARM from {url}")
+                try:
+                    urllib.request.urlretrieve(url, emu_path)
+                except HTTPError as e:
+                    err = f"HTTP error when downloading emulator from {url}, err: {e}"
+                    log(err, "red")
+                    raise RuntimeError(err)
+            else:
+                err = f"HTTP error when downloading emulator from {url}, err: {e}"
+                log(err, "red")
+                raise RuntimeError(err)
         # Running chmod +x on the newly downloaded emulator and
         # patching it so it can run in Nix
         # (patching fail will not cause any python error,
