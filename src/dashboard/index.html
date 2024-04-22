@@ -108,7 +108,7 @@ NOTE:
 
             <div>
                 <input type="text"
-                    placeholder="Full emulator URL, link to Gitlab job or just job ID - as specified in select. Do not forget to specify correct model"
+                    placeholder="Full emulator URL, or Gitlab job ID - as specified in select. Do not forget to specify correct model"
                     style="width:50%;" v-model="emulatorUrl.url" />
                 <select v-model="emulatorUrl.type">
                     <option v-for="option in emulatorUrl.typeChoices" :key="option" :value="option">
