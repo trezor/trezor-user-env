@@ -45,7 +45,7 @@ const app = createApp({
             },
             emulatorUrl: {
                 url: "",
-                typeChoices: ["Gitlab job link", "Gitlab job ID", "Custom link"],
+                typeChoices: ["Gitlab job ID", "Custom link"],
                 type: "Gitlab job ID",
                 model: "2",
                 downloadMessage: '',
@@ -238,30 +238,19 @@ const app = createApp({
             }
 
             const model = this.emulatorUrl.model;
-            const gitlabJobPrefix = "https://gitlab.com/satoshilabs/trezor/trezor-firmware/-/jobs"
-            const T1PathSuffix = "artifacts/raw/legacy/firmware/trezor.elf"
-            // TR shares things with T2 here
-            // TODO: account for arm
-            const T2PathSuffix = "artifacts/raw/core/build/unix/trezor-emu-core"
 
             // URL might need some processing in case it is not complete
             // (Yes, handling URLs as strings is not very good, but should be alright in this easy case)
-            if (this.emulatorUrl.type === "Gitlab job link") {
-                // Getting rid of possible slash at the end
-                if (url.substr(-1) === "/") {
-                    url = url.slice(0, -1);
-                }
-
+            if (this.emulatorUrl.type === "Gitlab job ID") {
+                const gitlabJobPrefix = "https://gitlab.com/satoshilabs/trezor/trezor-firmware/-/jobs"
+                const T1PathSuffix = "artifacts/raw/legacy/firmware/trezor.elf"
+                // TR/T3T1 share things with T2 here
+                const T2PathSuffix = "artifacts/raw/core/build/unix/trezor-emu-core"
+                const baseUrl = `${gitlabJobPrefix}/${url}`
                 if (model === "1") {
-                    url = `${url}/${T1PathSuffix}`
+                    url = `${baseUrl}/${T1PathSuffix}`
                 } else {
-                    url = `${url}/${T2PathSuffix}`
-                }
-            } else if (this.emulatorUrl.type === "Gitlab job ID") {
-                if (model === "1") {
-                    url = `${gitlabJobPrefix}/${url}/${T1PathSuffix}`
-                } else {
-                    url = `${gitlabJobPrefix}/${url}/${T2PathSuffix}`
+                    url = `${baseUrl}/${T2PathSuffix}`
                 }
             }
 
