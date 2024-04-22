@@ -119,6 +119,8 @@ def start_from_url(
     # Creating an identifier of emulator from this URL, so we have to
     # download it only once and can reuse it any time later
     emu_name = f"{model}-url-{get_url_identifier(url)}"
+    if binaries.IS_ARM and not emu_name.endswith(binaries.ARM_IDENTIFIER):
+        emu_name = f"{emu_name}{binaries.ARM_IDENTIFIER}"
 
     # Deciding the location to save depending on being T1/TT/TR
     # (to be compatible with already existing emulators)
