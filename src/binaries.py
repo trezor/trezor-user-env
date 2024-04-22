@@ -21,7 +21,7 @@ FIRMWARES: Dict[Model, Dict[str, str]] = {
 
 BRIDGES: List[str] = []
 
-IS_ARM = os.uname().machine.startswith("aarch64")
+IS_ARM = os.uname().machine.startswith(("aarch64", "arm"))
 ARM_IDENTIFIER = "-arm"
 
 IDENTIFIER_T1 = "trezor-emu-legacy-v"
