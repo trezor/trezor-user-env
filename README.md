@@ -28,7 +28,7 @@ Supported platforms are Linux and macOS (both Intel and Silicon).
 ### Steps
 
 1. Clone this repo and enter the directory
-2. Run `./run.sh` it will determine your platform and launch trezor-user-env. See `./run.sh --help` for some additional arguments.
+2. Run `./run.sh` it will determine your platform and launch trezor-user-env. See `./run.sh --help` for some additional arguments. (on Linux it might be necessary to set `sudo chmod 666 /var/run/docker.sock`)
 3. Open http://localhost:9002.
 
 ## Basic terminology
