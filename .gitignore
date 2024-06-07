@@ -6,6 +6,7 @@ __pycache__
 src/binaries/firmware/bin/*
 !src/binaries/firmware/bin/download.sh
 !src/binaries/firmware/bin/download_latest_gh.py
+!src/binaries/firmware/bin/patch_emulators.sh
 !src/binaries/firmware/bin/arm
 !src/binaries/trezord-go/bin/download.sh
 emulator.img

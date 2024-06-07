@@ -157,5 +157,5 @@ def patch_emulators_for_nix(dir_to_patch: str = "") -> None:
     That is on purpose, because it might be run in a non-Nix
     environment.
     """
-    cmd = ["./patch_emulators.sh", dir_to_patch]
+    cmd = ["./src/binaries/firmware/bin/patch_emulators.sh", dir_to_patch]
     subprocess.run(cmd, cwd=ROOT_DIR)
