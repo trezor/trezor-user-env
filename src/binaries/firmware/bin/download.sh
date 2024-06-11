@@ -29,7 +29,7 @@ else
    exit 1
 fi
 
-if ! wget --no-config -e robots=off --no-verbose --no-clobber --no-parent --cut-dirs=$CUT_DIRS --no-host-directories --reject "index.html*" "$SITE"; then
+if ! wget --no-config -e robots=off --no-verbose --no-clobber --no-parent --cut-dirs=$CUT_DIRS --no-host-directories --recursive --reject "index.html*" "$SITE"; then
     echo "Unable to fetch released emulators from $SITE"
     echo "You will have only available latest builds from CI"
     echo
