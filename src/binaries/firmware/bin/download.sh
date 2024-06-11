@@ -3,10 +3,8 @@ set -e -o pipefail
 
 SYSTEM_ARCH=$(uname -m)
 
-ROOT_DIR=$(pwd)
-BIN_DIR=$(dirname $(realpath -s $0))
-
-cd "$BIN_DIR"
+cd "$(dirname "${BASH_SOURCE[0]}")"
+BIN_DIR=$(pwd)
 
 # WARNING: this will download the emulators from the latest SUCCESSFULLY run pipeline from trezor-firmware.
 # If the pipeline fails, it will download from the previous successful run.
@@ -98,7 +96,3 @@ strip trezor-emu-*
 
 # no need for Mac builds
 rm -rf macos
-
-cd "$ROOT_DIR"
-
-sh "$BIN_DIR"/patch_emulators.sh

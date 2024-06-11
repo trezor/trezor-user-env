@@ -59,6 +59,7 @@ WORKDIR ./trezor-user-env
 
 RUN nix-shell --run "poetry install --without dev --no-root && rm -rf $POETRY_CACHE_DIR" \
   && nix-shell --run "./src/binaries/firmware/bin/download.sh" \
+  && nix-shell --run "./patch_emulators.sh src/binaries/firmware/bin" \
   && nix-shell --run "./src/binaries/trezord-go/bin/download.sh"
 
 CMD nix-shell --run "./run-nix.sh"
