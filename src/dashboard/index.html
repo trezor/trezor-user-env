@@ -207,10 +207,18 @@ NOTE:
                     <button @click="emulatorWipe();">Wipe</button>
                     <input
                         type="text"
-                        placeholder="default seed: all all"
+                        placeholder="input seed"
                         v-model="emulatorCommands.seed"
                     />
                     <button @click="emulatorSetup();">Load seed</button>
+                    <button @click="emulatorSetup('all');">
+                        Load ALL seed
+                    </button>
+                    <button @click="emulatorSetup('academic');">
+                        Load ACADEMIC seed
+                    </button>
+                </div>
+                <div>
                     <button @click="emulatorResetDevice();">Reset</button>
                     <button @click="emulatorResetDeviceShamir();">
                         Reset with Shamir

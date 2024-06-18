@@ -393,10 +393,18 @@ const app = createApp({
                 use_shamir: true,
             });
         },
-        emulatorSetup() {
-            const seed =
-                this.emulatorCommands.seed ||
-                "all all all all all all all all all all all all";
+        emulatorSetup(seedName = "") {
+            const mapping = {
+                all: "all all all all all all all all all all all all",
+                academic:
+                    "academic again academic academic academic academic academic academic academic academic academic academic academic academic academic academic academic pecan provide remember",
+            };
+
+            const seed = mapping[seedName] || this.emulatorCommands.seed;
+            if (!seed) {
+                this.showNotification("Please enter a seed", true);
+                return;
+            }
             this.sendMessage({
                 type: "emulator-setup",
                 mnemonic: seed,
