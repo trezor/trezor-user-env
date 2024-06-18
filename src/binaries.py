@@ -83,12 +83,14 @@ def explore_firmwares(args: Any) -> None:
             _print_in_verbose(f"On x86, ignoring ARM emulator - {fw}", args)
             continue
 
-        for identifier, model in [
+        models: List[Tuple[str, Model]] = [
             (IDENTIFIER_T1, "1"),
             (IDENTIFIER_TT, "2"),
             (IDENTIFIER_TR, "R"),
             (IDENTIFIER_T3T1, "T3T1"),
-        ]:
+        ]
+
+        for identifier, model in models:
             if identifier in fw:
                 version = fw.split(identifier)[-1]
                 break

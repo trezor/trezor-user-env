@@ -49,7 +49,7 @@ def get_latest_run_id(workflow_id: int, branch: str) -> int | None:
     for run in runs:
         # TODO: might also check run["conclusion"] == "success", but it seems to always fail
         if run["head_branch"] == branch and run["status"] == "completed":
-            return run["id"]
+            return run["id"]  # type: ignore
     return None
 
 
