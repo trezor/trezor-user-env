@@ -14,7 +14,7 @@ from typing import Any, Dict, Generator, Optional
 from urllib.error import HTTPError
 
 from psutil import Popen
-from trezorlib import debuglink, device, messages
+from trezorlib import debuglink, device, messages, models
 from trezorlib._internal.emulator import CoreEmulator, LegacyEmulator
 from trezorlib.debuglink import DebugLink, TrezorClientDebugLink
 from trezorlib.exceptions import TrezorFailure
@@ -139,7 +139,7 @@ def start_from_url(
         log(f"Emulator from {url} will be saved under {emu_path}")
         try:
             urllib.request.urlretrieve(url, emu_path)
-        except HTTPError as e:
+        except HTTPError as first_err:
             if binaries.IS_ARM and not url.endswith(binaries.ARM_IDENTIFIER):
                 log(
                     "ARM detected, trying to download the ARM version of the emulator",
@@ -154,7 +154,9 @@ def start_from_url(
                     log(err, "red")
                     raise RuntimeError(err)
             else:
-                err = f"HTTP error when downloading emulator from {url}, err: {e}"
+                err = (
+                    f"HTTP error when downloading emulator from {url}, err: {first_err}"
+                )
                 log(err, "red")
                 raise RuntimeError(err)
         # Running chmod +x on the newly downloaded emulator and
@@ -261,7 +263,7 @@ def start(
         time.sleep(SLEEP)
         with connect_to_debuglink() as debug:
             # Need to set model info (both TT and TR are under same category)
-            debug.model = "T"
+            debug.model = models.T2T1
             dir_to_save = get_new_screenshot_dir()
             log(f"Saving screenshots to {dir_to_save}")
             debug.start_recording(str(dir_to_save))
