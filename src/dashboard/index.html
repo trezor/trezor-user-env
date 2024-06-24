@@ -43,13 +43,14 @@
                     <button @click="setupWebSocket()">Connect</button>
                 </div>
             </div>
+    <div class="sections-container">
 
             <section>
-                <h3>Bridge</h3>
-                <div>
-                    <i>Start Bridge with emulator support.</i><br />
-                    <select v-model="bridges.selected">
-                        <option
+        <h3>Bridge</h3>
+        <div>
+            <i>Start Bridge with emulator support.</i><br />
+            <select v-model="bridges.selected">
+                <option
                             v-for="option in bridges.versions"
                             :key="option"
                             :value="option"
@@ -148,11 +149,11 @@
                     <label
                         class="underlined"
                         title="
-No square in top right corner.
-Screenshots are saved under `logs/screens`.
-NOTE:
-- does not work for T1
-- the first screen does contain the square, no way to change it."
+                No square in top right corner.
+                Screenshots are saved under `logs/screens`.
+                NOTE:
+                - does not work for T1
+                - the first screen does contain the square, no way to change it."
                         for="emulatorSaveScreenshots"
                         >Screenshot mode</label
                     >
@@ -196,7 +197,8 @@ NOTE:
                 </div>
 
                 <hr />
-
+            </section>
+            <section>
                 <h3>Emulator commands</h3>
                 <div class="explain-note">
                     These commands are auto-confirmed using the emulator's debug
@@ -332,7 +334,6 @@ NOTE:
                 <button @click="closeWebsocket();">Close websocket</button>
             </section>
 
-            <hr />
 
             <section>
                 <h3>Event Log</h3>
