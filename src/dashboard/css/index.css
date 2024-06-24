@@ -44,9 +44,7 @@ section {
 @media (min-width: 1025px) {
     /* Adjust 600px to the breakpoint you desire */
     section {
-        flex-basis: calc(
-            50% - 48px
-        ); /* Two sections per row on larger screens */
+        flex: 1 1 47%; /* Two sections per row on larger screens */
     }
 }
 
@@ -59,18 +57,21 @@ section {
     margin-top: 10px;
 }
 
+input {
+    margin: 6px;
+}
 select,
 input[type="submit"] {
     padding: 2px;
     cursor: pointer;
     min-width: 170px;
-    margin: 4px 4px 4px 0px;
+    margin: 0px 6px 14px 0px;
     padding: 4px 12px;
     font-weight: 500;
 }
 
 input[type="checkbox"] {
-    margin: 0 5px;
+    margin: 6px;
 }
 
 button {
@@ -82,16 +83,21 @@ button {
     display: inline-block;
     font-size: large;
     border-radius: 5px;
-    margin: 2px 5px;
+    margin: 8px;
     cursor: pointer;
     background-color: #3968ab;
     font-family: "TT Satoshi";
 }
 
+.wipe-yes-no {
+    display: flex;
+    justify-content: space-between;
+}
+
 input[type="text"] {
     padding: 2px;
     min-width: 170px;
-    margin: 4px 4px 4px 0px;
+    margin: 8px;
     padding: 4px 12px;
     font-weight: 500;
 }
@@ -99,6 +105,7 @@ input[type="text"] {
 textarea {
     width: 100%;
     min-height: 62px;
+    margin: 8px;
 }
 
 h3 {
