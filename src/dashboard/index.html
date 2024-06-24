@@ -190,6 +190,7 @@
                     <button @click="emulatorStartFromUrl();">
                         Start from URL
                     </button>
+
                 </div>
 
                 <div class="user-info" v-if="emulatorUrl.downloadMessage">
@@ -197,6 +198,8 @@
                 </div>
 
                 <hr />
+
+                <button @click="emulatorStop();">Stop</button>
             </section>
             <section>
                 <h3>Emulator commands</h3>
@@ -206,13 +209,20 @@
                 </div>
                 <br />
                 <div>
-                    <button @click="emulatorWipe();">Wipe</button>
+                    <div class="wipe-yes-no">
+                        <button @click="emulatorWipe();">Wipe</button>
+                        <div>
+                            <button @click="emulatorPressYes();">Press yes</button>
+                            <button @click="emulatorPressNo();">Press no</button>
+                        </div>
+                    </div>
                     <input
                         type="text"
                         placeholder="input seed"
                         v-model="emulatorCommands.seed"
                     />
                     <button @click="emulatorSetup();">Load seed</button>
+                    <br/>
                     <button @click="emulatorSetup('all');">
                         Load ALL seed
                     </button>
@@ -225,47 +235,45 @@
                     <button @click="emulatorResetDeviceShamir();">
                         Reset with Shamir
                     </button>
-                    <button @click="emulatorStop();">Stop</button>
-                </div>
-                <div>
-                    <button @click="emulatorPressYes();">Press yes</button>
-                    <button @click="emulatorPressNo();">Press no</button>
-                    <button @click="emulatorAllowUnsafe();">
-                        Allow unsafe (safety checks)
-                    </button>
+                    
                 </div>
                 <div>
                     <button @click="readAndConfirmMnemonic();">
                         Read and confirm mnemonic
                     </button>
+                    <br/>
+                    <button @click="emulatorAllowUnsafe();">
+                        Allow unsafe (safety checks)
+                    </button>
                 </div>
                 <div>
                     <label for="shares-input">Shares</label>
                     <input
-                        id="shares-input"
-                        type="number"
-                        value="3"
-                        size="3"
-                        min="1"
-                        max="20"
-                        v-model="emulatorCommands.shamirShares"
+                    id="shares-input"
+                    type="number"
+                    value="3"
+                    size="3"
+                    min="1"
+                    max="20"
+                    v-model="emulatorCommands.shamirShares"
                     />
                     <label for="threshold-input">Threshold</label>
                     <input
-                        id="threshold-input"
-                        type="number"
-                        value="2"
-                        size="3"
-                        min="1"
-                        max="20"
-                        v-model="emulatorCommands.shamirThreshold"
+                    id="threshold-input"
+                    type="number"
+                    value="2"
+                    size="3"
+                    min="1"
+                    max="20"
+                    v-model="emulatorCommands.shamirThreshold"
                     />
                     <button @click="readAndConfirmMnemonicShamir();">
                         Read and confirm mnemonic Shamir
                     </button>
                 </div>
+                
             </section>
-
+            
             <section>
                 <h3>Regtest</h3>
 
