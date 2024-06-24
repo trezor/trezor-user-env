@@ -26,39 +26,28 @@ body {
     font-family: "TT Satoshi";
 }
 
-section {
-    padding: 24px;
-    margin: 32px;
-    border-radius: 6px;
-    background-color: rgb(255, 255, 255);
-}
-.emulator-container,
-.regtest-server-container {
+.sections-container {
     display: flex;
-    flex-wrap: nowrap;
-    width: 100%;
+    flex-wrap: wrap;
     justify-content: space-between;
 }
 
-.emulator-selector,
-.emulator-commands,
-.regtest-section,
-.server-section {
-    flex: 1 1 50%;
-    width: 50%;
-    padding: 10px;
+section {
+    flex: 1 1 100%;
     box-sizing: border-box;
+    padding: 22px;
+    margin: 24px;
+    border-radius: 6px;
+    background-color: rgb(255, 255, 255);
 }
 
-/* Correct CSS to make the children grow properly */
-.emulator-container > .emulator-selector,
-.emulator-container > .emulator-commands {
-    flex: 1 1 50%; /* Allow them to grow to half the width of the container when side by side */
-}
-
-.emulator-section {
-    display: flex;
-    flex-wrap: wrap;
+@media (min-width: 1025px) {
+    /* Adjust 600px to the breakpoint you desire */
+    section {
+        flex-basis: calc(
+            50% - 48px
+        ); /* Two sections per row on larger screens */
+    }
 }
 
 .commands-container {
