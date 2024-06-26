@@ -77,16 +77,25 @@ input[type="checkbox"] {
 button {
     border: none;
     color: white;
-    padding: 5px 10px;
+    padding: 12px 25px;
     text-align: center;
     text-decoration: none;
+    min-width: 100px;
     display: inline-block;
     font-size: large;
-    border-radius: 5px;
+    border-radius: 50px;
     margin: 8px;
     cursor: pointer;
-    background-color: #3968ab;
+    background-color: #27789b;
     font-family: "TT Satoshi";
+}
+
+.positive {
+    background-color: #0f6148;
+}
+
+.negative {
+    background-color: #b43c3c;
 }
 
 .wipe-yes-no {
