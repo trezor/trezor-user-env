@@ -58,8 +58,8 @@
                             {{ option }}
                         </option>
                     </select>
-                    <button @click="bridgeStart()">Start</button>
-                    <button @click="bridgeStop()">Stop</button>
+                    <button class="positive" @click="bridgeStart()">Start</button>
+                    <button class="negative" @click="bridgeStop()">Stop</button>
                     <input
                         id="bridgeUseLogfile"
                         type="checkbox"
@@ -113,7 +113,7 @@
                             {{ option }}
                         </option>
                     </select>
-                    <button @click="emulatorStart(model);">Start</button>
+                    <button class="positive" @click="emulatorStart(model);">Start</button>
                 </div>
 
                 <div>
@@ -187,7 +187,7 @@
                             {{ details.header }}
                         </option>
                     </select>
-                    <button @click="emulatorStartFromUrl();">
+                    <button class="positive" @click="emulatorStartFromUrl();">
                         Start from URL
                     </button>
 
@@ -199,7 +199,7 @@
 
                 <hr />
 
-                <button @click="emulatorStop();">Stop</button>
+                <button class="negative" @click="emulatorStop();">Stop</button>
             </section>
             <section>
                 <h3>Emulator commands</h3>
@@ -212,8 +212,8 @@
                     <div class="wipe-yes-no">
                         <button @click="emulatorWipe();">Wipe</button>
                         <div>
-                            <button @click="emulatorPressYes();">Press yes</button>
-                            <button @click="emulatorPressNo();">Press no</button>
+                            <button class="positive" @click="emulatorPressYes();">Press yes</button>
+                            <button class="negative" @click="emulatorPressNo();">Press no</button>
                         </div>
                     </div>
                     <input
