@@ -59,7 +59,7 @@ if [[ $PULL -eq 1 ]]; then
     fi
 
     echo -e "Downloading latest images"
-    docker-compose -f ./docker/compose.yml pull $SERVICE_NAME $TENV_REGTEST
+    docker compose -f ./docker/compose.yml pull $SERVICE_NAME $TENV_REGTEST
 fi
 
 echo -e "Setup xhost for video device output"
@@ -83,4 +83,4 @@ else
 fi
 
 # launch trezor-user-env
-docker-compose -f ./docker/compose.yml up --force-recreate $SERVICE_NAME $TENV_REGTEST
+docker compose -f ./docker/compose.yml up --force-recreate $SERVICE_NAME $TENV_REGTEST
