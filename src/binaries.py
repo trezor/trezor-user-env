@@ -11,11 +11,11 @@ FIRMWARE_BIN_DIR = ROOT_DIR / "src/binaries/firmware/bin"
 USER_DOWNLOADED_DIR = FIRMWARE_BIN_DIR / "user_downloaded"
 USER_DOWNLOADED_DIR.mkdir(exist_ok=True)
 
-Model = Literal["1", "2", "R", "T3T1"]
+Model = Literal["T1B1", "T2T1", "T2B1", "T3T1"]
 FIRMWARES: Dict[Model, Dict[str, str]] = {
-    "1": OrderedDict(),
-    "2": OrderedDict(),
-    "R": OrderedDict(),
+    "T1B1": OrderedDict(),
+    "T2T1": OrderedDict(),
+    "T2B1": OrderedDict(),
     "T3T1": OrderedDict(),
 }
 
@@ -24,9 +24,9 @@ BRIDGES: List[str] = []
 IS_ARM = os.uname().machine.startswith(("aarch64", "arm"))
 ARM_IDENTIFIER = "-arm"
 
-IDENTIFIER_T1 = "trezor-emu-legacy-v"
-IDENTIFIER_TT = "trezor-emu-core-v"
-IDENTIFIER_TR = "trezor-emu-core-R-v"
+IDENTIFIER_T1B1 = "trezor-emu-legacy-v"
+IDENTIFIER_T2T1 = "trezor-emu-core-v"
+IDENTIFIER_T2B1 = "trezor-emu-core-R-v"
 IDENTIFIER_T3T1 = "trezor-emu-core-T3T1-v"
 
 
@@ -84,9 +84,9 @@ def explore_firmwares(args: Any) -> None:
             continue
 
         models: List[Tuple[str, Model]] = [
-            (IDENTIFIER_T1, "1"),
-            (IDENTIFIER_TT, "2"),
-            (IDENTIFIER_TR, "R"),
+            (IDENTIFIER_T1B1, "T1B1"),
+            (IDENTIFIER_T2T1, "T2T1"),
+            (IDENTIFIER_T2B1, "T2B1"),
             (IDENTIFIER_T3T1, "T3T1"),
         ]
 
@@ -140,15 +140,9 @@ def explore_bridges() -> None:
     if IS_ARM:
         BRIDGES.append(f"2.0.33{ARM_IDENTIFIER}")
         BRIDGES.append(f"2.0.32{ARM_IDENTIFIER}")
-        BRIDGES.append(f"2.0.31{ARM_IDENTIFIER}")
-        BRIDGES.append(f"2.0.30{ARM_IDENTIFIER}")
     else:
         BRIDGES.append("2.0.33")
         BRIDGES.append("2.0.32")
-        BRIDGES.append("2.0.31")
-        BRIDGES.append("2.0.27")
-        BRIDGES.append("2.0.26")
-        BRIDGES.append("2.0.19")
 
 
 def patch_emulators_for_nix(dir_to_patch: str = "") -> None:
