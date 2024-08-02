@@ -7,4 +7,4 @@ DIR_TO_PATCH="${1:-src/binaries/firmware/bin}"
 
 echo "Patching ${DIR_TO_PATCH}"
 
-nix-shell --run "autoPatchelf ${DIR_TO_PATCH}"
+patchelf ${DIR_TO_PATCH}
