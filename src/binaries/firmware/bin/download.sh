@@ -5,25 +5,67 @@ SYSTEM_ARCH=$(uname -m)
 
 cd "$(dirname "${BASH_SOURCE[0]}")"
 BIN_DIR=$(pwd)
+base_url="https://data.trezor.io/dev/firmware/releases/emulators-new"
 
 if [[ $SYSTEM_ARCH == x86_64* ]]; then
     SITE="https://data.trezor.io/dev/firmware/releases/emulators/"
     CUT_DIRS=4
+    suffix=""
 
 elif [[ $SYSTEM_ARCH == aarch64* ]]; then
     SITE="https://data.trezor.io/dev/firmware/releases/emulators/arm/"
     CUT_DIRS=5
+    suffix="-arm"
 
 else
    echo "Not a supported arch - $SYSTEM_ARCH"
    exit 1
 fi
 
-if ! wget --no-config -e robots=off --no-verbose --no-clobber --no-parent --cut-dirs=$CUT_DIRS --no-host-directories --recursive --reject "index.html*" "$SITE"; then
-    echo "Unable to fetch released emulators from $SITE"
-    echo "You will have only available latest builds from CI"
-    echo
-  fi
+# if ! wget --no-config -e robots=off --no-verbose --no-clobber --no-parent --cut-dirs=$CUT_DIRS --no-host-directories --recursive --reject "index.html*" "$SITE"; then
+#     echo "Unable to fetch released emulators from $SITE"
+#     echo "You will have only available latest builds from CI"
+#     echo
+#   fi
+
+# Define the emulators to download latest 10 versions
+files=(
+ # T1B1
+  "T1B1/trezor-emu-legacy-T1B1-v1.10.0${suffix}"
+  "T1B1/trezor-emu-legacy-T1B1-v1.10.1${suffix}"
+  "T1B1/trezor-emu-legacy-T1B1-v1.10.2${suffix}"
+  "T1B1/trezor-emu-legacy-T1B1-v1.10.3${suffix}"
+  "T1B1/trezor-emu-legacy-T1B1-v1.10.4${suffix}"
+  "T1B1/trezor-emu-legacy-T1B1-v1.10.5${suffix}"
+  "T1B1/trezor-emu-legacy-T1B1-v1.11.1${suffix}"
+  "T1B1/trezor-emu-legacy-T1B1-v1.11.2${suffix}"
+  "T1B1/trezor-emu-legacy-T1B1-v1.12.0${suffix}"
+  "T1B1/trezor-emu-legacy-T1B1-v1.12.1${suffix}"
+  # T2T1
+  "T2T1/trezor-emu-core-T2T1-v2.5.1${suffix}"
+  "T2T1/trezor-emu-core-T2T1-v2.5.2${suffix}"
+  "T2T1/trezor-emu-core-T2T1-v2.5.3${suffix}"
+  "T2T1/trezor-emu-core-T2T1-v2.6.0${suffix}"
+  "T2T1/trezor-emu-core-T2T1-v2.6.3${suffix}"
+  "T2T1/trezor-emu-core-T2T1-v2.6.4${suffix}"
+  "T2T1/trezor-emu-core-T2T1-v2.7.0${suffix}"
+  "T2T1/trezor-emu-core-T2T1-v2.7.2${suffix}"
+  "T2T1/trezor-emu-core-T2T1-v2.8.1${suffix}"
+  # T2B1
+  "T2B1/trezor-emu-core-T2B1-v2.6.3${suffix}"
+  "T2B1/trezor-emu-core-T2B1-v2.6.4${suffix}"
+  "T2B1/trezor-emu-core-T2B1-v2.7.0${suffix}"
+  "T2B1/trezor-emu-core-T2B1-v2.7.2${suffix}"
+  "T2B1/trezor-emu-core-T2B1-v2.8.0${suffix}"
+  # T3T1
+  "T3T1/trezor-emu-core-T3T1-v2.7.2${suffix}"
+  "T3T1/trezor-emu-core-T3T1-v2.8.0${suffix}"
+  "T3T1/trezor-emu-core-T3T1-v2.8.1${suffix}"
+)
+
+for file in "${files[@]}"; do
+  wget "${base_url}/${file}" || true
+done
 
 # download emulator from main
 TMP_DIR="$BIN_DIR/tmp"
@@ -38,18 +80,15 @@ trap cleanup EXIT
 
 cd "$TMP_DIR"
 
-# NOTE: when unziping, using -o to overwrite existing files,
-# otherwise extracting TR into already existing TT will ask for confirmation
-
 if [[ $SYSTEM_ARCH == x86_64* ]]; then
     wget https://data.trezor.io/dev/firmware/emu-nightly/trezor-emu-legacy-T1B1-universal
-    mv trezor-emu-legacy-T1B1-universal ../trezor-emu-legacy-v1-main
+    mv trezor-emu-legacy-T1B1-universal ../trezor-emu-legacy-T1B1-v1-main
 
     wget https://data.trezor.io/dev/firmware/emu-nightly/trezor-emu-core-T2T1-universal
-    mv trezor-emu-core-T2T1-universal ../trezor-emu-core-v2-main
+    mv trezor-emu-core-T2T1-universal ../trezor-emu-core-T2T1-v2-main
 
     wget https://data.trezor.io/dev/firmware/emu-nightly/trezor-emu-core-T2B1-universal
-    mv trezor-emu-core-T2B1-universal ../trezor-emu-core-R-v2-main
+    mv trezor-emu-core-T2B1-universal ../trezor-emu-core-T2B1-v2-main
 
     wget https://data.trezor.io/dev/firmware/emu-nightly/trezor-emu-core-T3T1-universal
     mv trezor-emu-core-T3T1-universal ../trezor-emu-core-T3T1-v2-main
@@ -57,13 +96,13 @@ if [[ $SYSTEM_ARCH == x86_64* ]]; then
 elif [[ $SYSTEM_ARCH == aarch64* ]]; then
 
     wget https://data.trezor.io/dev/firmware/emu-nightly/trezor-emu-arm-legacy-T1B1-universal
-    mv trezor-emu-arm-legacy-T1B1-universal ../trezor-emu-legacy-v1-main-arm
+    mv trezor-emu-arm-legacy-T1B1-universal ../trezor-emu-legacy-T1B1-v1-main-arm
 
     wget https://data.trezor.io/dev/firmware/emu-nightly/trezor-emu-arm-core-T2T1-universal
-    mv trezor-emu-arm-core-T2T1-universal ../trezor-emu-core-v2-main-arm
+    mv trezor-emu-arm-core-T2T1-universal ../trezor-emu-core-T2T1-v2-main-arm
 
     wget https://data.trezor.io/dev/firmware/emu-nightly/trezor-emu-arm-core-T2B1-universal
-    mv trezor-emu-arm-core-T2B1-universal ../trezor-emu-core-R-v2-main-arm
+    mv trezor-emu-arm-core-T2B1-universal ../trezor-emu-core-T2B1-v2-main-arm
 
     wget https://data.trezor.io/dev/firmware/emu-nightly/trezor-emu-arm-core-T3T1-universal
     mv trezor-emu-arm-core-T3T1-universal ../trezor-emu-core-T3T1-v2-main-arm
