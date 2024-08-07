@@ -24,9 +24,9 @@ BRIDGES: List[str] = []
 IS_ARM = os.uname().machine.startswith(("aarch64", "arm"))
 ARM_IDENTIFIER = "-arm"
 
-IDENTIFIER_T1B1 = "trezor-emu-legacy-v"
-IDENTIFIER_T2T1 = "trezor-emu-core-v"
-IDENTIFIER_T2B1 = "trezor-emu-core-R-v"
+IDENTIFIER_T1B1 = "trezor-emu-legacy-T1B1-v"
+IDENTIFIER_T2T1 = "trezor-emu-core-T2T1-v"
+IDENTIFIER_T2B1 = "trezor-emu-core-T2B1-v"
 IDENTIFIER_T3T1 = "trezor-emu-core-T3T1-v"
 
 
