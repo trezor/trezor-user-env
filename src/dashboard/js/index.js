@@ -16,23 +16,23 @@ const app = createApp({
             },
             emulators: {
                 versions: {
-                    1: {
+                    T1B1: {
                         header: "Trezor One",
                         versions: [],
                         selected: "",
                     },
-                    2: {
+                    T2T1: {
                         header: "Trezor T",
                         versions: [],
                         selected: "",
                     },
-                    R: {
+                    T2B1: {
                         header: "Trezor Safe 3",
                         versions: [],
                         selected: "",
                     },
                     T3T1: {
-                        header: "Trezor T3T1",
+                        header: "Trezor Safe 5",
                         versions: [],
                         selected: "",
                     },
@@ -47,7 +47,7 @@ const app = createApp({
                 url: "",
                 typeChoices: ["Gitlab job ID", "Custom link"],
                 type: "Gitlab job ID",
-                model: "2",
+                model: "T2T1",
                 downloadMessage: "",
             },
             emulatorCommands: {
@@ -274,7 +274,7 @@ const app = createApp({
                 const T2PathSuffix =
                     "artifacts/raw/core/build/unix/trezor-emu-core";
                 const baseUrl = `${gitlabJobPrefix}/${url}`;
-                if (model === "1") {
+                if (model === "T1B1") {
                     url = `${baseUrl}/${T1PathSuffix}`;
                 } else {
                     url = `${baseUrl}/${T2PathSuffix}`;

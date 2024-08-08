@@ -181,19 +181,19 @@ async def test_bridge_start_stop(websocket) -> None:
 
 async def test_emulator_tt_start_stop(websocket) -> None:
     await _test_start_stop(
-        websocket, component="emulator", version=EMU_TO_TEST_TT, model="2"
+        websocket, component="emulator", version=EMU_TO_TEST_TT, model="T2T1"
     )
 
 
 async def test_emulator_t1_start_stop(websocket) -> None:
     await _test_start_stop(
-        websocket, component="emulator", version=EMU_TO_TEST_T1, model="1"
+        websocket, component="emulator", version=EMU_TO_TEST_T1, model="T1B1"
     )
 
 
 async def test_emulator_tr_start_stop(websocket) -> None:
     await _test_start_stop(
-        websocket, component="emulator", version=EMU_TO_TEST_TR, model="R"
+        websocket, component="emulator", version=EMU_TO_TEST_TR, model="T2B1"
     )
 
 

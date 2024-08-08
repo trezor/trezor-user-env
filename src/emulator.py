@@ -125,9 +125,9 @@ def start_from_url(
     # Deciding the location to save depending on being T1/TT/TR
     # (to be compatible with already existing emulators)
     model_identifier = {
-        "1": binaries.IDENTIFIER_T1,
-        "2": binaries.IDENTIFIER_TT,
-        "R": binaries.IDENTIFIER_TR,
+        "T1B1": binaries.IDENTIFIER_T1B1,
+        "T2T1": binaries.IDENTIFIER_T2T1,
+        "T2B1": binaries.IDENTIFIER_T2B1,
         "T3T1": binaries.IDENTIFIER_T3T1,
     }.get(model)
     if not model_identifier:
@@ -215,13 +215,13 @@ def start(
 
     emu_location = Path(binaries.get_firmware_location(model, version))
 
-    if model in ("2", "R", "T3T1"):
+    if model in ("T2T1", "T2B1", "T3T1"):
         EMULATOR = CoreEmulator(
             emu_location,
             profile_dir=binaries.FIRMWARE_BIN_DIR,
             logfile=logfile,
         )
-    elif model == "1":
+    elif model == "T1B1":
         os.environ["TREZOR_OLED_SCALE"] = str(TREZOR_ONE_OLED_SCALE)
         EMULATOR = LegacyEmulator(
             emu_location,
@@ -259,7 +259,7 @@ def start(
     # Creating a new directory for each emulator session, so the screens are not being overwritten
     # NOT supported for T1, as it needs Debuglink for screenshot creation, and therefore
     # it would not save screenshots for example from Suite and other interaction.
-    if save_screenshots and model != "1":
+    if save_screenshots and model != "T1B1":
         time.sleep(SLEEP)
         with connect_to_debuglink() as debug:
             # Need to set model info (both TT and TR are under same category)

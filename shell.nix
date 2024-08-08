@@ -21,7 +21,6 @@ stdenv.mkDerivation {
     xorg.xhost
     wget
     git
-    unzip
     curl
     procps
   ];
