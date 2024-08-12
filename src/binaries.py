@@ -57,7 +57,9 @@ def get_main_version(model: Model) -> str:
 def check_model(model: str) -> None:
     supported_models = FIRMWARES.keys()
     if model not in supported_models:
-        raise RuntimeError(f"Unknown model {model} - supported are {supported_models}")
+        raise RuntimeError(
+            f"Unknown model {model} - supported are {list(supported_models)}"
+        )
 
 
 def _print_in_verbose(text: str, args: Any) -> None:
