@@ -19,15 +19,17 @@ FIRMWARES: Dict[Model, Dict[str, str]] = {
     "T3T1": OrderedDict(),
 }
 
+MODEL_IDENTIFIERS: Dict[Model, str] = {
+    "T1B1": "trezor-emu-legacy-T1B1-v",
+    "T2T1": "trezor-emu-core-T2T1-v",
+    "T2B1": "trezor-emu-core-T2B1-v",
+    "T3T1": "trezor-emu-core-T3T1-v",
+}
+
 BRIDGES: List[str] = []
 
 IS_ARM = os.uname().machine.startswith(("aarch64", "arm"))
 ARM_IDENTIFIER = "-arm"
-
-IDENTIFIER_T1B1 = "trezor-emu-legacy-T1B1-v"
-IDENTIFIER_T2T1 = "trezor-emu-core-T2T1-v"
-IDENTIFIER_T2B1 = "trezor-emu-core-T2B1-v"
-IDENTIFIER_T3T1 = "trezor-emu-core-T3T1-v"
 
 
 def register_new_firmware(model: Model, version: str, location: str) -> None:
@@ -88,14 +90,7 @@ def explore_firmwares(args: Any) -> None:
             _print_in_verbose(f"On x86, ignoring ARM emulator - {fw}", args)
             continue
 
-        models: List[Tuple[str, Model]] = [
-            (IDENTIFIER_T1B1, "T1B1"),
-            (IDENTIFIER_T2T1, "T2T1"),
-            (IDENTIFIER_T2B1, "T2B1"),
-            (IDENTIFIER_T3T1, "T3T1"),
-        ]
-
-        for identifier, model in models:
+        for model, identifier in MODEL_IDENTIFIERS.items():
             if identifier in fw:
                 version = fw.split(identifier)[-1]
                 break
