@@ -46,7 +46,7 @@ REGTEST_RPC = BTCJsonRPC(
     user="rpc",
     passwd="rpc",
 )
-PREV_RUNNING_MODEL: str = ""
+PREV_RUNNING_MODEL: binaries.Model | None = None
 
 
 def is_regtest_active() -> bool:
@@ -162,26 +162,26 @@ class ResponseGetter:
     def run_emulator_command(self) -> "ResponseType":
         global PREV_RUNNING_MODEL
 
-        # The versions are sorted, the first one is the current main
-        # build and then the rest by version number.
-        # Not supplying any version will result in "2-main",
-        # "X-latest" will get the latest release of X.
         if self.command == "emulator-start":
+            model: binaries.Model | None = self.request_dict.get("model")
+            if not model:
+                return {
+                    "success": False,
+                    "error": "Model must be supplied for the emulator to start",
+                }
+            binaries.check_model(model)
+
+            # Not supplying any version will result in "-main",
+            # "-latest" will get the latest release of X.
             if "version" in self.request_dict:
                 requested_version = self.request_dict["version"]
                 if requested_version.endswith("-latest"):
-                    model = requested_version[0]
                     version = binaries.get_latest_release_version(model)
                 else:
                     version = requested_version
             else:
-                version = binaries.get_main_version("2")
+                version = binaries.get_main_version(model)
 
-            # Model is not compulsory for backwards compatibility purposes
-            # Is needed now, because TR and TT are sharing the same versions
-            # (default to the first character in version, which works fine for
-            # "legacy" T1 and TT setup - `2.5.0`, `2-main`, `1.10.1`, etc.)
-            model = self.request_dict.get("model", version[0])
             wipe = self.request_dict.get("wipe", False)
             output_to_logfile = self.request_dict.get("output_to_logfile", True)
             save_screenshots = self.request_dict.get("save_screenshots", False)
@@ -202,6 +202,12 @@ class ResponseGetter:
         elif self.command == "emulator-start-from-url":
             url = self.request_dict["url"]
             model = self.request_dict["model"]
+            if not model:
+                return {
+                    "success": False,
+                    "error": "Model must be supplied for the emulator to start",
+                }
+            binaries.check_model(model)
             wipe = self.request_dict.get("wipe", False)
             output_to_logfile = self.request_dict.get("output_to_logfile", True)
             save_screenshots = self.request_dict.get("save_screenshots", False)
