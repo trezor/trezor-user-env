@@ -5,28 +5,18 @@ SYSTEM_ARCH=$(uname -m)
 
 cd "$(dirname "${BASH_SOURCE[0]}")"
 BIN_DIR=$(pwd)
-base_url="https://data.trezor.io/dev/firmware/releases/emulators-new"
+BASE_EMU_URL="https://data.trezor.io/dev/firmware/releases/emulators-new"
 
 if [[ $SYSTEM_ARCH == x86_64* ]]; then
-    SITE="https://data.trezor.io/dev/firmware/releases/emulators/"
-    CUT_DIRS=4
     suffix=""
 
 elif [[ $SYSTEM_ARCH == aarch64* ]]; then
-    SITE="https://data.trezor.io/dev/firmware/releases/emulators/arm/"
-    CUT_DIRS=5
     suffix="-arm"
 
 else
    echo "Not a supported arch - $SYSTEM_ARCH"
    exit 1
 fi
-
-# if ! wget --no-config -e robots=off --no-verbose --no-clobber --no-parent --cut-dirs=$CUT_DIRS --no-host-directories --recursive --reject "index.html*" "$SITE"; then
-#     echo "Unable to fetch released emulators from $SITE"
-#     echo "You will have only available latest builds from CI"
-#     echo
-#   fi
 
 # Define the emulators to download latest 10 versions
 files=(
@@ -64,7 +54,7 @@ files=(
 )
 
 for file in "${files[@]}"; do
-  wget "${base_url}/${file}" || true
+  wget "${BASE_EMU_URL}/${file}" || true
 done
 
 # download emulator from main
