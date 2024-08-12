@@ -35,7 +35,10 @@ def register_new_firmware(model: Model, version: str, location: str) -> None:
 
 
 def get_firmware_location(model: Model, version: str) -> str:
-    return FIRMWARES[model][version]
+    try:
+        return FIRMWARES[model][version]
+    except KeyError:
+        raise RuntimeError(f"Unknown firmware {model} {version}")
 
 
 def get_all_firmware_versions() -> dict[Model, list[str]]:
