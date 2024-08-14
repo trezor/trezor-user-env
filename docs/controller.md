@@ -24,10 +24,11 @@
   - **response**: `{"bridge_status": bool, "emulator_status": bool}`
 
 - **emulator-start**
-  - **action**: start the specified version of emulator (and if one already runs, kills it)
+  - **action**: start the specified emulator (identified by model + version) (and if one already runs, kills it)
   - **arguments**:
-    - **version**: `str` (1.9.4, 2.4.0., etc.) - default is the latest TT (`2-main`)
-      - `1-latest` and `2-latest` can be used to get the latest released version of that model
+    - **model**: `str` (enum of new model names - `["T1B1", "T2T1", "T2B1", "T3T1"]`) - needs to be supplied
+    - **version**: `str` (1.9.4, 2.4.0., etc.) - default is the latest version from master/main branch (`-main`)
+      - `-latest` can be used to get the latest released version of that model (by release tag, e.g. 2.9.0)
     - **wipe**: `bool` (default=False) whether to delete the emulator profile before starting it
     - **output_to_logfile**: `bool` (default=True) whether the debug output should go to a logfile - otherwise it goes to stdout
     - **save_screenshots**: `bool` (default=False) whether to save screenshots to enable calling **emulator-get-screenshot**
@@ -36,7 +37,7 @@
   - **action**: downloads emulator from specified URL and runs it
   - **arguments**:
     - **url**: `str` from where to download the emulator
-    - **model**: `str` which emulator it is - either "1" for T1 or "2" for T2
+    - **model**: `str` which emulator it is - `["T1B1", "T2T1", "T2B1", "T3T1"]`
     - **wipe**: `bool` (default=False) whether to delete the emulator profile before starting it
     - **output_to_logfile**: `bool` (default=True) whether the debug output should go to a logfile - otherwise it goes to stdout
     - **save_screenshots**: `bool` (default=False) whether to save screenshots to enable calling **emulator-get-screenshot**
