@@ -4,6 +4,7 @@ from __future__ import annotations
 import os
 import socket
 import time
+from shlex import split
 from typing import TYPE_CHECKING
 
 from psutil import Popen
@@ -97,14 +98,14 @@ def start(version: str, proxy: bool = False, output_to_logfile: bool = True) -> 
         if helpers.physical_trezor()
         else f"{bridge_location} -ed 21324:21325 -u=false"
     )
-
     # Conditionally redirecting the output to a logfile instead of terminal/stdout
+    command_list = split(command)
     if output_to_logfile:
         log_file = open(helpers.EMU_BRIDGE_LOG, "a")
         log(f"All the bridge debug output redirected to {helpers.EMU_BRIDGE_LOG}")
-        BRIDGE = Popen(command, shell=True, stdout=log_file, stderr=log_file)
+        BRIDGE = Popen(command_list, stdout=log_file, stderr=log_file)
     else:
-        BRIDGE = Popen(command, shell=True)
+        BRIDGE = Popen(command_list)
 
     log(f"Bridge spawned: {BRIDGE}. CMD: {BRIDGE.cmdline()}")
 
@@ -129,10 +130,22 @@ def stop(proxy: bool = True) -> None:
     global VERSION_RUNNING
 
     if BRIDGE is None:
-        log("WARNING: Attempting to stop a brige, but it is not running", "red")
+        log("WARNING: Attempting to stop a bridge, but it is not running", "red")
     else:
-        BRIDGE.kill()
-        log(f"Bridge killed: {BRIDGE}")
+        try:
+            BRIDGE.terminate()
+            BRIDGE.wait(timeout=5)
+        except Exception as e:
+            log(f"Termination failed: {e}, killing process.", "yellow")
+            BRIDGE.kill()
+            BRIDGE.wait()
+
+        # Ensuring all child processes are cleaned up
+        for child in BRIDGE.children(recursive=True):
+            log(f"Killing child process {child.pid}")
+            child.kill()
+            child.wait()
+
         BRIDGE = None
         VERSION_RUNNING = None
 
