@@ -32,6 +32,7 @@ files=(
   "T1B1/trezor-emu-legacy-T1B1-v1.12.0${suffix}"
   "T1B1/trezor-emu-legacy-T1B1-v1.12.1${suffix}"
   # T2T1
+  "T2T1/trezor-emu-core-T2T1-v2.3.0${suffix}"
   "T2T1/trezor-emu-core-T2T1-v2.5.1${suffix}"
   "T2T1/trezor-emu-core-T2T1-v2.5.2${suffix}"
   "T2T1/trezor-emu-core-T2T1-v2.5.3${suffix}"
