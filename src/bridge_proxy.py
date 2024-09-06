@@ -34,9 +34,9 @@ def start() -> None:
 
     file_path = os.path.join(os.path.dirname(__file__), "bridge_proxy_server.py")
 
-    command = f"python {file_path}"
+    command_list = ["python", file_path]
 
-    BRIDGE_PROXY = Popen(command, shell=True)
+    BRIDGE_PROXY = Popen(command_list)
     log(f"Bridge proxy spawned: {BRIDGE_PROXY}. CMD: {BRIDGE_PROXY.cmdline()}")
 
     # Verifying if the proxy is really running
@@ -54,4 +54,9 @@ def stop() -> None:
     else:
         BRIDGE_PROXY.kill()
         log(f"Bridge proxy killed: {BRIDGE_PROXY}")
+        # Ensuring all child processes are cleaned up
+        for child in BRIDGE_PROXY.children(recursive=True):
+            log(f"Killing child process {child.pid}")
+            child.kill()
+            child.wait()
         BRIDGE_PROXY = None
