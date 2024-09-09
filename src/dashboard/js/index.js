@@ -86,6 +86,12 @@ const app = createApp({
         this.$nextTick(() => {
             document.getElementById("app").style.display = "block";
         });
+        // listen for Esc key and close the notification
+        window.addEventListener("keydown", (event) => {
+            if (this.notifications.showPopup && event.key === "Escape") {
+                this.notifications.showPopup = false;
+            }
+        });
     },
     methods: {
         setupWebSocket() {
