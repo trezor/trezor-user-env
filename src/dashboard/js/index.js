@@ -68,6 +68,7 @@ const app = createApp({
             },
             ws: null,
             isWaitingForResponse: false,
+            enablePassphrase: true,
             req_id: 0,
             logs: [],
             notifications: {
@@ -415,7 +416,7 @@ const app = createApp({
                 type: "emulator-setup",
                 mnemonic: seed,
                 pin: "",
-                passphrase_protection: false,
+                passphrase_protection: this.enablePassphrase,
                 label: "Hello!",
             });
         },
