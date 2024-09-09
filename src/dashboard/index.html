@@ -219,6 +219,18 @@
                         </div>
                     </div>
                     <input
+                        id="enablePassphrase"
+                        type="checkbox"
+                        v-model="enablePassphrase"
+                    />
+                    <label
+                        class="underlined"
+                        title="Passphrase protection will be enabled with loading seed."
+                        for="enablePassphrase"
+                        >Enable passphrase protection with Load</label
+                    >
+                    <br/>
+                    <input
                         type="text"
                         placeholder="input seed"
                         v-model="emulatorCommands.seed"
