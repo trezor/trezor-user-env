@@ -12,6 +12,7 @@
                 v-if="notifications.showPopup"
                 id="notifications-popup"
                 class="popup"
+                @click="notifications.showPopup = false"
             >
                 <div
                     :class="[
@@ -20,6 +21,7 @@
                         {'red-border': notifications.isError},
                         {'green-border': !notifications.isError}
                     ]"
+                    @click.stop
                 >
                     <span
                         class="close-button"
@@ -235,7 +237,7 @@
                     <button @click="emulatorResetDeviceShamir();">
                         Reset with Shamir
                     </button>
-                    
+
                 </div>
                 <div>
                     <button @click="readAndConfirmMnemonic();">
@@ -271,9 +273,9 @@
                         Read and confirm mnemonic Shamir
                     </button>
                 </div>
-                
+
             </section>
-            
+
             <section>
                 <h3>Regtest</h3>
 
