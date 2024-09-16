@@ -651,8 +651,11 @@ def get_debug_state() -> Dict[str, Any]:
             # Not interested in private attributes and non-JSON fields (bytes)
             if key.startswith("__") or key[0].isupper():
                 continue
-            if val is not None and not isinstance(val, (list, str, bool, int)):
-                continue
+            if isinstance(val, bytes):
+                try:
+                    val = val.decode("utf-8")
+                except UnicodeDecodeError:
+                    val = val.hex()
 
             debug_state_dict[key] = val
 
