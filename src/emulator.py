@@ -423,21 +423,52 @@ def swipe(direction: str) -> None:
             debug.swipe_left()
 
 
+def assert_text_on_screen(debug: DebugLink, text: str) -> None:
+    layout = debug.read_layout()
+    real_text = layout.text_content()
+    assert text.lower() in real_text.lower(), f"Expected text: {text}, got: {real_text}"
+
+
+def assert_seed_words(debug: DebugLink, amount: int) -> None:
+    layout = debug.read_layout()
+    seed_words = layout.seed_words()
+    real_amount = len(seed_words)
+    assert real_amount == amount, f"Expected seed words: {amount}, got: {real_amount}"
+
+
 def read_and_confirm_mnemonic() -> None:
+    with connect_to_client() as client:
+        internal_model = client.features.internal_model
+
+    if internal_model == models.T2T1.internal_name:
+        read_and_confirm_mnemonic_t2t1()
+    else:
+        raise RuntimeError(f"Model {internal_model} not supported for this operation.")
+
+
+def read_and_confirm_mnemonic_t2t1() -> None:
     with connect_to_debuglink() as debug:
-        # So that we can wait layout
         debug.watch_layout(True)
 
-        # Clicking continue button
-        debug.press_yes()
-        time.sleep(SLEEP)
-
-        # Scrolling through all the 12 words on next three pages
-        for _ in range(3):
-            debug.swipe_up()
+        preview_texts = [
+            "backup contains 12 words",
+            "anywhere digital",
+        ]
+        for expected_text in preview_texts:
+            assert_text_on_screen(debug, expected_text)
+            debug.press_yes()
             time.sleep(SLEEP)
 
-        # Confirming that I have written the seed down
+        # Two swipes and confirm of the seed words
+        assert_seed_words(debug, 4)
+        debug.swipe_up()
+        time.sleep(SLEEP)
+
+        assert_seed_words(debug, 4)
+        debug.swipe_up()
+        time.sleep(SLEEP)
+
+        assert_seed_words(debug, 4)
         debug.press_yes()
         time.sleep(SLEEP)
 
@@ -446,23 +477,30 @@ def read_and_confirm_mnemonic() -> None:
         assert secret_bytes is not None
         mnem = secret_bytes.decode("utf-8")
         mnemonic = mnem.split()
+        assert (
+            len(mnemonic) == 12
+        ), f"Expected 12 words in mnemonic, got {len(mnemonic)}"
         time.sleep(SLEEP)
 
         # Answering 3 questions asking for a specific word
         for _ in range(3):
-            layout = debug.wait_layout()
+            layout = debug.read_layout()
+            screen_text = layout.text_content()
             # "Select word 3 of 20"
             #              ^
-            word_pos = int(layout.text_content().split()[2])
+            assert_text_on_screen(debug, "select word")
+            word_pos = int(screen_text.split()[2])
             wanted_word = mnemonic[word_pos - 1].lower()
             debug.input(wanted_word)
             time.sleep(SLEEP)
 
         # Click Continue to finish the quiz
+        assert_text_on_screen(debug, "finished verifying")
         debug.press_yes()
         time.sleep(SLEEP)
 
         # Click Continue to finish the backup
+        assert_text_on_screen(debug, "backup is done")
         debug.press_yes()
         time.sleep(SLEEP)
 
@@ -517,7 +555,7 @@ def read_and_confirm_shamir_mnemonic(shares: int = 1, threshold: int = 1) -> Non
 
         # When we have 1 or 2 shares, the threshold is set and cannot be changed
         # (it will be 1 and 2 respectively)
-        # Otherise assign it correctly by clicking the plus/minus button
+        # Otherwise assign it correctly by clicking the plus/minus button
         if shares not in [1, 2]:
             # Default threshold can be calculated from the share number
             default_threshold = shares // 2 + 1
@@ -660,3 +698,8 @@ def get_debug_state() -> Dict[str, Any]:
             debug_state_dict[key] = val
 
         return debug_state_dict
+
+
+# For testing/debugging purposes
+if __name__ == "__main__":
+    read_and_confirm_mnemonic()
