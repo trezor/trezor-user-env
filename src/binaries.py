@@ -141,6 +141,7 @@ def explore_bridges() -> None:
         BRIDGES.append(f"2.0.33{ARM_IDENTIFIER}")
         BRIDGES.append(f"2.0.32{ARM_IDENTIFIER}")
     else:
+        BRIDGES.append("2.0.27")
         BRIDGES.append("2.0.33")
         BRIDGES.append("2.0.32")
 
