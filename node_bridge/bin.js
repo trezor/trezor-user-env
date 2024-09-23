@@ -1867,7 +1867,7 @@ function createProtocolMessage(body, protocol) {
 }
 
 // src/core.ts
-var import_usb = require("usb");
+// var import_usb = require("usb");
 
 // ../protocol/src/protocol-v1/index.ts
 var protocol_v1_exports = {};
