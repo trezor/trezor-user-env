@@ -22,6 +22,7 @@ stdenv.mkDerivation {
     wget
     git
     curl
+    nodejs # for node bridge
     procps
   ];
 }
