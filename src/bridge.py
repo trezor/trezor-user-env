@@ -81,24 +81,33 @@ def start(version: str, proxy: bool = False, output_to_logfile: bool = True) -> 
         log("WARNING: Bridge is already running, not spawning a new one", "red")
         return
 
-    # normalize path to be relative to this folder, not pwd
-    path = helpers.ROOT_DIR / "src/binaries/trezord-go/bin"
+    def get_command_list() -> list[str]:
+        # Special handling of node-js bridge (experimental)
+        if "node" in version:
+            path = helpers.ROOT_DIR / "node_bridge/bin.js"
+            return ["node", str(path)]
+        else:
+            # normalize path to be relative to this folder, not pwd
+            path = helpers.ROOT_DIR / "src/binaries/trezord-go/bin"
 
-    bridge_location = path / f"trezord-go-v{version}"
-    if not bridge_location.exists():
-        raise RuntimeError(
-            f"Bridge does not exist for version {version} under {bridge_location}"
-        )
+            bridge_location = path / f"trezord-go-v{version}"
+            if not bridge_location.exists():
+                raise RuntimeError(
+                    f"Bridge does not exist for version {version} under {bridge_location}"
+                )
 
-    # In case user wants to use a physical device, not adding any arguments
-    # to the bridge. These arguments make the bridge optimized for emulators.
-    command = (
-        str(bridge_location)
-        if helpers.physical_trezor()
-        else f"{bridge_location} -ed 21324:21325 -u=false"
-    )
-    # Conditionally redirecting the output to a logfile instead of terminal/stdout
-    command_list: list[str] = split(command)
+            # In case user wants to use a physical device, not adding any arguments
+            # to the bridge. These arguments make the bridge optimized for emulators.
+            command = (
+                str(bridge_location)
+                if helpers.physical_trezor()
+                else f"{bridge_location} -ed 21324:21325 -u=false"
+            )
+            # Conditionally redirecting the output to a logfile instead of terminal/stdout
+            return split(command)
+
+    command_list = get_command_list()
+
     if output_to_logfile:
         log_file = open(helpers.EMU_BRIDGE_LOG, "a")
         log(f"All the bridge debug output redirected to {helpers.EMU_BRIDGE_LOG}")
