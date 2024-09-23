@@ -3589,7 +3589,7 @@ var TrezordNode = class {
 // src/bin.ts
 var trezordNode = new TrezordNode({
   port: 21325,
-  api: process.argv.includes("udp") ? "udp" : "usb",
+  api: "udp",
   logger: new Log("@trezor/transport-bridge", true)
 });
 trezordNode.start();
