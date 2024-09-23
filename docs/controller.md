@@ -128,6 +128,12 @@
     - TT: ` { ... "layout_lines": ["RecoveryHomescreen", "Select number of words", ""], ...}`
       - `layout_lines` showing the current content of the screen
 
+- **emulator-get-screen-content**
+  - **action**: get current screen content
+  - **response**: `{"response": {"title": str, "body": str}}`
+  - **example response**:
+    - `{'title': 'Create wallet backup', 'body': 'Your wallet backup contains 12 words in a specific order.'}`
+
 - **bridge-start**
   - **action**: start the specified version of bridge (only if it is not already running)
   - **arguments**:

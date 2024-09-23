@@ -10,7 +10,7 @@ from contextlib import contextmanager
 from datetime import datetime
 from pathlib import Path
 from subprocess import PIPE
-from typing import Any, Dict, Generator, Optional
+from typing import Any, Dict, Generator, Optional, TypedDict
 from urllib.error import HTTPError
 
 from psutil import Popen
@@ -683,7 +683,7 @@ def get_debug_state() -> Dict[str, Any]:
     # We need to connect on UDP not to interrupt any bridge sessions
     with connect_to_debuglink(needs_udp=True) as debug:
         debug_state = debug.state()
-        debug_state_dict = {}
+        debug_state_dict: Dict[str, Any] = {}
         for key in dir(debug_state):
             val = getattr(debug_state, key)
             # Not interested in private attributes and non-JSON fields (bytes)
@@ -698,6 +698,19 @@ def get_debug_state() -> Dict[str, Any]:
             debug_state_dict[key] = val
 
         return debug_state_dict
+
+
+class ScreenContent(TypedDict):
+    title: str
+    body: str
+
+
+def get_screen_content() -> ScreenContent:
+    with connect_to_debuglink(needs_udp=True) as debug:
+        layout = debug.read_layout()
+        title = layout.title()
+        body = layout.text_content()
+        return {"title": title, "body": body}
 
 
 # For testing/debugging purposes
