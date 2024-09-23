@@ -421,6 +421,8 @@ def swipe(direction: str) -> None:
             debug.swipe_down()
         elif direction == "left":
             debug.swipe_left()
+        else:
+            raise ValueError(f"Unknown direction: {direction}")
 
 
 def assert_text_on_screen(debug: DebugLink, text: str) -> None:
