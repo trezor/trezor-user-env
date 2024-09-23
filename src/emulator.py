@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import base64
 import os
+import re
 import stat
 import sys
 import time
@@ -439,13 +440,18 @@ def assert_seed_words(debug: DebugLink, amount: int) -> None:
 
 
 def read_and_confirm_mnemonic() -> None:
-    with connect_to_client() as client:
-        internal_model = client.features.internal_model
+    if not VERSION_RUNNING:
+        raise RuntimeError("No emulator running.")
 
-    if internal_model == models.T2T1.internal_name:
+    # It is not possible to read the model from the client's features
+    if models.T2T1.internal_name in VERSION_RUNNING:
         read_and_confirm_mnemonic_t2t1()
+    elif models.T2B1.internal_name in VERSION_RUNNING:
+        read_and_confirm_mnemonic_t2b1()
+    elif models.T3T1.internal_name in VERSION_RUNNING:
+        read_and_confirm_mnemonic_t3t1()
     else:
-        raise RuntimeError(f"Model {internal_model} not supported for this operation.")
+        raise RuntimeError(f"Model {VERSION_RUNNING} not supported for this operation.")
 
 
 def read_and_confirm_mnemonic_t2t1() -> None:
@@ -507,7 +513,81 @@ def read_and_confirm_mnemonic_t2t1() -> None:
         time.sleep(SLEEP)
 
 
-def read_and_confirm_shamir_mnemonic(shares: int = 1, threshold: int = 1) -> None:
+def read_and_confirm_mnemonic_t3t1() -> None:
+    with connect_to_debuglink(needs_udp=True) as debug:
+        debug.watch_layout(True)
+
+        # "backup contains XXX words"
+        words_pattern = r"contains (\d+) words"
+        text_content = debug.read_layout().text_content()
+        match = re.search(words_pattern, text_content)
+        if match is None:
+            raise RuntimeError(f"Could not find number of words in: {text_content}")
+        word_amount = int(match.group(1))
+
+        preview_texts = [
+            f"backup contains {word_amount} words",
+            "anywhere digital",
+            f"following {word_amount} words in order",
+        ]
+        for expected_text in preview_texts:
+            assert_text_on_screen(debug, expected_text)
+            debug.swipe_up()
+            time.sleep(SLEEP)
+
+        mnemonic: list[str] = []
+
+        for _ in range(word_amount):
+            debug.swipe_up()
+            seed_words = debug.read_layout().seed_words()
+            mnemonic.extend(seed_words)
+            time.sleep(SLEEP)
+
+        assert (
+            len(mnemonic) == word_amount
+        ), f"Expected {word_amount} words in mnemonic, got {len(mnemonic)}"
+
+        assert_text_on_screen(debug, f"I wrote down all {word_amount} words in order")
+        debug.press_yes()
+        time.sleep(SLEEP)
+
+        # Answering 3 questions asking for a specific word
+        for _ in range(3):
+            layout = debug.read_layout()
+            assert_text_on_screen(debug, "select word")
+
+            pattern = r"Select word (\d+)"
+            screen_text = layout.text_content()
+            match = re.search(pattern, screen_text)
+            if match is None:
+                raise RuntimeError(f"Could not find word position in: {screen_text}")
+
+            word_pos = int(match.group(1))
+
+            wanted_word = mnemonic[word_pos - 1].lower()
+            debug.input(wanted_word)
+            time.sleep(SLEEP)
+
+        assert_text_on_screen(debug, "wallet backup completed")
+        debug.swipe_up()
+        time.sleep(SLEEP)
+
+
+def read_and_confirm_mnemonic_t2b1() -> None:
+    raise NotImplementedError("T2B1 mnemonic confirmation not implemented yet.")
+
+
+def read_and_confirm_shamir_mnemonic(shares: int, threshold: int) -> None:
+    if not VERSION_RUNNING:
+        raise RuntimeError("No emulator running.")
+
+    if models.T2T1.internal_name in VERSION_RUNNING:
+        read_and_confirm_shamir_mnemonic_t2t1(shares=shares, threshold=threshold)
+    else:
+        raise RuntimeError(f"Model {VERSION_RUNNING} not supported for this operation.")
+
+
+def read_and_confirm_shamir_mnemonic_t2t1(shares: int, threshold: int) -> None:
     """Performs a walkthrough of the whole Shamir backup on the device.
 
     NOTE: does not support Super Shamir.
@@ -531,6 +611,7 @@ def read_and_confirm_shamir_mnemonic(shares: int = 1, threshold: int = 1) -> Non
         debug.watch_layout(True)
 
         # Click Continue to begin Shamir setup process
+        assert_text_on_screen(debug, "wallet backup contains multiple lists of words")
         debug.press_yes()
         time.sleep(SLEEP)
 
@@ -717,4 +798,10 @@ def get_screen_content() -> ScreenContent:
 
 # For testing/debugging purposes
 if __name__ == "__main__":
-    read_and_confirm_mnemonic()
+    # read_and_confirm_mnemonic()
+    read_and_confirm_mnemonic_t3t1()
+    # read_and_confirm_shamir_mnemonic_t2t1(3, 2)
+    # state = get_debug_state()
+    # print("state", state)
+    # screen = get_screen_content()
+    # print("screen", screen)
