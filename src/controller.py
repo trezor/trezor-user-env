@@ -138,7 +138,7 @@ class ResponseGetter:
 
     def run_bridge_command(self) -> "ResponseType":
         if self.command == "bridge-start":
-            version = self.request_dict.get("version", binaries.BRIDGES[0])
+            version = self.request_dict.get("version", binaries.DEFAULT_BRIDGE)
             output_to_logfile = self.request_dict.get("output_to_logfile", True)
             bridge.start(
                 version, proxy=BRIDGE_PROXY, output_to_logfile=output_to_logfile
