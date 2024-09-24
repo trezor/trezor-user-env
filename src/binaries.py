@@ -138,13 +138,13 @@ def sort_firmwares(version: str) -> Tuple[int, ...]:
 def explore_bridges() -> None:
     # Send only suitable bridges for ARM/non-ARM
     if IS_ARM:
-        BRIDGES.append("node-bridge")
         BRIDGES.append(f"2.0.33{ARM_IDENTIFIER}")
         BRIDGES.append(f"2.0.32{ARM_IDENTIFIER}")
-    else:
         BRIDGES.append("node-bridge")
+    else:
         BRIDGES.append("2.0.33")
         BRIDGES.append("2.0.32")
+        BRIDGES.append("node-bridge")
 
 
 def patch_emulators_for_nix(dir_to_patch: str = "") -> None:
