@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import base64
 import os
+import re
 import stat
 import sys
 import time
@@ -10,7 +11,7 @@ from contextlib import contextmanager
 from datetime import datetime
 from pathlib import Path
 from subprocess import PIPE
-from typing import Any, Dict, Generator, Optional
+from typing import Any, Dict, Generator, Optional, TypedDict
 from urllib.error import HTTPError
 
 from psutil import Popen
@@ -421,23 +422,61 @@ def swipe(direction: str) -> None:
             debug.swipe_down()
         elif direction == "left":
             debug.swipe_left()
+        else:
+            raise ValueError(f"Unknown direction: {direction}")
+
+
+def assert_text_on_screen(debug: DebugLink, text: str) -> None:
+    layout = debug.read_layout()
+    real_text = layout.text_content()
+    assert text.lower() in real_text.lower(), f"Expected text: {text}, got: {real_text}"
+
+
+def assert_seed_words(debug: DebugLink, amount: int) -> None:
+    layout = debug.read_layout()
+    seed_words = layout.seed_words()
+    real_amount = len(seed_words)
+    assert real_amount == amount, f"Expected seed words: {amount}, got: {real_amount}"
 
 
 def read_and_confirm_mnemonic() -> None:
+    if not VERSION_RUNNING:
+        raise RuntimeError("No emulator running.")
+
+    # It is not possible to read the model from the client's features
+    if models.T2T1.internal_name in VERSION_RUNNING:
+        read_and_confirm_mnemonic_t2t1()
+    elif models.T2B1.internal_name in VERSION_RUNNING:
+        read_and_confirm_mnemonic_t2b1()
+    elif models.T3T1.internal_name in VERSION_RUNNING:
+        read_and_confirm_mnemonic_t3t1()
+    else:
+        raise RuntimeError(f"Model {VERSION_RUNNING} not supported for this operation.")
+
+
+def read_and_confirm_mnemonic_t2t1() -> None:
     with connect_to_debuglink() as debug:
-        # So that we can wait layout
         debug.watch_layout(True)
 
-        # Clicking continue button
-        debug.press_yes()
-        time.sleep(SLEEP)
-
-        # Scrolling through all the 12 words on next three pages
-        for _ in range(3):
-            debug.swipe_up()
+        preview_texts = [
+            "backup contains 12 words",
+            "anywhere digital",
+        ]
+        for expected_text in preview_texts:
+            assert_text_on_screen(debug, expected_text)
+            debug.press_yes()
             time.sleep(SLEEP)
 
-        # Confirming that I have written the seed down
+        # Two swipes and confirm of the seed words
+        assert_seed_words(debug, 4)
+        debug.swipe_up()
+        time.sleep(SLEEP)
+
+        assert_seed_words(debug, 4)
+        debug.swipe_up()
+        time.sleep(SLEEP)
+
+        assert_seed_words(debug, 4)
         debug.press_yes()
         time.sleep(SLEEP)
 
@@ -446,28 +485,109 @@ def read_and_confirm_mnemonic() -> None:
         assert secret_bytes is not None
         mnem = secret_bytes.decode("utf-8")
         mnemonic = mnem.split()
+        assert (
+            len(mnemonic) == 12
+        ), f"Expected 12 words in mnemonic, got {len(mnemonic)}"
         time.sleep(SLEEP)
 
         # Answering 3 questions asking for a specific word
         for _ in range(3):
-            layout = debug.wait_layout()
+            layout = debug.read_layout()
+            screen_text = layout.text_content()
             # "Select word 3 of 20"
             #              ^
-            word_pos = int(layout.text_content().split()[2])
+            assert_text_on_screen(debug, "select word")
+            word_pos = int(screen_text.split()[2])
             wanted_word = mnemonic[word_pos - 1].lower()
             debug.input(wanted_word)
             time.sleep(SLEEP)
 
         # Click Continue to finish the quiz
+        assert_text_on_screen(debug, "finished verifying")
         debug.press_yes()
         time.sleep(SLEEP)
 
         # Click Continue to finish the backup
+        assert_text_on_screen(debug, "backup is done")
         debug.press_yes()
         time.sleep(SLEEP)
 
 
-def read_and_confirm_shamir_mnemonic(shares: int = 1, threshold: int = 1) -> None:
+def read_and_confirm_mnemonic_t3t1() -> None:
+    with connect_to_debuglink(needs_udp=True) as debug:
+        debug.watch_layout(True)
+
+        # "backup contains XXX words"
+        words_pattern = r"contains (\d+) words"
+        text_content = debug.read_layout().text_content()
+        match = re.search(words_pattern, text_content)
+        if match is None:
+            raise RuntimeError(f"Could not find number of words in: {text_content}")
+        word_amount = int(match.group(1))
+
+        preview_texts = [
+            f"backup contains {word_amount} words",
+            "anywhere digital",
+            f"following {word_amount} words in order",
+        ]
+        for expected_text in preview_texts:
+            assert_text_on_screen(debug, expected_text)
+            debug.swipe_up()
+            time.sleep(SLEEP)
+
+        mnemonic: list[str] = []
+
+        for _ in range(word_amount):
+            debug.swipe_up()
+            seed_words = debug.read_layout().seed_words()
+            mnemonic.extend(seed_words)
+            time.sleep(SLEEP)
+
+        assert (
+            len(mnemonic) == word_amount
+        ), f"Expected {word_amount} words in mnemonic, got {len(mnemonic)}"
+
+        assert_text_on_screen(debug, f"I wrote down all {word_amount} words in order")
+        debug.press_yes()
+        time.sleep(SLEEP)
+
+        # Answering 3 questions asking for a specific word
+        for _ in range(3):
+            layout = debug.read_layout()
+            assert_text_on_screen(debug, "select word")
+
+            pattern = r"Select word (\d+)"
+            screen_text = layout.text_content()
+            match = re.search(pattern, screen_text)
+            if match is None:
+                raise RuntimeError(f"Could not find word position in: {screen_text}")
+
+            word_pos = int(match.group(1))
+
+            wanted_word = mnemonic[word_pos - 1].lower()
+            debug.input(wanted_word)
+            time.sleep(SLEEP)
+
+        assert_text_on_screen(debug, "wallet backup completed")
+        debug.swipe_up()
+        time.sleep(SLEEP)
+
+
+def read_and_confirm_mnemonic_t2b1() -> None:
+    raise NotImplementedError("T2B1 mnemonic confirmation not implemented yet.")
+
+
+def read_and_confirm_shamir_mnemonic(shares: int, threshold: int) -> None:
+    if not VERSION_RUNNING:
+        raise RuntimeError("No emulator running.")
+
+    if models.T2T1.internal_name in VERSION_RUNNING:
+        read_and_confirm_shamir_mnemonic_t2t1(shares=shares, threshold=threshold)
+    else:
+        raise RuntimeError(f"Model {VERSION_RUNNING} not supported for this operation.")
+
+
+def read_and_confirm_shamir_mnemonic_t2t1(shares: int, threshold: int) -> None:
     """Performs a walkthrough of the whole Shamir backup on the device.
 
     NOTE: does not support Super Shamir.
@@ -491,6 +611,7 @@ def read_and_confirm_shamir_mnemonic(shares: int = 1, threshold: int = 1) -> Non
         debug.watch_layout(True)
 
         # Click Continue to begin Shamir setup process
+        assert_text_on_screen(debug, "wallet backup contains multiple lists of words")
         debug.press_yes()
         time.sleep(SLEEP)
 
@@ -517,7 +638,7 @@ def read_and_confirm_shamir_mnemonic(shares: int = 1, threshold: int = 1) -> Non
 
         # When we have 1 or 2 shares, the threshold is set and cannot be changed
         # (it will be 1 and 2 respectively)
-        # Otherise assign it correctly by clicking the plus/minus button
+        # Otherwise assign it correctly by clicking the plus/minus button
         if shares not in [1, 2]:
             # Default threshold can be calculated from the share number
             default_threshold = shares // 2 + 1
@@ -645,15 +766,42 @@ def get_debug_state() -> Dict[str, Any]:
     # We need to connect on UDP not to interrupt any bridge sessions
     with connect_to_debuglink(needs_udp=True) as debug:
         debug_state = debug.state()
-        debug_state_dict = {}
+        debug_state_dict: Dict[str, Any] = {}
         for key in dir(debug_state):
             val = getattr(debug_state, key)
             # Not interested in private attributes and non-JSON fields (bytes)
             if key.startswith("__") or key[0].isupper():
                 continue
-            if val is not None and not isinstance(val, (list, str, bool, int)):
-                continue
+            if isinstance(val, bytes):
+                try:
+                    val = val.decode("utf-8")
+                except UnicodeDecodeError:
+                    val = val.hex()
 
             debug_state_dict[key] = val
 
         return debug_state_dict
+
+
+class ScreenContent(TypedDict):
+    title: str
+    body: str
+
+
+def get_screen_content() -> ScreenContent:
+    with connect_to_debuglink(needs_udp=True) as debug:
+        layout = debug.read_layout()
+        title = layout.title()
+        body = layout.text_content()
+        return {"title": title, "body": body}
+
+
+# For testing/debugging purposes
+if __name__ == "__main__":
+    # read_and_confirm_mnemonic()
+    read_and_confirm_mnemonic_t3t1()
+    # read_and_confirm_shamir_mnemonic_t2t1(3, 2)
+    # state = get_debug_state()
+    # print("state", state)
+    # screen = get_screen_content()
+    # print("screen", screen)

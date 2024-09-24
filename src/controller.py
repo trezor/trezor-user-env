@@ -300,6 +300,9 @@ class ResponseGetter:
         elif self.command == "emulator-get-debug-state":
             debug_state = emulator.get_debug_state()
             return {"response": debug_state}
+        elif self.command == "emulator-get-screen-content":
+            content = emulator.get_screen_content()
+            return {"response": content}  # type: ignore
         else:
             return {
                 "success": False,
