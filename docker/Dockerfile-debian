@@ -47,6 +47,7 @@ RUN poetry install --no-dev --no-root
 # Execute scripts and clean up
 RUN ./src/binaries/firmware/bin/download.sh
 RUN ./src/binaries/trezord-go/bin/download.sh
+RUN ./src/binaries/node-bridge/download.sh
 # Patch emulator binaries
 RUN cd src/binaries/firmware/bin && ./patch-bin.sh
 
