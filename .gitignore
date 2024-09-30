@@ -9,6 +9,7 @@ src/binaries/firmware/bin/*
 !src/binaries/firmware/bin/patch-bin.sh
 !src/binaries/firmware/bin/arm
 !src/binaries/trezord-go/bin/download.sh
+src/binaries/node-bridge/bin.js
 emulator.img
 .vscode
 .mypy_cache
