@@ -84,13 +84,12 @@ def start(version: str, proxy: bool = False, output_to_logfile: bool = True) -> 
     def get_command_list() -> list[str]:
         # Special handling of node-js bridge (experimental)
         if "node" in version:
-            path = helpers.ROOT_DIR / "node_bridge/bin.js"
+            path = binaries.NODE_BRIDGE_DIR / "bin.js"
+            if not path.exists():
+                raise RuntimeError(f"Node bridge does not exist under {path}")
             return ["node", str(path), "udp"]
         else:
-            # normalize path to be relative to this folder, not pwd
-            path = helpers.ROOT_DIR / "src/binaries/trezord-go/bin"
-
-            bridge_location = path / f"trezord-go-v{version}"
+            bridge_location = binaries.BRIDGE_BIN_DIR / f"trezord-go-v{version}"
             if not bridge_location.exists():
                 raise RuntimeError(
                     f"Bridge does not exist for version {version} under {bridge_location}"
