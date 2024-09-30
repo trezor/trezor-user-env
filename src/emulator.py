@@ -615,6 +615,11 @@ def read_and_confirm_shamir_mnemonic_t2t1(shares: int, threshold: int) -> None:
         debug.press_yes()
         time.sleep(SLEEP)
 
+        # Summary - click Continue to set number of shares
+        assert_text_on_screen(debug, "set number of shares")
+        debug.press_yes()
+        time.sleep(SLEEP)
+
         # Clicking the minus/plus button to set right number of shares (it starts at 5)
         DEFAULT_SHARES = 5
         needed_clicks = abs(shares - DEFAULT_SHARES)
@@ -632,7 +637,8 @@ def read_and_confirm_shamir_mnemonic_t2t1(shares: int, threshold: int) -> None:
         debug.click(OK_BUTTON_COORDS)
         time.sleep(SLEEP)
 
-        # Click Continue to set threshold
+        # Summary - click Continue to set threshold
+        assert_text_on_screen(debug, "set threshold")
         debug.press_yes()
         time.sleep(SLEEP)
 
@@ -657,11 +663,13 @@ def read_and_confirm_shamir_mnemonic_t2t1(shares: int, threshold: int) -> None:
         debug.press_yes()
         time.sleep(SLEEP)
 
-        # Click Continue to continue
+        # Summary - click Continue to start writing down the seed
+        assert_text_on_screen(debug, "write down and check")
         debug.press_yes()
         time.sleep(SLEEP)
 
         # Click I understand
+        assert_text_on_screen(debug, "anywhere digital")
         debug.press_yes()
         time.sleep(SLEEP)
 
