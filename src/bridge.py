@@ -85,7 +85,7 @@ def start(version: str, proxy: bool = False, output_to_logfile: bool = True) -> 
         # Special handling of node-js bridge (experimental)
         if "node" in version:
             path = helpers.ROOT_DIR / "node_bridge/bin.js"
-            return ["node", str(path)]
+            return ["node", str(path), "udp"]
         else:
             # normalize path to be relative to this folder, not pwd
             path = helpers.ROOT_DIR / "src/binaries/trezord-go/bin"
