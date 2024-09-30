@@ -583,6 +583,8 @@ def read_and_confirm_shamir_mnemonic(shares: int, threshold: int) -> None:
 
     if models.T2T1.internal_name in VERSION_RUNNING:
         read_and_confirm_shamir_mnemonic_t2t1(shares=shares, threshold=threshold)
+    elif models.T3T1.internal_name in VERSION_RUNNING:
+        read_and_confirm_shamir_mnemonic_t3t1(shares=shares, threshold=threshold)
     else:
         raise RuntimeError(f"Model {VERSION_RUNNING} not supported for this operation.")
 
@@ -710,6 +712,136 @@ def read_and_confirm_shamir_mnemonic_t2t1(shares: int, threshold: int) -> None:
         time.sleep(SLEEP)
 
 
+def read_and_confirm_shamir_mnemonic_t3t1(shares: int, threshold: int) -> None:
+    """Performs a walkthrough of the whole Shamir backup on the device.
+
+    NOTE: does not support Super Shamir.
+    """
+    MIN_SHARES = 1
+    MAX_SHARES = 16
+    if shares < MIN_SHARES or shares > MAX_SHARES:
+        raise RuntimeError(
+            f"Number of shares must be between {MIN_SHARES} and {MAX_SHARES}."
+        )
+    if threshold > shares:
+        raise RuntimeError("Threshold cannot be bigger than number of shares.")
+
+    # For setting the right amount of shares/thresholds, we need location of buttons
+    MINUS_BUTTON_COORDS = (60, 180)
+    PLUS_BUTTON_COORDS = (180, 180)
+
+    with connect_to_debuglink() as debug:
+        # So that we can wait layout
+        debug.watch_layout(True)
+
+        # Click Continue to begin Shamir setup process
+        assert_text_on_screen(debug, "wallet backup contains multiple lists of words")
+        debug.swipe_up()
+        time.sleep(SLEEP)
+
+        # Summary
+        debug.swipe_up()
+        time.sleep(SLEEP)
+
+        # Clicking the minus/plus button to set right number of shares (it starts at 5)
+        DEFAULT_SHARES = 5
+        needed_clicks = abs(shares - DEFAULT_SHARES)
+        if needed_clicks > 0:
+            if shares < DEFAULT_SHARES:
+                button_coords_to_click = MINUS_BUTTON_COORDS
+            else:
+                button_coords_to_click = PLUS_BUTTON_COORDS
+
+            for _ in range(needed_clicks):
+                debug.click(button_coords_to_click, wait=True)
+                time.sleep(SLEEP)
+
+        # Confirm
+        debug.swipe_up()
+        time.sleep(SLEEP)
+
+        # Summary
+        debug.swipe_up()
+        time.sleep(SLEEP)
+
+        # When we have 1 or 2 shares, the threshold is set and cannot be changed
+        # (it will be 1 and 2 respectively)
+        # Otherwise assign it correctly by clicking the plus/minus button
+        if shares not in [1, 2]:
+            # Default threshold can be calculated from the share number
+            default_threshold = shares // 2 + 1
+            needed_clicks = abs(threshold - default_threshold)
+            if needed_clicks > 0:
+                if threshold < default_threshold:
+                    button_coords_to_click = MINUS_BUTTON_COORDS
+                else:
+                    button_coords_to_click = PLUS_BUTTON_COORDS
+
+                for _ in range(needed_clicks):
+                    debug.click(button_coords_to_click)
+                    time.sleep(SLEEP)
+
+        # Confirm
+        debug.swipe_up()
+        time.sleep(SLEEP)
+
+        # Summary
+        debug.swipe_up()
+        time.sleep(SLEEP)
+
+        assert_text_on_screen(debug, "anywhere digital")
+        debug.swipe_up()
+        time.sleep(SLEEP)
+
+        # Loop through all the shares and fulfill all checks
+        for _ in range(shares):
+            assert_text_on_screen(debug, "following 20 words in order")
+            debug.swipe_up()
+            time.sleep(SLEEP)
+
+            # Scrolling through all the 20 words on next 5 pages
+            # While doing so, saving all the words on the screen for the "quiz" later
+            mnemonic: list[str] = []
+            layout = debug.read_layout()
+            for _ in range(20):
+                mnemonic.extend(layout.seed_words())
+                layout = debug.swipe_up(wait=True)  # type: ignore
+                assert layout is not None
+            mnemonic.extend(layout.seed_words())
+
+            assert len(mnemonic) == 20
+
+            # Confirming that I have written the seed down
+            debug.press_yes()
+            time.sleep(SLEEP)
+
+            # Answering 3 questions asking for a specific word
+            for _ in range(3):
+                layout = debug.read_layout()
+                assert_text_on_screen(debug, "select word")
+                pattern = r"Select word (\d+)"
+                screen_text = layout.text_content()
+                match = re.search(pattern, screen_text)
+                if match is None:
+                    raise RuntimeError(
+                        f"Could not find word position in: {screen_text}"
+                    )
+
+                word_pos = int(match.group(1))
+                wanted_word = mnemonic[word_pos - 1].lower()
+
+                debug.input(wanted_word)
+                time.sleep(SLEEP)
+
+            # Finish this quiz
+            debug.swipe_up()
+            time.sleep(SLEEP)
+
+        # Finish the backup
+        debug.swipe_up()
+        time.sleep(SLEEP)
+
+
 def select_num_of_words(num_of_words: int = 12) -> None:
     with connect_to_debuglink() as debug:
         debug.input(str(num_of_words))
@@ -807,7 +939,8 @@ def get_screen_content() -> ScreenContent:
 # For testing/debugging purposes
 if __name__ == "__main__":
     # read_and_confirm_mnemonic()
-    read_and_confirm_mnemonic_t3t1()
+    # read_and_confirm_mnemonic_t3t1()
+    read_and_confirm_shamir_mnemonic_t3t1(3, 2)
     # read_and_confirm_shamir_mnemonic_t2t1(3, 2)
     # state = get_debug_state()
     # print("state", state)
