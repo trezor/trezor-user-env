@@ -38,6 +38,12 @@ def is_running() -> bool:
     return is_port_in_use(BRIDGE_PORT)
 
 
+def is_node_bridge_running() -> bool:
+    if VERSION_RUNNING is None:
+        return False
+    return "node" in VERSION_RUNNING
+
+
 def get_status() -> "StatusResponse":
     if helpers.physical_trezor():
         return {

@@ -81,7 +81,8 @@ def wait_for_udp_device() -> Transport:
 
 
 def get_device() -> Transport:
-    if bridge.is_running():
+    # Node bridges need UDP
+    if bridge.is_running() and not bridge.is_node_bridge_running():
         return wait_for_bridge_device()
 
     return wait_for_udp_device()
@@ -306,7 +307,7 @@ def get_current_screen() -> str:
 
 @contextmanager
 def connect_to_client(
-    needs_udp: bool = True,
+    needs_udp: bool = False,
 ) -> Generator[TrezorClientDebugLink, None, None]:
     """Connect to the emulator and yield a client instance.
     Disconnect after the action is done.
@@ -328,7 +329,7 @@ def connect_to_client(
 
 @contextmanager
 def connect_to_debuglink(
-    needs_udp: bool = True,
+    needs_udp: bool = False,
 ) -> Generator[DebugLink, None, None]:
     """Connect to the emulator and yield a debuglink instance.
     Disconnect after the action is done.
@@ -455,7 +456,7 @@ def read_and_confirm_mnemonic() -> None:
 
 
 def read_and_confirm_mnemonic_t2t1() -> None:
-    with connect_to_debuglink() as debug:
+    with connect_to_debuglink(needs_udp=True) as debug:
         debug.watch_layout(True)
 
         preview_texts = [
@@ -514,7 +515,7 @@ def read_and_confirm_mnemonic_t2t1() -> None:
 
 
 def read_and_confirm_mnemonic_t3t1() -> None:
-    with connect_to_debuglink() as debug:
+    with connect_to_debuglink(needs_udp=True) as debug:
         debug.watch_layout(True)
 
         # "backup contains XXX words"
@@ -904,7 +905,7 @@ def allow_unsafe() -> None:
 
 def get_debug_state() -> Dict[str, Any]:
     # We need to connect on UDP not to interrupt any bridge sessions
-    with connect_to_debuglink() as debug:
+    with connect_to_debuglink(needs_udp=True) as debug:
         debug_state = debug.state()
         debug_state_dict: Dict[str, Any] = {}
         for key in dir(debug_state):
@@ -929,7 +930,7 @@ class ScreenContent(TypedDict):
 
 
 def get_screen_content() -> ScreenContent:
-    with connect_to_debuglink() as debug:
+    with connect_to_debuglink(needs_udp=True) as debug:
         layout = debug.read_layout()
         title = layout.title()
         body = layout.text_content()
