@@ -42,7 +42,7 @@ WORKDIR /trezor-user-env
 
 # Install Python dependencies using poetry
 RUN poetry cache clear --all pypi
-RUN poetry install --no-dev --no-root
+RUN poetry install --no-root --without dev
 
 # Execute scripts and clean up
 RUN ./src/binaries/firmware/bin/download.sh
