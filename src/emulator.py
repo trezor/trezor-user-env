@@ -917,8 +917,7 @@ def get_debug_state() -> Dict[str, Any]:
                     val = val.decode("utf-8")
                 except UnicodeDecodeError:
                     val = val.hex()
-
-            debug_state_dict[key] = val
+                debug_state_dict[key] = val
 
         return debug_state_dict
 
