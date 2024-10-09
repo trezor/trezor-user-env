@@ -910,15 +910,18 @@ def get_debug_state() -> Dict[str, Any]:
         debug_state_dict: Dict[str, Any] = {}
         for key in dir(debug_state):
             val = getattr(debug_state, key)
-            # Not interested in private attributes and non-JSON fields (bytes)
+            # Not interested in private or uppercase attributes
             if key.startswith("__") or key[0].isupper():
                 continue
+            # Not interested in methods
+            if callable(val):
+                continue
+            # Transforming bytes to string
             if isinstance(val, bytes):
                 try:
                     val = val.decode("utf-8")
                 except UnicodeDecodeError:
                     val = val.hex()
-
             debug_state_dict[key] = val
 
         return debug_state_dict
@@ -941,9 +944,9 @@ def get_screen_content() -> ScreenContent:
 if __name__ == "__main__":
     # read_and_confirm_mnemonic()
     # read_and_confirm_mnemonic_t3t1()
-    read_and_confirm_shamir_mnemonic_t3t1(3, 2)
+    # read_and_confirm_shamir_mnemonic_t3t1(3, 2)
     # read_and_confirm_shamir_mnemonic_t2t1(3, 2)
-    # state = get_debug_state()
-    # print("state", state)
+    state = get_debug_state()
+    print("state", state)
     # screen = get_screen_content()
     # print("screen", screen)

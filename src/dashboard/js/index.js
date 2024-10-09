@@ -162,6 +162,7 @@ const app = createApp({
 
             if (
                 "response" in dataObject &&
+                typeof dataObject.response === 'string' &&
                 dataObject.response.includes("Emulator downloaded")
             ) {
                 this.downloadMessage = "";
