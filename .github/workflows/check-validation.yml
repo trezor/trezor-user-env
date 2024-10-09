@@ -13,7 +13,7 @@ jobs:
           nix_path: nixpkgs=channel:nixos-unstable
 
       - name: "Install poetry"
-        run: nix-shell --run "poetry install"
+        run: nix-shell --run "poetry install --no-root"
       - name: Run style check
         run: nix-shell --run "poetry run make style_check"
       - name: Run code check
