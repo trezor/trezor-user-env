@@ -12,6 +12,7 @@ src/binaries/firmware/bin/*
 src/binaries/node-bridge/bin.js
 src/binaries/node-bridge/bin_suite.js
 emulator.img
+channel_data.json
 .vscode
 .mypy_cache
 docker/version.txt
