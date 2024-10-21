@@ -335,6 +335,13 @@ class ResponseGetter:
         elif self.command == "emulator-get-debug-state":
             debug_state = emulator.get_debug_state()
             return {"response": debug_state}
+        elif self.command == "emulator-get-pairing-info":
+            debug_state = emulator.get_pairing_info(
+                self.request_dict["thp_channel_id"],
+                self.request_dict["handshake_hash"],
+                self.request_dict["nfc_secret_host"],
+            )
+            return {"response": debug_state}
         elif self.command == "emulator-get-screen-content":
             content = emulator.get_screen_content()
             return {"response": content}  # type: ignore
