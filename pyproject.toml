@@ -7,7 +7,7 @@ authors = ["SatoshiLabs <info@satoshilabs.com>"]
 [tool.poetry.dependencies]
 python = "^3.11"
 termcolor = "^1.1.0"
-trezor = { git = "https://github.com/trezor/trezor-firmware.git", branch = "main", subdirectory = "python" }
+trezor = { git = "https://github.com/trezor/trezor-firmware.git", branch = "M1nd3r/thp", subdirectory = "python" }
 websockets = "^10.1"
 psutil = "^5.8.0"
 Pillow = "^9.1.0"
