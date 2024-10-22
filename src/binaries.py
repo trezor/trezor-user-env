@@ -10,6 +10,7 @@ ROOT_DIR = Path(__file__).resolve().parent.parent
 FIRMWARE_BIN_DIR = ROOT_DIR / "src/binaries/firmware/bin"
 BRIDGE_BIN_DIR = ROOT_DIR / "src/binaries/trezord-go/bin"
 NODE_BRIDGE_DIR = ROOT_DIR / "src/binaries/node-bridge"
+LOCAL_NODE_BRIDGE_DIR = Path("/trezor-suite/packages/transport-bridge/dist").resolve()
 USER_DOWNLOADED_DIR = FIRMWARE_BIN_DIR / "user_downloaded"
 USER_DOWNLOADED_DIR.mkdir(exist_ok=True)
 
