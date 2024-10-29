@@ -212,7 +212,7 @@ def start(
 
     emu_location = Path(binaries.get_firmware_location(model, version))
 
-    if model in ("T2T1", "T2B1", "T3T1"):
+    if model in ("T2T1", "T2B1", "T3T1", "T3W1"):
         EMULATOR = CoreEmulator(
             emu_location,
             profile_dir=binaries.FIRMWARE_BIN_DIR,

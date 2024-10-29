@@ -13,12 +13,13 @@ NODE_BRIDGE_DIR = ROOT_DIR / "src/binaries/node-bridge"
 USER_DOWNLOADED_DIR = FIRMWARE_BIN_DIR / "user_downloaded"
 USER_DOWNLOADED_DIR.mkdir(exist_ok=True)
 
-Model = Literal["T1B1", "T2T1", "T2B1", "T3T1"]
+Model = Literal["T1B1", "T2T1", "T2B1", "T3T1", "T3W1"]
 FIRMWARES: Dict[Model, Dict[str, str]] = {
     "T1B1": OrderedDict(),
     "T2T1": OrderedDict(),
     "T2B1": OrderedDict(),
     "T3T1": OrderedDict(),
+    "T3W1": OrderedDict(),
 }
 
 MODEL_IDENTIFIERS: Dict[Model, str] = {
@@ -26,6 +27,7 @@ MODEL_IDENTIFIERS: Dict[Model, str] = {
     "T2T1": "trezor-emu-core-T2T1-v",
     "T2B1": "trezor-emu-core-T2B1-v",
     "T3T1": "trezor-emu-core-T3T1-v",
+    "T3W1": "trezor-emu-core-T3W1-v",
 }
 
 BRIDGES: List[str] = []

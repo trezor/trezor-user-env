@@ -36,6 +36,11 @@ const app = createApp({
                         versions: [],
                         selected: "",
                     },
+                    T3W1: {
+                        header: "T3W1",
+                        versions: [],
+                        selected: "",
+                    },
                 },
                 wipeDevice: false,
                 screenshotMode: false,
