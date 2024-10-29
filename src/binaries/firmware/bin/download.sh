@@ -84,6 +84,9 @@ if [[ $SYSTEM_ARCH == x86_64* ]]; then
     wget https://data.trezor.io/dev/firmware/emu-nightly/trezor-emu-core-T3T1-universal
     mv trezor-emu-core-T3T1-universal ../trezor-emu-core-T3T1-v2-main
 
+    wget https://data.trezor.io/dev/firmware/emu-nightly/trezor-emu-core-T3W1-universal
+    mv trezor-emu-core-T3W1-universal ../trezor-emu-core-T3W1-v2-main
+
 elif [[ $SYSTEM_ARCH == aarch64* ]]; then
 
     wget https://data.trezor.io/dev/firmware/emu-nightly/trezor-emu-arm-legacy-T1B1-universal
@@ -97,6 +100,9 @@ elif [[ $SYSTEM_ARCH == aarch64* ]]; then
 
     wget https://data.trezor.io/dev/firmware/emu-nightly/trezor-emu-arm-core-T3T1-universal
     mv trezor-emu-arm-core-T3T1-universal ../trezor-emu-core-T3T1-v2-main-arm
+
+    wget https://data.trezor.io/dev/firmware/emu-nightly/trezor-emu-arm-core-T3W1-universal
+    mv trezor-emu-arm-core-T3W1-universal ../trezor-emu-core-T3W1-v2-main-arm
 fi
 
 cd "$BIN_DIR"
