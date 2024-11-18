@@ -50,8 +50,8 @@ const app = createApp({
             },
             emulatorUrl: {
                 url: "",
-                typeChoices: ["Gitlab job ID", "Custom link"],
-                type: "Gitlab job ID",
+                typeChoices: ["Custom link"],
+                type: "Custom link",
                 model: "T2T1",
                 downloadMessage: "",
             },
@@ -276,23 +276,6 @@ const app = createApp({
             }
 
             const model = this.emulatorUrl.model;
-
-            // URL might need some processing in case it is not complete
-            // (Yes, handling URLs as strings is not very good, but should be alright in this easy case)
-            if (this.emulatorUrl.type === "Gitlab job ID") {
-                const gitlabJobPrefix =
-                    "https://gitlab.com/satoshilabs/trezor/trezor-firmware/-/jobs";
-                const T1PathSuffix = "artifacts/raw/legacy/firmware/trezor.elf";
-                // TR/T3T1 share things with T2 here
-                const T2PathSuffix =
-                    "artifacts/raw/core/build/unix/trezor-emu-core";
-                const baseUrl = `${gitlabJobPrefix}/${url}`;
-                if (model === "T1B1") {
-                    url = `${baseUrl}/${T1PathSuffix}`;
-                } else {
-                    url = `${baseUrl}/${T2PathSuffix}`;
-                }
-            }
 
             this.sendMessage({
                 type: "emulator-start-from-url",
