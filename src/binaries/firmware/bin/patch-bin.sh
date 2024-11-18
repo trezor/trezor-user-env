@@ -3,6 +3,9 @@
 SYSTEM_ARCH=$(uname -m)
 echo "System architecture: $SYSTEM_ARCH"
 
+# Use the first argument as BINARY_DIR if provided; otherwise, default to './'
+BINARY_DIR="${1:-./}"
+
 if [[ "$SYSTEM_ARCH" == "x86_64" ]]; then
     INTERPRETER_DEFAULT="/lib64/ld-linux-x86-64.so.2"
 elif [[ "$SYSTEM_ARCH" == "aarch64" || "$SYSTEM_ARCH" == "arm64" ]]; then
@@ -61,8 +64,6 @@ change_interpreter() {
 export -f change_interpreter
 export -f get_interpreter
 export INTERPRETER_DEFAULT
-
-BINARY_DIR="./"
 
 find "$BINARY_DIR" -type f -executable -exec bash -c 'change_interpreter "$0"' {} \;
 
