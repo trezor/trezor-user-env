@@ -168,18 +168,9 @@
                     <input
                         type="text"
                         placeholder="Full emulator URL. Do not forget to specify correct model"
-                        style="width: 50%"
+                        style="width: 40%"
                         v-model="emulatorUrl.url"
                     />
-                    <select v-model="emulatorUrl.type">
-                        <option
-                            v-for="option in emulatorUrl.typeChoices"
-                            :key="option"
-                            :value="option"
-                        >
-                            {{ option }}
-                        </option>
-                    </select>
                     <select v-model="emulatorUrl.model">
                         <option
                             v-for="(details, model) in emulators.versions"
@@ -192,11 +183,42 @@
                     <button class="positive" @click="emulatorStartFromUrl();">
                         Start from URL
                     </button>
-
                 </div>
 
-                <div class="user-info" v-if="emulatorUrl.downloadMessage">
-                    {{ emulatorUrl.downloadMessage }}
+                <div>
+                    <input
+                        type="text"
+                        placeholder="Firmware branch. Do not forget to specify correct model"
+                        style="width: 30%"
+                        v-model="emulatorBranch.branch"
+                    />
+                    <select v-model="emulatorBranch.model">
+                        <option
+                            v-for="(details, model) in emulators.versions"
+                            :value="model"
+                            :key="model"
+                        >
+                            {{ details.header }}
+                        </option>
+                    </select>
+                        <input
+                        id="emulatorBtcOnly"
+                        type="checkbox"
+                        v-model="emulatorBranch.btcOnly"
+                    />
+                    <label
+                        class="underlined"
+                        title="Use BTC-only version of the emulator."
+                        for="emulatorBtcOnly"
+                        >BTC-only</label
+                    >
+                    <button class="positive" @click="emulatorStartFromBranch();">
+                        Start from branch
+                    </button>
+                </div>
+
+                <div class="user-info" v-if="emulatorDownloadMessage">
+                    {{ emulatorDownloadMessage }}
                 </div>
 
                 <hr />
