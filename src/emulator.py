@@ -115,12 +115,14 @@ def start_from_url(
     wipe: bool,
     output_to_logfile: bool = True,
     save_screenshots: bool = False,
+    force_update: bool = False,
+    force_name: str | None = None,
 ) -> None:
     binaries.check_model(model)
 
     # Creating an identifier of emulator from this URL, so we have to
     # download it only once and can reuse it any time later
-    emu_name = f"{model}-url-{get_url_identifier(url)}"
+    emu_name = force_name if force_name else f"{model}-url-{get_url_identifier(url)}"
     if binaries.IS_ARM and not emu_name.endswith(binaries.ARM_IDENTIFIER):
         emu_name = f"{emu_name}{binaries.ARM_IDENTIFIER}"
 
@@ -131,8 +133,8 @@ def start_from_url(
         raise RuntimeError(f"Unknown model {model}")
     emu_path = binaries.USER_DOWNLOADED_DIR / f"{model_identifier}{emu_name}"
 
-    # Downloading only if it does not yet exist
-    if not emu_path.is_file():
+    # Downloading only if it does not yet exist (or forced)
+    if force_update or not emu_path.is_file():
         log(f"Emulator from {url} will be saved under {emu_path}")
         try:
             urllib.request.urlretrieve(url, emu_path)
@@ -173,6 +175,44 @@ def start_from_url(
         wipe=wipe,
         output_to_logfile=output_to_logfile,
         save_screenshots=save_screenshots,
+    )
+
+
+def start_from_branch(
+    branch: str,
+    model: binaries.Model,
+    btc_only: bool,
+    wipe: bool,
+    output_to_logfile: bool = True,
+    save_screenshots: bool = False,
+) -> None:
+    emu_name = "trezor-emu-core"
+    if binaries.IS_ARM:
+        emu_name += binaries.ARM_IDENTIFIER
+    emu_name += f"-{model}"
+    if btc_only:
+        emu_name += "-btconly"
+    else:
+        emu_name += "-universal"
+
+    # Main has just a nightly pipeline
+    if branch == "main":
+        url = f"https://data.trezor.io/dev/firmware/emu-nightly/{emu_name}"
+    else:
+        url = f"https://data.trezor.io/dev/firmware/emu-branches/{branch}/{emu_name}"
+
+    force_name = branch.replace("/", "-")
+    if btc_only:
+        force_name += "-btconly"
+
+    return start_from_url(
+        url=url,
+        model=model,
+        wipe=wipe,
+        output_to_logfile=output_to_logfile,
+        save_screenshots=save_screenshots,
+        force_update=True,
+        force_name=force_name,
     )
 
 

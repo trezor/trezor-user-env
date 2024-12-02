@@ -50,11 +50,14 @@ const app = createApp({
             },
             emulatorUrl: {
                 url: "",
-                typeChoices: ["Custom link"],
-                type: "Custom link",
                 model: "T2T1",
-                downloadMessage: "",
             },
+            emulatorBranch: {
+                branch: "",
+                model: "T2T1",
+                btcOnly: false,
+            },
+            emulatorDownloadMessage: "",
             emulatorCommands: {
                 seed: "",
                 shamirShares: 3,
@@ -162,6 +165,7 @@ const app = createApp({
                         "Some error happened, please look into Log below.",
                         true
                     );
+                    this.emulatorDownloadMessage = "";
                 }
             }
 
@@ -170,7 +174,7 @@ const app = createApp({
                 typeof dataObject.response === 'string' &&
                 dataObject.response.includes("Emulator downloaded")
             ) {
-                this.downloadMessage = "";
+                this.emulatorDownloadMessage = "";
             }
 
             this.logEvent(`Response received: ${event.data}`, color);
@@ -286,7 +290,29 @@ const app = createApp({
                 save_screenshots: this.emulators.screenshotMode,
             });
 
-            this.downloadMessage =
+            this.emulatorDownloadMessage =
+                "Emulator started downloading, it may take a while...";
+        },
+        emulatorStartFromBranch() {
+            let branch = this.emulatorBranch.branch;
+            if (!branch) {
+                this.showNotification("Branch is empty!", true);
+                return;
+            }
+
+            const model = this.emulatorBranch.model;
+
+            this.sendMessage({
+                type: "emulator-start-from-branch",
+                branch,
+                model,
+                btc_only: this.emulatorBranch.btcOnly,
+                wipe: this.emulators.wipeDevice,
+                output_to_logfile: this.emulators.outputToLogfile,
+                save_screenshots: this.emulators.screenshotMode,
+            });
+
+            this.emulatorDownloadMessage =
                 "Emulator started downloading, it may take a while...";
         },
         reflectBackgroundSituationInGUI(dataObject) {

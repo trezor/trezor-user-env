@@ -42,6 +42,16 @@
     - **output_to_logfile**: `bool` (default=True) whether the debug output should go to a logfile - otherwise it goes to stdout
     - **save_screenshots**: `bool` (default=False) whether to save screenshots to enable calling **emulator-get-screenshot**
 
+- **emulator-start-from-branch**
+  - **action**: downloads latest emulators for a specified firmware branch and runs it
+  - **arguments**:
+    - **branch**: `str` exact name of the firmware branch
+    - **model**: `str` which emulator it is - `["T1B1", "T2T1", "T2B1", "T3T1", "T3W1"]`
+    - **btc_only**: `bool` (default=False) whether to get btc-only version of the emulator
+    - **wipe**: `bool` (default=False) whether to delete the emulator profile before starting it
+    - **output_to_logfile**: `bool` (default=True) whether the debug output should go to a logfile - otherwise it goes to stdout
+    - **save_screenshots**: `bool` (default=False) whether to save screenshots to enable calling **emulator-get-screenshot**
+
 - **emulator-stop**
   - **action**: stop the emulator
 

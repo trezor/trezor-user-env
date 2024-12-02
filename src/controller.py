@@ -225,6 +225,34 @@ class ResponseGetter:
             if wipe:
                 response_text += " and wiped to be empty"
             return {"response": response_text}
+        elif self.command == "emulator-start-from-branch":
+            branch = self.request_dict["branch"]
+            model = self.request_dict["model"]
+            if not model:
+                return {
+                    "success": False,
+                    "error": "Model must be supplied for the emulator to start",
+                }
+            binaries.check_model(model)
+            btc_only = self.request_dict.get("btc_only", False)
+            wipe = self.request_dict.get("wipe", False)
+            output_to_logfile = self.request_dict.get("output_to_logfile", True)
+            save_screenshots = self.request_dict.get("save_screenshots", False)
+            if model != PREV_RUNNING_MODEL:
+                wipe = True
+            PREV_RUNNING_MODEL = model
+            emulator.start_from_branch(
+                branch=branch,
+                model=model,
+                btc_only=btc_only,
+                wipe=wipe,
+                output_to_logfile=output_to_logfile,
+                save_screenshots=save_screenshots,
+            )
+            response_text = f"Emulator downloaded from branch {branch} and started"
+            if wipe:
+                response_text += " and wiped to be empty"
+            return {"response": response_text}
         elif self.command == "emulator-stop":
             emulator.stop()
             return {"response": "Emulator stopped"}
