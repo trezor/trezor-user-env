@@ -19,27 +19,22 @@ const app = createApp({
                     T1B1: {
                         header: "Trezor One",
                         versions: [],
-                        selected: "",
                     },
                     T2T1: {
                         header: "Trezor T",
                         versions: [],
-                        selected: "",
                     },
                     T2B1: {
                         header: "Trezor Safe 3",
                         versions: [],
-                        selected: "",
                     },
                     T3T1: {
                         header: "Trezor Safe 5",
                         versions: [],
-                        selected: "",
                     },
                     T3W1: {
                         header: "T3W1",
                         versions: [],
-                        selected: "",
                     },
                 },
                 wipeDevice: false,
@@ -50,11 +45,11 @@ const app = createApp({
             },
             emulatorUrl: {
                 url: "",
-                model: "T2T1",
+                model: "",
             },
             emulatorBranch: {
                 branch: "",
-                model: "T2T1",
+                model: "",
                 btcOnly: false,
             },
             emulatorDownloadMessage: "",
@@ -102,7 +97,19 @@ const app = createApp({
             }
         });
     },
+    watch: {
+        'emulatorUrl.url': function (newUrl) {
+            this.updateModelFromUrl(newUrl);
+        }
+    },
     methods: {
+        updateModelFromUrl(url) {
+            Object.keys(this.emulators.versions).forEach((model) => {
+                if (url.toLowerCase().includes(model.toLowerCase())) {
+                    this.emulatorUrl.model = model;
+                }
+            });
+        },
         setupWebSocket() {
             this.ws = new WebSocket(websocketUrl);
 
@@ -273,13 +280,17 @@ const app = createApp({
             });
         },
         emulatorStartFromUrl() {
-            let url = this.emulatorUrl.url;
+            const url = this.emulatorUrl.url;
             if (!url) {
                 this.showNotification("URL is empty!", true);
                 return;
             }
 
             const model = this.emulatorUrl.model;
+            if (!model) {
+                this.showNotification("Model is empty!", true);
+                return;
+            }
 
             this.sendMessage({
                 type: "emulator-start-from-url",
@@ -301,6 +312,10 @@ const app = createApp({
             }
 
             const model = this.emulatorBranch.model;
+            if (!model) {
+                this.showNotification("Model is empty!", true);
+                return;
+            }
 
             this.sendMessage({
                 type: "emulator-start-from-branch",
