@@ -1,5 +1,6 @@
 import logging
 import os
+from datetime import datetime
 from pathlib import Path
 
 from termcolor import colored  # type: ignore
@@ -27,7 +28,8 @@ logging.basicConfig(
 
 def log(text: str, color: str = "blue") -> None:
     logging.info(text)
-    print(colored(text, color))
+    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S:%f")
+    print(colored(f"{now} - {text}", color))
 
 
 def physical_trezor() -> bool:
