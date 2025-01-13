@@ -361,9 +361,13 @@ def connect_to_client(
     client.open()
     time.sleep(SLEEP)
 
+    # Needs to be done because some older emulators require this explicitly
+    client.debug.watch_layout(True)
+
     try:
         yield client
     finally:
+        client.debug.watch_layout(False)
         client.close()
 
 
