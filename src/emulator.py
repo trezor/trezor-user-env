@@ -29,6 +29,7 @@ import helpers
 
 # TODO: consider creating a class from this module to avoid these globals
 VERSION_RUNNING: str | None = None
+MODEL_RUNNING: binaries.Model | None = None
 EMULATOR: CoreEmulator | LegacyEmulator | None = None
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
@@ -225,6 +226,7 @@ def start(
 ) -> None:
     global VERSION_RUNNING
     global EMULATOR
+    global MODEL_RUNNING
 
     binaries.check_model(model)
 
@@ -275,9 +277,11 @@ def start(
 
     try:
         EMULATOR.start()
+        VERSION_RUNNING = model
     except Exception:
         # When emulators fails to start, setting it to empty state not to cause issues later
         EMULATOR = None
+        VERSION_RUNNING = None
         raise
 
     log(f"Emulator spawned. PID: {EMULATOR.process.pid}. CMD: {EMULATOR.process.args}")  # type: ignore
@@ -317,6 +321,7 @@ def stop() -> None:
     log("Stopping")
     global VERSION_RUNNING
     global EMULATOR
+    global MODEL_RUNNING
 
     if EMULATOR is None:
         log("WARNING: Attempting to stop emulator, but it is not running", "red")
@@ -327,6 +332,7 @@ def stop() -> None:
         log(f"Emulator killed. PID: {emu_pid}.")
         EMULATOR = None
         VERSION_RUNNING = None
+        MODEL_RUNNING = None
 
 
 def get_current_screen() -> str:
@@ -362,12 +368,16 @@ def connect_to_client(
     time.sleep(SLEEP)
 
     # Needs to be done because some older emulators require this explicitly
-    client.debug.watch_layout(True)
+    # Done for all the newer models, does not work with the legacy model
+    watch_layout = MODEL_RUNNING and MODEL_RUNNING != "T1B1"
 
     try:
+        if watch_layout:
+            client.debug.watch_layout(True)
         yield client
     finally:
-        client.debug.watch_layout(False)
+        if watch_layout:
+            client.debug.watch_layout(False)
         client.close()
 
 
