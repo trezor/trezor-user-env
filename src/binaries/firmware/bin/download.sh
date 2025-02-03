@@ -31,6 +31,7 @@ files=(
   "T1B1/trezor-emu-legacy-T1B1-v1.11.2${suffix}"
   "T1B1/trezor-emu-legacy-T1B1-v1.12.0${suffix}"
   "T1B1/trezor-emu-legacy-T1B1-v1.12.1${suffix}"
+  "T1B1/trezor-emu-legacy-T1B1-v1.13.0${suffix}"
   # T2T1
   "T2T1/trezor-emu-core-T2T1-v2.3.0${suffix}"
   "T2T1/trezor-emu-core-T2T1-v2.5.1${suffix}"
@@ -42,16 +43,21 @@ files=(
   "T2T1/trezor-emu-core-T2T1-v2.7.0${suffix}"
   "T2T1/trezor-emu-core-T2T1-v2.7.2${suffix}"
   "T2T1/trezor-emu-core-T2T1-v2.8.1${suffix}"
+  "T2T1/trezor-emu-core-T2T1-v2.8.7${suffix}"
+  "T2T1/trezor-emu-core-T2T1-v2.8.8${suffix}"
   # T2B1
   "T2B1/trezor-emu-core-T2B1-v2.6.3${suffix}"
   "T2B1/trezor-emu-core-T2B1-v2.6.4${suffix}"
   "T2B1/trezor-emu-core-T2B1-v2.7.0${suffix}"
   "T2B1/trezor-emu-core-T2B1-v2.7.2${suffix}"
   "T2B1/trezor-emu-core-T2B1-v2.8.0${suffix}"
+  "T2B1/trezor-emu-core-T2B1-v2.8.7${suffix}"
   # T3T1
   "T3T1/trezor-emu-core-T3T1-v2.7.2${suffix}"
   "T3T1/trezor-emu-core-T3T1-v2.8.0${suffix}"
   "T3T1/trezor-emu-core-T3T1-v2.8.1${suffix}"
+  "T3T1/trezor-emu-core-T3T1-v2.8.3${suffix}"
+  "T3T1/trezor-emu-core-T3T1-v2.8.7${suffix}"
 )
 
 for file in "${files[@]}"; do
