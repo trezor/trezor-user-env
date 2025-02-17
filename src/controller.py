@@ -160,6 +160,7 @@ class ResponseGetter:
             }
 
     def run_emulator_command(self) -> "ResponseType":
+        print("test")
         global PREV_RUNNING_MODEL
 
         if self.command == "emulator-start":
