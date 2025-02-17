@@ -53,6 +53,26 @@ def log(text: str, color: str = LOG_COLOR) -> None:
     helpers.log(f"EMULATOR: {text}", color)
 
 
+# Hacking the bridge connection code to have a timeout
+import trezorlib.transport.bridge as monkey_patch_bridge
+
+last_bridge_url: str | None = None
+
+original_bridge_post = monkey_patch_bridge.CONNECTION.post
+
+
+def bridge_post_with_timeout(url: str, data=None, **kwargs):  # type: ignore
+    global last_bridge_url
+    last_bridge_url = url
+    log(f"Bridge POST {url}, data: {data}")
+    if "timeout" not in kwargs:
+        kwargs["timeout"] = 5
+    return original_bridge_post(url, data=data, **kwargs)  # type: ignore
+
+
+monkey_patch_bridge.CONNECTION.post = bridge_post_with_timeout  # type: ignore
+
+
 def get_bridge_device() -> Transport:
     devices = BridgeTransport.enumerate()
     for d in devices:
@@ -399,8 +419,26 @@ def connect_to_debuglink(
 
     try:
         yield client
+    except Exception as e:
+        log(f"Error when operating debuglink: {e}", "red")
+
+        # If not bridge, raise immediately
+        if not needs_udp:
+            raise
+
+        # For bridge, ignore errors during /read and /release
+        should_raise = True
+        if last_bridge_url:
+            log(f"Last bridge URL: {last_bridge_url}")
+            if any(action in last_bridge_url for action in ["/read/", "/release/"]):
+                should_raise = False
+        if should_raise:
+            raise
     finally:
-        client.close()
+        try:
+            client.close()
+        except Exception as e:
+            log(f"Error when closing debuglink: {e}", "red")
 
 
 def setup_device(
@@ -445,8 +483,11 @@ def reset_device(
 
 
 def press_yes() -> None:
-    with connect_to_debuglink() as debug:
-        debug.press_yes()
+    try:
+        with connect_to_debuglink() as debug:
+            debug.press_yes()
+    except Exception as e:
+        log(f"Error when pressing YES: {e}", "red")
 
 
 def press_no() -> None:
