@@ -791,7 +791,7 @@ def read_and_confirm_shamir_mnemonic_t2t1(shares: int, threshold: int) -> None:
 
             # Answering 3 questions asking for a specific word
             for _ in range(3):
-                layout = debug.wait_layout()
+                layout = debug.read_layout()
                 # "Select word 3 of 20"
                 #              ^
                 word_pos = int(layout.text_content().split()[2])
