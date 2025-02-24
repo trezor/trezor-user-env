@@ -482,6 +482,11 @@ const app = createApp({
                 threshold: this.emulatorCommands.shamirThreshold,
             });
         },
+        emulatorSetBackupState() {
+            this.sendMessage({
+                type: "emulator-set-for-backup",
+            });
+        },
         regtestMine() {
             this.sendMessage({
                 type: "regtest-mine-blocks",

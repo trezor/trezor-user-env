@@ -331,6 +331,9 @@ class ResponseGetter:
         elif self.command == "emulator-get-screen-content":
             content = emulator.get_screen_content()
             return {"response": content}  # type: ignore
+        elif self.command == "emulator-set-for-backup":
+            emulator.set_for_backup()
+            return {"response": "Backup set"}
         else:
             return {
                 "success": False,

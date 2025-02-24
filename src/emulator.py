@@ -5,6 +5,7 @@ import os
 import re
 import stat
 import sys
+import threading
 import time
 import urllib.request
 from contextlib import contextmanager
@@ -17,6 +18,7 @@ from urllib.error import HTTPError
 from psutil import Popen
 from trezorlib import debuglink, device, messages, models
 from trezorlib._internal.emulator import CoreEmulator, LegacyEmulator
+from trezorlib.client import TrezorClient
 from trezorlib.debuglink import DebugLink, TrezorClientDebugLink
 from trezorlib.exceptions import TrezorFailure
 from trezorlib.transport import Transport
@@ -398,6 +400,20 @@ def connect_to_client(
     finally:
         if watch_layout:
             client.debug.watch_layout(False)
+        client.close()
+
+
+@contextmanager
+def connect_to_nondebug_client() -> Generator[TrezorClient, None, None]:
+    from trezorlib.client import get_default_client
+
+    client = get_default_client()
+    client.open()
+    time.sleep(SLEEP)
+
+    try:
+        yield client
+    finally:
         client.close()
 
 
@@ -1033,6 +1049,21 @@ def get_screen_content() -> ScreenContent:
         title = layout.title()
         body = layout.text_content()
         return {"title": title, "body": body}
+
+
+def set_for_backup() -> None:
+    # Bridge needs to be running for correct working
+    if not bridge.is_running():
+        raise RuntimeError(
+            "Bridge needs to be running for setting device to backup state."
+        )
+
+    def to_call():
+        with connect_to_nondebug_client() as client:
+            device.backup(client)
+
+    thread = threading.Thread(target=to_call, daemon=True)
+    thread.start()
 
 
 # For testing/debugging purposes
