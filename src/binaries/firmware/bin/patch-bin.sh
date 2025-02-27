@@ -6,6 +6,12 @@ echo "System architecture: $SYSTEM_ARCH"
 # Use the first argument as BINARY_DIR if provided; otherwise, default to './'
 BINARY_DIR="${1:-./}"
 
+# ./src/binaries/firmware/bin/patch-bin.sh ./src/binaries/firmware/bin/
+if [ -n "$IN_NIX_SHELL" ]; then
+    nix-shell --run "autoPatchelf ${BINARY_DIR}trezor-emu-*"
+    exit
+fi
+
 if [[ "$SYSTEM_ARCH" == "x86_64" ]]; then
     INTERPRETER_DEFAULT="/lib64/ld-linux-x86-64.so.2"
 elif [[ "$SYSTEM_ARCH" == "aarch64" || "$SYSTEM_ARCH" == "arm64" ]]; then
