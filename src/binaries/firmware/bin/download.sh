@@ -60,8 +60,14 @@ files=(
   "T3T1/trezor-emu-core-T3T1-v2.8.7${suffix}"
 )
 
-for file in "${files[@]}"; do
-  wget "${BASE_EMU_URL}/${file}" || true
+for file_path in "${files[@]}"; do
+  file=$( echo ${file_path##*/} )
+  if [ -e $file ]
+  then
+    echo "${file} already exists. skipping..."
+  else
+    wget "${BASE_EMU_URL}/${file_path}" || true
+  fi
 done
 
 # download emulator from main
