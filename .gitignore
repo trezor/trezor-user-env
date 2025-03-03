@@ -11,6 +11,7 @@ src/binaries/firmware/bin/*
 !src/binaries/trezord-go/bin/download.sh
 src/binaries/node-bridge/bin.js
 emulator.img
+channel_data.json
 .vscode
 .mypy_cache
 docker/version.txt
