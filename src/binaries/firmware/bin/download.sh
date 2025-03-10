@@ -45,6 +45,7 @@ files=(
   "T2T1/trezor-emu-core-T2T1-v2.8.1${suffix}"
   "T2T1/trezor-emu-core-T2T1-v2.8.7${suffix}"
   "T2T1/trezor-emu-core-T2T1-v2.8.8${suffix}"
+  "T2T1/trezor-emu-core-T2T1-v2.8.9${suffix}"
   # T2B1
   "T2B1/trezor-emu-core-T2B1-v2.6.3${suffix}"
   "T2B1/trezor-emu-core-T2B1-v2.6.4${suffix}"
@@ -52,12 +53,14 @@ files=(
   "T2B1/trezor-emu-core-T2B1-v2.7.2${suffix}"
   "T2B1/trezor-emu-core-T2B1-v2.8.0${suffix}"
   "T2B1/trezor-emu-core-T2B1-v2.8.7${suffix}"
+  "T2B1/trezor-emu-core-T2B1-v2.8.9${suffix}"
   # T3T1
   "T3T1/trezor-emu-core-T3T1-v2.7.2${suffix}"
   "T3T1/trezor-emu-core-T3T1-v2.8.0${suffix}"
   "T3T1/trezor-emu-core-T3T1-v2.8.1${suffix}"
   "T3T1/trezor-emu-core-T3T1-v2.8.3${suffix}"
   "T3T1/trezor-emu-core-T3T1-v2.8.7${suffix}"
+  "T3T1/trezor-emu-core-T3T1-v2.8.9${suffix}"
 )
 
 for file_path in "${files[@]}"; do
