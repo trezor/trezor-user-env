@@ -468,7 +468,7 @@ def setup_device(
     #   "wrong previous session" from bridge
     with connect_to_client() as client:
         debuglink.load_device(
-            client,
+            client.get_seedless_session(),
             mnemonic,
             pin,
             passphrase_protection,
@@ -479,7 +479,7 @@ def setup_device(
 
 def wipe_device() -> None:
     with connect_to_client() as client:
-        device.wipe(client)
+        device.wipe(client.get_seedless_session())
 
 
 def reset_device(
@@ -490,7 +490,7 @@ def reset_device(
 
     with connect_to_client() as client:
         device.reset(
-            client,
+            client.get_seedless_session(),
             skip_backup=True,
             pin_protection=False,
             backup_type=backup_type,
@@ -977,7 +977,7 @@ def apply_settings(
 
     with connect_to_client() as client:
         device.apply_settings(
-            client,
+            client.get_seedless_session(),
             label=label,
             language=language,
             use_passphrase=use_passphrase,
@@ -1002,7 +1002,10 @@ def allow_unsafe() -> None:
         # the command will fail with a specific error message
         # T1 supports safety checks from 1.10.1 and T2 from 2.3.2
         try:
-            device.apply_settings(client, safety_checks=safety_checks)
+            device.apply_settings(
+                client.get_seedless_session(),
+                safety_checks=safety_checks
+            )
         except TrezorFailure as err:
             # Catching only specific error message, otherwise reraising the exception
             if "No setting provided" in str(err):
@@ -1013,30 +1016,46 @@ def allow_unsafe() -> None:
             else:
                 raise
 
+def response_dict(response) -> Dict[str, Any]:
+    resp_dict: Dict[str, Any] = {}
+    for key in dir(response):
+        val = getattr(response, key)
+        # Not interested in private or uppercase attributes
+        if key.startswith("__") or key[0].isupper():
+            continue
+        # Not interested in methods
+        if callable(val):
+            continue
+        # Transforming bytes to string
+        if isinstance(val, bytes):
+            try:
+                val = val.decode("utf-8")
+            except UnicodeDecodeError:
+                val = val.hex()
+        resp_dict[key] = val
+
+    return resp_dict
 
 def get_debug_state() -> Dict[str, Any]:
     # We need to connect on UDP not to interrupt any bridge sessions
     with connect_to_debuglink(needs_udp=True) as debug:
         debug_state = debug.state()
-        debug_state_dict: Dict[str, Any] = {}
-        for key in dir(debug_state):
-            val = getattr(debug_state, key)
-            # Not interested in private or uppercase attributes
-            if key.startswith("__") or key[0].isupper():
-                continue
-            # Not interested in methods
-            if callable(val):
-                continue
-            # Transforming bytes to string
-            if isinstance(val, bytes):
-                try:
-                    val = val.decode("utf-8")
-                except UnicodeDecodeError:
-                    val = val.hex()
-            debug_state_dict[key] = val
 
-        return debug_state_dict
+        return response_dict(debug_state)
 
+def get_pairing_info(thp_channel_id=None, handshake_hash=None, nfc_secret_host=None) -> Dict[str, Any]:
+    # We need to connect on UDP not to interrupt any bridge sessions
+    with connect_to_debuglink(needs_udp=True) as debug:
+        def to_bytearray(value: Optional[str]):
+            return bytearray.fromhex(value) if value else None
+
+        pairing_info = debug.pairing_info(
+            thp_channel_id=to_bytearray(thp_channel_id),
+            handshake_hash=to_bytearray(handshake_hash),
+            nfc_secret_host=to_bytearray(nfc_secret_host),
+        )
+
+        return response_dict(pairing_info)
 
 class ScreenContent(TypedDict):
     title: str
