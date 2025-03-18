@@ -24,5 +24,7 @@ stdenv.mkDerivation {
     curl
     nodejs # for node bridge
     procps
+    xdotool
+    xorg.xwininfo
   ];
 }
