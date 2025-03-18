@@ -423,6 +423,9 @@ async def handler(websocket, path) -> None:
         except ConnectionClosedError:
             log("Client exiting with a failure. Goodbye", "red")
             return
+        except Exception as e:
+            log(f"Error in handler: {e}", "red")
+            return
 
 
 def start() -> None:
