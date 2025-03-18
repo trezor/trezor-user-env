@@ -32,6 +32,7 @@
     - **wipe**: `bool` (default=False) whether to delete the emulator profile before starting it
     - **output_to_logfile**: `bool` (default=True) whether the debug output should go to a logfile - otherwise it goes to stdout
     - **save_screenshots**: `bool` (default=False) whether to save screenshots to enable calling **emulator-get-screenshot**
+    - **return_features**: `bool` (default=False) whether to call get-features
 
 - **emulator-start-from-url**
   - **action**: downloads emulator from specified URL and runs it
