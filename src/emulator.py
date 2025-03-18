@@ -21,6 +21,7 @@ from trezorlib._internal.emulator import CoreEmulator, LegacyEmulator
 from trezorlib.client import TrezorClient
 from trezorlib.debuglink import DebugLink, TrezorClientDebugLink
 from trezorlib.exceptions import TrezorFailure
+from trezorlib.messages import Features
 from trezorlib.transport import Transport
 from trezorlib.transport.bridge import BridgeTransport
 from trezorlib.transport.udp import UdpTransport
@@ -140,7 +141,7 @@ def start_from_url(
     save_screenshots: bool = False,
     force_update: bool = False,
     force_name: str | None = None,
-) -> None:
+) -> Features | None:
     binaries.check_model(model)
 
     # Creating an identifier of emulator from this URL, so we have to
@@ -208,7 +209,7 @@ def start_from_branch(
     wipe: bool,
     output_to_logfile: bool = True,
     save_screenshots: bool = False,
-) -> None:
+) -> Features | None:
     emu_name = "trezor-emu-core"
     if binaries.IS_ARM:
         emu_name += binaries.ARM_IDENTIFIER
@@ -245,7 +246,8 @@ def start(
     wipe: bool,
     output_to_logfile: bool = True,
     save_screenshots: bool = False,
-) -> None:
+    return_features: bool = False,
+) -> Features | None:
     global VERSION_RUNNING
     global EMULATOR
     global MODEL_RUNNING
@@ -330,6 +332,10 @@ def start(
             dir_to_save = get_new_screenshot_dir()
             log(f"Saving screenshots to {dir_to_save}")
             debug.start_recording(str(dir_to_save))
+
+    if return_features:
+        return get_features()
+    return None
 
 
 def get_new_screenshot_dir() -> Path:
@@ -988,6 +994,11 @@ def apply_settings(
             safety_checks=safety_checks,
             experimental_features=experimental_features,
         )
+
+
+def get_features() -> Features:
+    with connect_to_client() as client:
+        return client.features
 
 
 def allow_unsafe() -> None:
