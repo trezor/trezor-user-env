@@ -32,7 +32,6 @@
     - **wipe**: `bool` (default=False) whether to delete the emulator profile before starting it
     - **output_to_logfile**: `bool` (default=True) whether the debug output should go to a logfile - otherwise it goes to stdout
     - **save_screenshots**: `bool` (default=False) whether to save screenshots to enable calling **emulator-get-screenshot**
-    - **return_features**: `bool` (default=False) whether to call get-features
 
 - **emulator-start-from-url**
   - **action**: downloads emulator from specified URL and runs it
@@ -144,6 +143,12 @@
   - **response**: `{"response": {"title": str, "body": str}}`
   - **example response**:
     - `{'title': 'Create wallet backup', 'body': 'Your wallet backup contains 12 words in a specific order.'}`
+
+- **emulator-get-features**
+  - **action**: get selected features
+  - **response**: `{"response": dict}`
+  - **example responses**:
+    `{ revision: [ 'fad9682201cf9289bba2adb66e6e07ed1cf78936' ] }`
 
 - **bridge-start**
   - **action**: start the specified version of bridge (only if it is not already running)

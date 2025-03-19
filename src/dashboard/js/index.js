@@ -39,7 +39,6 @@ const app = createApp({
                 },
                 wipeDevice: false,
                 screenshotMode: false,
-                returnFeatures: false,
                 outputToLogfile: false,
                 status: "unknown",
                 statusColor: "black",
@@ -278,7 +277,6 @@ const app = createApp({
                 wipe: this.emulators.wipeDevice,
                 output_to_logfile: this.emulators.outputToLogfile,
                 save_screenshots: this.emulators.screenshotMode,
-                return_features: this.emulators.returnFeatures,
             });
         },
         emulatorStartFromUrl() {
@@ -487,6 +485,11 @@ const app = createApp({
         emulatorSetBackupState() {
             this.sendMessage({
                 type: "emulator-set-for-backup",
+            });
+        },
+        emulatorGetFeatures() {
+            this.sendMessage({
+                type: "emulator-get-features",
             });
         },
         regtestMine() {

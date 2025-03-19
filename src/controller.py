@@ -185,34 +185,21 @@ class ResponseGetter:
             wipe = self.request_dict.get("wipe", False)
             output_to_logfile = self.request_dict.get("output_to_logfile", True)
             save_screenshots = self.request_dict.get("save_screenshots", False)
-            return_features = self.request_dict.get("return_features", False)
             if model != PREV_RUNNING_MODEL:
                 wipe = True
             PREV_RUNNING_MODEL = model
-            features = emulator.start(
+            emulator.start(
                 version=version,
                 model=model,
                 wipe=wipe,
                 output_to_logfile=output_to_logfile,
                 save_screenshots=save_screenshots,
-                return_features=return_features,
             )
             response_text = f"Emulator version {version} ({model}) started"
             if wipe:
                 response_text += " and wiped to be empty"
 
-            features_res = {}
-            if return_features and features:
-                log(f"Features: {features}")
-                features_res["revision"] = (
-                    features.revision.hex() if features.revision else "",
-                )
-
-            response = {
-                "response": response_text,
-                "features": features_res,
-            }
-            return {"response": response}
+            return {"response": response_text}
         elif self.command == "emulator-start-from-url":
             url = self.request_dict["url"]
             model = self.request_dict["model"]
@@ -348,6 +335,15 @@ class ResponseGetter:
         elif self.command == "emulator-set-for-backup":
             emulator.set_for_backup()
             return {"response": "Backup set"}
+        elif self.command == "emulator-get-features":
+            features = emulator.get_features()
+            features_res = {}
+            if return_features and features:
+                log(f"Features: {features}")
+                features_res["revision"] = (
+                    features.revision.hex() if features.revision else "",
+                )
+            return {"response": features_res}
         else:
             return {
                 "success": False,
