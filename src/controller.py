@@ -338,7 +338,7 @@ class ResponseGetter:
         elif self.command == "emulator-get-features":
             features = emulator.get_features()
             features_res = {}
-            if return_features and features:
+            if features:
                 log(f"Features: {features}")
                 features_res["revision"] = (
                     features.revision.hex() if features.revision else "",
