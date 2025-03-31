@@ -336,14 +336,8 @@ class ResponseGetter:
             emulator.set_for_backup()
             return {"response": "Backup set"}
         elif self.command == "emulator-get-features":
-            features = emulator.get_features()
-            features_res = {}
-            if features:
-                log(f"Features: {features}")
-                features_res["revision"] = (
-                    features.revision.hex() if features.revision else "",
-                )
-            return {"response": features_res}
+            features = emulator.get_features_serialized()
+            return {"response": features}
         else:
             return {
                 "success": False,
