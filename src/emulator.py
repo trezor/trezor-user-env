@@ -10,6 +10,7 @@ import time
 import urllib.request
 from contextlib import contextmanager
 from datetime import datetime
+from enum import Enum
 from pathlib import Path
 from subprocess import PIPE
 from typing import Any, Dict, Generator, Optional, TypedDict
@@ -21,7 +22,7 @@ from trezorlib._internal.emulator import CoreEmulator, LegacyEmulator
 from trezorlib.client import TrezorClient
 from trezorlib.debuglink import DebugLink, TrezorClientDebugLink
 from trezorlib.exceptions import TrezorFailure
-from trezorlib.messages import Features
+from trezorlib.messages import Features, protobuf
 from trezorlib.transport import Transport
 from trezorlib.transport.bridge import BridgeTransport
 from trezorlib.transport.udp import UdpTransport
@@ -993,9 +994,38 @@ def apply_settings(
         )
 
 
-def get_features() -> Features:
+def get_features_raw() -> Features:
     with connect_to_client() as client:
         return client.features
+
+
+def _serialize_protobuf_message(msg: protobuf.MessageType) -> dict[str, Any]:
+    result: dict[str, Any] = {}
+    for field_number, field in msg.FIELDS.items():
+        try:
+            key = field.name
+            value = getattr(msg, key, None)
+
+            if isinstance(value, Enum):
+                result[key] = value.name
+            elif isinstance(value, bytes):
+                result[key] = value.hex()
+            elif isinstance(value, list):
+                result[key] = [v.name if isinstance(v, Enum) else v for v in value]  # type: ignore
+            else:
+                result[key] = value
+        except Exception as e:
+            log(
+                f"Error serializing field {field.name} of: {e}",
+                "red",
+            )
+    return result
+
+
+def get_features_serialized() -> dict[str, Any]:
+    """Returns the serialized features of the device."""
+    features_raw = get_features_raw()
+    return _serialize_protobuf_message(features_raw)
 
 
 def allow_unsafe() -> None:
