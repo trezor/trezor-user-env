@@ -185,6 +185,7 @@ class ResponseGetter:
             wipe = self.request_dict.get("wipe", False)
             output_to_logfile = self.request_dict.get("output_to_logfile", True)
             save_screenshots = self.request_dict.get("save_screenshots", False)
+            show_animations = self.request_dict.get("show_animations", False)
             if model != PREV_RUNNING_MODEL:
                 wipe = True
             PREV_RUNNING_MODEL = model
@@ -194,6 +195,7 @@ class ResponseGetter:
                 wipe=wipe,
                 output_to_logfile=output_to_logfile,
                 save_screenshots=save_screenshots,
+                show_animations=show_animations,
             )
             response_text = f"Emulator version {version} ({model}) started"
             if wipe:
@@ -212,6 +214,7 @@ class ResponseGetter:
             wipe = self.request_dict.get("wipe", False)
             output_to_logfile = self.request_dict.get("output_to_logfile", True)
             save_screenshots = self.request_dict.get("save_screenshots", False)
+            show_animations = self.request_dict.get("show_animations", False)
             if model != PREV_RUNNING_MODEL:
                 wipe = True
             PREV_RUNNING_MODEL = model
@@ -221,6 +224,7 @@ class ResponseGetter:
                 wipe=wipe,
                 output_to_logfile=output_to_logfile,
                 save_screenshots=save_screenshots,
+                show_animations=show_animations,
             )
             response_text = f"Emulator downloaded from {url} and started"
             if wipe:
@@ -249,6 +253,7 @@ class ResponseGetter:
                 wipe=wipe,
                 output_to_logfile=output_to_logfile,
                 save_screenshots=save_screenshots,
+                show_animations=show_animations,
             )
             response_text = f"Emulator downloaded from branch {branch} and started"
             if wipe:
