@@ -120,6 +120,18 @@
 
                 <div>
                     <input
+                        id="animations"
+                        type="checkbox"
+                        v-model="emulators.animations"
+                    />
+                    <label
+                        class="underlined"
+                        title="Animations will be turned on."
+                        for="animations"
+                        >Show animations</label
+                    >
+                    <br />
+                    <input
                         id="wipeDevice"
                         type="checkbox"
                         v-model="emulators.wipeDevice"

@@ -39,6 +39,7 @@ const app = createApp({
                 },
                 wipeDevice: false,
                 screenshotMode: false,
+                animations: false,
                 outputToLogfile: false,
                 status: "unknown",
                 statusColor: "black",
@@ -277,6 +278,7 @@ const app = createApp({
                 wipe: this.emulators.wipeDevice,
                 output_to_logfile: this.emulators.outputToLogfile,
                 save_screenshots: this.emulators.screenshotMode,
+                show_animations: this.emulators.animations,
             });
         },
         emulatorStartFromUrl() {
@@ -299,6 +301,7 @@ const app = createApp({
                 wipe: this.emulators.wipeDevice,
                 output_to_logfile: this.emulators.outputToLogfile,
                 save_screenshots: this.emulators.screenshotMode,
+                show_animations: this.emulators.animations,
             });
 
             this.emulatorDownloadMessage =
@@ -325,6 +328,7 @@ const app = createApp({
                 wipe: this.emulators.wipeDevice,
                 output_to_logfile: this.emulators.outputToLogfile,
                 save_screenshots: this.emulators.screenshotMode,
+                show_animations: this.emulators.animations,
             });
 
             this.emulatorDownloadMessage =

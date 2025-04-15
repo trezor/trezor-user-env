@@ -142,6 +142,7 @@ def start_from_url(
     save_screenshots: bool = False,
     force_update: bool = False,
     force_name: str | None = None,
+    show_animations: bool = False,
 ) -> None:
     binaries.check_model(model)
 
@@ -200,6 +201,7 @@ def start_from_url(
         wipe=wipe,
         output_to_logfile=output_to_logfile,
         save_screenshots=save_screenshots,
+        show_animations=show_animations,
     )
 
 
@@ -210,6 +212,7 @@ def start_from_branch(
     wipe: bool,
     output_to_logfile: bool = True,
     save_screenshots: bool = False,
+    show_animations: bool = False,
 ) -> None:
     emu_name = "trezor-emu-core"
     if binaries.IS_ARM:
@@ -238,6 +241,7 @@ def start_from_branch(
         save_screenshots=save_screenshots,
         force_update=True,
         force_name=force_name,
+        show_animations=show_animations,
     )
 
 
@@ -247,6 +251,7 @@ def start(
     wipe: bool,
     output_to_logfile: bool = True,
     save_screenshots: bool = False,
+    show_animations: bool = False,
 ) -> None:
     global VERSION_RUNNING
     global EMULATOR
@@ -283,6 +288,7 @@ def start(
             emu_location,
             profile_dir=binaries.FIRMWARE_BIN_DIR,
             logfile=logfile,
+            disable_animation=not show_animations,
         )
     elif model == "T1B1":
         os.environ["TREZOR_OLED_SCALE"] = str(TREZOR_ONE_OLED_SCALE)
