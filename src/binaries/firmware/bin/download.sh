@@ -93,8 +93,8 @@ if [[ $SYSTEM_ARCH == x86_64* ]]; then
     wget https://data.trezor.io/dev/firmware/emu-nightly/trezor-emu-core-T2T1-universal
     mv trezor-emu-core-T2T1-universal ../trezor-emu-core-T2T1-v2-main
 
-    wget https://data.trezor.io/dev/firmware/emu-nightly/trezor-emu-core-T2B1-universal
-    mv trezor-emu-core-T2B1-universal ../trezor-emu-core-T2B1-v2-main
+    wget https://data.trezor.io/dev/firmware/emu-nightly/trezor-emu-core-T3B1-universal
+    mv trezor-emu-core-T3B1-universal ../trezor-emu-core-T2B1-v2-main
 
     wget https://data.trezor.io/dev/firmware/emu-nightly/trezor-emu-core-T3T1-universal
     mv trezor-emu-core-T3T1-universal ../trezor-emu-core-T3T1-v2-main
@@ -110,8 +110,8 @@ elif [[ $SYSTEM_ARCH == aarch64* ]]; then
     wget https://data.trezor.io/dev/firmware/emu-nightly/trezor-emu-arm-core-T2T1-universal
     mv trezor-emu-arm-core-T2T1-universal ../trezor-emu-core-T2T1-v2-main-arm
 
-    wget https://data.trezor.io/dev/firmware/emu-nightly/trezor-emu-arm-core-T2B1-universal
-    mv trezor-emu-arm-core-T2B1-universal ../trezor-emu-core-T2B1-v2-main-arm
+    wget https://data.trezor.io/dev/firmware/emu-nightly/trezor-emu-arm-core-T3B1-universal
+    mv trezor-emu-arm-core-T3B1-universal ../trezor-emu-core-T2B1-v2-main-arm
 
     wget https://data.trezor.io/dev/firmware/emu-nightly/trezor-emu-arm-core-T3T1-universal
     mv trezor-emu-arm-core-T3T1-universal ../trezor-emu-core-T3T1-v2-main-arm
