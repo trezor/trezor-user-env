@@ -58,7 +58,7 @@ def log(text: str, color: str = LOG_COLOR) -> None:
 
 
 # Hacking the bridge connection code to have a timeout
-import trezorlib.transport.bridge as monkey_patch_bridge
+import trezorlib.transport.bridge as monkey_patch_bridge  # noqa: E402
 
 last_bridge_url: str | None = None
 
