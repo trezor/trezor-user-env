@@ -1,5 +1,5 @@
 # Start with a base Debian image
-FROM debian:bookworm-slim
+FROM debian:trixie-slim
 
 # Set environment variables
 ENV TERM=xterm \
