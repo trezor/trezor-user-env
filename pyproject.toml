@@ -10,7 +10,7 @@ termcolor = "^1.1.0"
 trezor = { git = "https://github.com/trezor/trezor-firmware.git", branch = "main", subdirectory = "python" }
 websockets = "^10.1"
 psutil = "^5.8.0"
-Pillow = "^9.1.0"
+Pillow = "^10.0.0"
 
 [tool.poetry.dev-dependencies]
 black = ">=22.3"
