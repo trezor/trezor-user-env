@@ -65,16 +65,16 @@ last_bridge_url: str | None = None
 original_bridge_post = monkey_patch_bridge.CONNECTION.post
 
 
-def bridge_post_with_timeout(url: str, data=None, **kwargs):  # type: ignore
+def bridge_post_with_timeout(url: str, data=None, **kwargs):
     global last_bridge_url
     last_bridge_url = url
     log(f"Bridge POST {url}, data: {data}")
     if "timeout" not in kwargs:
         kwargs["timeout"] = 5
-    return original_bridge_post(url, data=data, **kwargs)  # type: ignore
+    return original_bridge_post(url, data=data, **kwargs)
 
 
-monkey_patch_bridge.CONNECTION.post = bridge_post_with_timeout  # type: ignore
+monkey_patch_bridge.CONNECTION.post = bridge_post_with_timeout
 
 
 def get_bridge_device() -> Transport:
@@ -279,7 +279,7 @@ def start(
     if output_to_logfile:
         logfile = open(helpers.EMU_BRIDGE_LOG, "a")
     else:
-        logfile = sys.stdout
+        logfile = sys.stdout  # type: ignore
 
     emu_location = Path(binaries.get_firmware_location(model, version))
 
@@ -875,7 +875,7 @@ def read_and_confirm_shamir_mnemonic_t3t1(shares: int, threshold: int) -> None:
                 button_coords_to_click = PLUS_BUTTON_COORDS
 
             for _ in range(needed_clicks):
-                debug.click(button_coords_to_click, wait=True)
+                debug.click(button_coords_to_click)
                 time.sleep(SLEEP)
 
         # Confirm
@@ -978,7 +978,7 @@ def apply_settings(
     display_rotation: Optional[int] = None,
     passphrase_always_on_device: Optional[bool] = None,
     safety_checks: Optional[int] = None,
-    experimental_features: Optional[int] = None,
+    experimental_features: Optional[bool] = None,
 ) -> None:
     """Forwards settings fields to be applied on a device."""
     # Homescreen needs to be bytes object, so if there,
@@ -994,8 +994,8 @@ def apply_settings(
             homescreen=homescreen_bytes,
             passphrase_always_on_device=passphrase_always_on_device,
             auto_lock_delay_ms=auto_lock_delay_ms,
-            display_rotation=display_rotation,
-            safety_checks=safety_checks,
+            display_rotation=display_rotation,  # type: ignore
+            safety_checks=safety_checks,  # type: ignore
             experimental_features=experimental_features,
         )
 
@@ -1017,7 +1017,7 @@ def _serialize_protobuf_message(msg: protobuf.MessageType) -> dict[str, Any]:
             elif isinstance(value, bytes):
                 result[key] = value.hex()
             elif isinstance(value, list):
-                result[key] = [v.name if isinstance(v, Enum) else v for v in value]  # type: ignore
+                result[key] = [v.name if isinstance(v, Enum) else v for v in value]
             else:
                 result[key] = value
         except Exception as e:
