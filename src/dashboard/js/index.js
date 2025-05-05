@@ -66,9 +66,9 @@ const app = createApp({
             regtest: {
                 status: "unknown",
                 statusColor: "black",
-                mineBlocks: 0,
+                mineBlocks: 1,
                 mineAddress: "",
-                sendAmount: 0,
+                sendAmount: 10,
                 sendAddress: "",
             },
             ws: null,
