@@ -74,7 +74,7 @@ def bridge_post_with_timeout(url: str, data=None, **kwargs):
     return original_bridge_post(url, data=data, **kwargs)
 
 
-monkey_patch_bridge.CONNECTION.post = bridge_post_with_timeout
+monkey_patch_bridge.CONNECTION.post = bridge_post_with_timeout  # type: ignore
 
 
 def get_bridge_device() -> Transport:
