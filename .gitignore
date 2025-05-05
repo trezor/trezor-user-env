@@ -10,6 +10,7 @@ src/binaries/firmware/bin/*
 !src/binaries/firmware/bin/arm
 !src/binaries/trezord-go/bin/download.sh
 src/binaries/node-bridge/bin.js
+src/binaries/node-bridge/bin_suite.js
 emulator.img
 .vscode
 .mypy_cache
@@ -17,3 +18,4 @@ docker/version.txt
 logs/debugging.log
 logs/emulator_bridge.log
 logs/screens
+trezor-suite

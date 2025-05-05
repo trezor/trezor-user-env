@@ -13,6 +13,7 @@ const app = createApp({
                 outputToLogfile: false,
                 status: "unknown",
                 statusColor: "black",
+                hasSuiteLocal: false,
             },
             emulators: {
                 versions: {
@@ -196,6 +197,9 @@ const app = createApp({
                 }
                 this.bridges.selected = dataObject.bridges[0];
                 this.bridges.versions = dataObject.bridges;
+                this.bridges.hasSuiteLocal = dataObject.bridges.includes(
+                    "local-suite-node-bridge"
+                );
             }
         },
         sendMessage(msg) {

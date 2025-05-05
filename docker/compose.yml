@@ -10,6 +10,7 @@ services:
       # Second option of running with HW device is running the whole `tenv` locally.
       - PHYSICAL_TREZOR=$PHYSICAL_TREZOR
     volumes:
+      - ./../trezor-suite:/trezor-user-env/trezor-suite
       - ./../logs/screens:/trezor-user-env/logs/screens
       - ./../src/binaries/firmware/bin/user_downloaded:/trezor-user-env/src/binaries/firmware/bin/user_downloaded
 
@@ -25,6 +26,7 @@ services:
       - DISPLAY=docker.for.mac.host.internal:0
       - REGTEST_RPC_URL=http://host.docker.internal:18021
     volumes:
+      - ./../trezor-suite:/trezor-user-env/trezor-suite
       - ./../logs/screens:/trezor-user-env/logs/screens
       - ./../src/binaries/firmware/bin/user_downloaded:/trezor-user-env/src/binaries/firmware/bin/user_downloaded
 

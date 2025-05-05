@@ -60,3 +60,10 @@ See [docs/development.md](docs/development.md).
 ## Troubleshooting
 
 - On Apple Silicon Macs, `trezor-user-env-regtest` runs in an emulation layer as there is no arm native image. You may experience some slowness or issues when using it on arm Macs.
+
+## Features
+
+### Running node bridge from local Suite build
+
+- instead of running the `develop` version of the node bridge, downloadable from `https://dev.suite.sldev.cz/transport-bridge/develop/dist/bin.js`, it is possible to run the `bin.js` server from the local Suite build
+- it is necessary to create a symbolic link to the ./trezor-suite dir with the local Suite repository - e.g. `ln -s ~/trezor-suite trezor-suite` in the root of the trezor-user-env repo

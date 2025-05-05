@@ -9,7 +9,15 @@ from termcolor import colored  # type: ignore
 ROOT_DIR = Path(__file__).resolve().parent.parent
 FIRMWARE_BIN_DIR = ROOT_DIR / "src/binaries/firmware/bin"
 BRIDGE_BIN_DIR = ROOT_DIR / "src/binaries/trezord-go/bin"
+
 NODE_BRIDGE_DIR = ROOT_DIR / "src/binaries/node-bridge"
+LOCAL_SUITE_NODE_BRIDGE_DIR = ROOT_DIR / "trezor-suite/packages/transport-bridge/dist"
+NODE_BRIDGE_BIN_JS = NODE_BRIDGE_DIR / "bin.js"
+LOCAL_SUITE_NODE_BRIDGE_BIN_JS = LOCAL_SUITE_NODE_BRIDGE_DIR / "bin.js"
+
+NODE_BRIDGE_ID = "node-bridge"
+LOCAL_SUITE_NODE_BRIDGE_ID = "local-suite-node-bridge"
+
 USER_DOWNLOADED_DIR = FIRMWARE_BIN_DIR / "user_downloaded"
 USER_DOWNLOADED_DIR.mkdir(exist_ok=True)
 
@@ -146,11 +154,14 @@ def explore_bridges() -> None:
     if IS_ARM:
         BRIDGES.append(f"2.0.33{ARM_IDENTIFIER}")
         BRIDGES.append(f"2.0.32{ARM_IDENTIFIER}")
-        BRIDGES.append("node-bridge")
     else:
         BRIDGES.append("2.0.33")
         BRIDGES.append("2.0.32")
-        BRIDGES.append("node-bridge")
+
+    if NODE_BRIDGE_BIN_JS.exists():
+        BRIDGES.append(NODE_BRIDGE_ID)
+    if LOCAL_SUITE_NODE_BRIDGE_BIN_JS.exists():
+        BRIDGES.append(LOCAL_SUITE_NODE_BRIDGE_ID)
 
 
 def patch_emulators_for_nix(dir_to_patch: str = "") -> None:
