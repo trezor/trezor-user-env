@@ -19,6 +19,8 @@ mypy = "^1.15.0"
 flake8 = "^7.2.0"
 pytest = "^6.2.5"
 pytest-asyncio = "^0.16.0"
+types-requests = "^2.32.0.20250328"
+types-psutil = "^7.0.0.20250401"
 
 [tool.mypy]
 exclude = "^trezor-suite/"
