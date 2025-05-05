@@ -75,6 +75,12 @@
                     ><br />
                 </div>
                 <div>
+                    <div v-if="bridges.hasSuiteLocal" :style="{ color: 'green' }">
+                        You have mounted local Suite - local node bridge is available.
+                    </div>
+                    <div v-else :style="{ color: 'orange' }">
+                        Local Suite is not mounted - please run `ln -s [local-suite-path] trezor-suite` in root dir and restart server.
+                    </div>
                     <div :style="{ color: bridges.statusColor }">
                         <b>Status: <span>{{ bridges.status }}</span></b>
                     </div>

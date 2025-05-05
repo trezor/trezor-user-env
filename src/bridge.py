@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import shutil
 import socket
 import time
 from shlex import split
@@ -89,11 +90,33 @@ def start(version: str, proxy: bool = False, output_to_logfile: bool = True) -> 
 
     def get_command_list() -> list[str]:
         # Special handling of node-js bridge (experimental)
-        if "node" in version:
-            path = binaries.NODE_BRIDGE_DIR / "bin.js"
+        if version == binaries.NODE_BRIDGE_ID:
+            path = binaries.NODE_BRIDGE_BIN_JS
+            log(f"Using local bridge from {path}")
             if not path.exists():
                 raise RuntimeError(f"Node bridge does not exist under {path}")
             return ["node", str(path), "udp"]
+        elif version == binaries.LOCAL_SUITE_NODE_BRIDGE_ID:
+            path = binaries.LOCAL_SUITE_NODE_BRIDGE_BIN_JS
+            if not path.exists():
+                raise RuntimeError(
+                    f"Local Suite node bridge does not exist under {path}"
+                )
+            log(f"Using local Suite bridge from {path}")
+            transformed_path = binaries.NODE_BRIDGE_DIR / "bin_suite.js"
+            shutil.copyfile(path, transformed_path)
+            proc = Popen(
+                [
+                    f"{binaries.NODE_BRIDGE_DIR}/modify_node_bin_js.sh",
+                    str(transformed_path),
+                ]
+            )
+            proc.wait()
+            if proc.returncode != 0:
+                raise RuntimeError(
+                    f"Failed to modify the node bridge binary: {proc.returncode}"
+                )
+            return ["node", str(transformed_path), "udp"]
         else:
             bridge_location = binaries.BRIDGE_BIN_DIR / f"trezord-go-v{version}"
             if not bridge_location.exists():
