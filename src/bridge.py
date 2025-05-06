@@ -73,7 +73,12 @@ def start(version: str, proxy: bool = False, output_to_logfile: bool = True) -> 
     global VERSION_RUNNING
 
     # When we are on ARM, include appropriate suffix for the version if not there
-    if binaries.IS_ARM and not version.endswith(binaries.ARM_IDENTIFIER):
+    # Not doing this for node bridge
+    if (
+        binaries.IS_ARM
+        and not version.endswith(binaries.ARM_IDENTIFIER)
+        and "node" not in version
+    ):
         log("ARM detected, adding suffix to bridge version", "yellow")
         version += binaries.ARM_IDENTIFIER
 
