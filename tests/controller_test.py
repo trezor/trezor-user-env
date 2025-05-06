@@ -193,7 +193,7 @@ async def test_emulator_t1_start_stop(websocket) -> None:
 
 async def test_emulator_tr_start_stop(websocket) -> None:
     await _test_start_stop(
-        websocket, component="emulator", version=EMU_TO_TEST_TR, model="T2B1"
+        websocket, component="emulator", version=EMU_TO_TEST_TR, model="T3B1"
     )
 
 

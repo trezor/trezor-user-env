@@ -46,14 +46,10 @@ files=(
   "T2T1/trezor-emu-core-T2T1-v2.8.7${suffix}"
   "T2T1/trezor-emu-core-T2T1-v2.8.8${suffix}"
   "T2T1/trezor-emu-core-T2T1-v2.8.9${suffix}"
-  # T2B1
-  "T2B1/trezor-emu-core-T2B1-v2.6.3${suffix}"
-  "T2B1/trezor-emu-core-T2B1-v2.6.4${suffix}"
-  "T2B1/trezor-emu-core-T2B1-v2.7.0${suffix}"
-  "T2B1/trezor-emu-core-T2B1-v2.7.2${suffix}"
-  "T2B1/trezor-emu-core-T2B1-v2.8.0${suffix}"
-  "T2B1/trezor-emu-core-T2B1-v2.8.7${suffix}"
-  "T2B1/trezor-emu-core-T2B1-v2.8.9${suffix}"
+  # T3B1
+  "T3B1/trezor-emu-core-T3B1-v2.8.3${suffix}"
+  "T3B1/trezor-emu-core-T3B1-v2.8.7${suffix}"
+  "T3B1/trezor-emu-core-T3B1-v2.8.9${suffix}"
   # T3T1
   "T3T1/trezor-emu-core-T3T1-v2.7.2${suffix}"
   "T3T1/trezor-emu-core-T3T1-v2.8.0${suffix}"
@@ -94,7 +90,7 @@ if [[ $SYSTEM_ARCH == x86_64* ]]; then
     mv trezor-emu-core-T2T1-universal ../trezor-emu-core-T2T1-v2-main
 
     wget https://data.trezor.io/dev/firmware/emu-nightly/trezor-emu-core-T3B1-universal
-    mv trezor-emu-core-T3B1-universal ../trezor-emu-core-T2B1-v2-main
+    mv trezor-emu-core-T3B1-universal ../trezor-emu-core-T3B1-v2-main
 
     wget https://data.trezor.io/dev/firmware/emu-nightly/trezor-emu-core-T3T1-universal
     mv trezor-emu-core-T3T1-universal ../trezor-emu-core-T3T1-v2-main
@@ -111,7 +107,7 @@ elif [[ $SYSTEM_ARCH == aarch64* ]]; then
     mv trezor-emu-arm-core-T2T1-universal ../trezor-emu-core-T2T1-v2-main-arm
 
     wget https://data.trezor.io/dev/firmware/emu-nightly/trezor-emu-arm-core-T3B1-universal
-    mv trezor-emu-arm-core-T3B1-universal ../trezor-emu-core-T2B1-v2-main-arm
+    mv trezor-emu-arm-core-T3B1-universal ../trezor-emu-core-T3B1-v2-main-arm
 
     wget https://data.trezor.io/dev/firmware/emu-nightly/trezor-emu-arm-core-T3T1-universal
     mv trezor-emu-arm-core-T3T1-universal ../trezor-emu-core-T3T1-v2-main-arm

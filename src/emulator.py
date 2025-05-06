@@ -283,7 +283,7 @@ def start(
 
     emu_location = Path(binaries.get_firmware_location(model, version))
 
-    if model in ("T2T1", "T2B1", "T3T1", "T3W1"):
+    if model in ("T2T1", "T3B1", "T3T1", "T3W1"):
         EMULATOR = CoreEmulator(
             emu_location,
             profile_dir=binaries.FIRMWARE_BIN_DIR,
@@ -568,8 +568,8 @@ def read_and_confirm_mnemonic() -> None:
     # It is not possible to read the model from the client's features
     if models.T2T1.internal_name in VERSION_RUNNING:
         read_and_confirm_mnemonic_t2t1()
-    elif models.T2B1.internal_name in VERSION_RUNNING:
-        read_and_confirm_mnemonic_t2b1()
+    elif models.T3B1.internal_name in VERSION_RUNNING:
+        read_and_confirm_mnemonic_t3b1()
     elif models.T3T1.internal_name in VERSION_RUNNING:
         read_and_confirm_mnemonic_t3t1()
     else:
@@ -695,8 +695,8 @@ def read_and_confirm_mnemonic_t3t1() -> None:
         time.sleep(SLEEP)
 
 
-def read_and_confirm_mnemonic_t2b1() -> None:
-    raise NotImplementedError("T2B1 mnemonic confirmation not implemented yet.")
+def read_and_confirm_mnemonic_t3b1() -> None:
+    raise NotImplementedError("T3B1 mnemonic confirmation not implemented yet.")
 
 
 def read_and_confirm_shamir_mnemonic(shares: int, threshold: int) -> None:

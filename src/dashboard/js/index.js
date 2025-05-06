@@ -25,7 +25,7 @@ const app = createApp({
                         header: "Trezor T",
                         versions: [],
                     },
-                    T2B1: {
+                    T3B1: {
                         header: "Trezor Safe 3",
                         versions: [],
                     },
