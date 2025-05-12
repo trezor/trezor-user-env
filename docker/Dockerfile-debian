@@ -20,7 +20,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     python3-dev \
     python3-pip \
     python3-venv \
-    python3-poetry \
     libsdl2-2.0-0 \
     libsdl2-image-2.0-0 \
     x11-xserver-utils \
@@ -40,11 +39,17 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY ./ /trezor-user-env
 WORKDIR /trezor-user-env
 
-# Install Python dependencies using poetry
-RUN poetry cache clear --all pypi
-RUN poetry install --no-root --without dev
+# Need to export the installed libraries from poetry to requirements.txt,
+# so it can be installed by pip, which is then needed for the custom
+# trezorlib installation from git.
+RUN python3 -m venv /venv
+ENV PATH="/venv/bin:$PATH"
+RUN pip install --upgrade pip
+RUN pip install poetry==1.8.5
+RUN poetry export -f requirements.txt --output requirements.txt --without-hashes --without dev
+RUN pip install -r requirements.txt
+RUN pip install "git+https://github.com/trezor/trezor-firmware.git@main#egg=trezor&subdirectory=python"
 
-# Execute scripts and clean up
 RUN ./src/binaries/firmware/bin/download.sh
 RUN ./src/binaries/trezord-go/bin/download.sh
 RUN ./src/binaries/node-bridge/download.sh
@@ -52,4 +57,4 @@ RUN ./src/binaries/node-bridge/download.sh
 RUN cd src/binaries/firmware/bin && ./patch-bin.sh
 
 # Command to run on container start
-CMD poetry run python src/main.py
+CMD ["/venv/bin/python", "src/main.py"]
