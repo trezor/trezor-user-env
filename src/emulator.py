@@ -805,7 +805,9 @@ def read_and_confirm_shamir_mnemonic_t2t1(shares: int, threshold: int) -> None:
             layout = debug.read_layout()
             for _ in range(layout.page_count() - 1):
                 mnemonic.extend(layout.seed_words())
-                layout = debug.swipe_up(wait=True)  # type: ignore
+                debug.swipe_up()
+                time.sleep(SLEEP)
+                layout = debug.read_layout()
                 assert layout is not None
             mnemonic.extend(layout.seed_words())
 
