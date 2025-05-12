@@ -44,6 +44,9 @@ WORKDIR /trezor-user-env
 RUN poetry cache clear --all pypi
 RUN poetry install --no-root --without dev
 
+# Trezorlib needs special installation from main branch
+RUN pip install "git+https://github.com/trezor/trezor-firmware.git@main#egg=trezor&subdirectory=python"
+
 # Execute scripts and clean up
 RUN ./src/binaries/firmware/bin/download.sh
 RUN ./src/binaries/trezord-go/bin/download.sh
