@@ -44,11 +44,12 @@ RUN python3 -m venv /venv
 ENV PATH="/venv/bin:$PATH"
 
 # Install Poetry manually (to use with this venv)
-RUN curl -sSL https://install.python-poetry.org | python3 - && \
-    ln -s ~/.local/bin/poetry /usr/local/bin/poetry
+RUN curl -sSL https://install.python-poetry.org | python3 - --version 1.8.5
+ENV PATH="/root/.local/bin:$PATH"
 
 # Disable Poetry's own venv handling (we're inside one)
 ENV POETRY_VIRTUALENVS_CREATE=false
+RUN poetry env use /venv/bin/python
 
 # Install deps
 RUN poetry install --no-root --without dev
