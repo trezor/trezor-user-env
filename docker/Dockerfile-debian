@@ -20,7 +20,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     python3-dev \
     python3-pip \
     python3-venv \
-    python3-poetry \
     libsdl2-2.0-0 \
     libsdl2-image-2.0-0 \
     x11-xserver-utils \
@@ -40,14 +39,22 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY ./ /trezor-user-env
 WORKDIR /trezor-user-env
 
-# Install Python dependencies using poetry
-# Do not create venv, so we can install custom trezorlib below
+# Install a virtualenv for the app
+RUN python3 -m venv /venv
+ENV PATH="/venv/bin:$PATH"
+
+# Install Poetry manually (to use with this venv)
+RUN curl -sSL https://install.python-poetry.org | python3 - && \
+    ln -s ~/.local/bin/poetry /usr/local/bin/poetry
+
+# Disable Poetry's own venv handling (we're inside one)
 ENV POETRY_VIRTUALENVS_CREATE=false
-RUN poetry cache clear --all pypi
+
+# Install deps
 RUN poetry install --no-root --without dev
 
-# Trezorlib needs special installation from main branch
-RUN pip install --break-system-packages "git+https://github.com/trezor/trezor-firmware.git@main#egg=trezor&subdirectory=python"
+# Install trezorlib from Git
+RUN pip install "git+https://github.com/trezor/trezor-firmware.git@main#egg=trezor&subdirectory=python"
 
 # Execute scripts and clean up
 RUN ./src/binaries/firmware/bin/download.sh
