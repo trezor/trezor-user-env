@@ -1,6 +1,6 @@
 src/binaries/firmware/repo/
 src/binaries/trezord-go/repo/
-docker/Dockerfile
+docker/Dockerfile-debian
 docker/compose.yml
 .git
 .dockerignore
