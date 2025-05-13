@@ -64,4 +64,4 @@ RUN ./src/binaries/node-bridge/download.sh
 RUN cd src/binaries/firmware/bin && ./patch-bin.sh
 
 # Command to run on container start
-CMD poetry run python src/main.py
+CMD ["/venv/bin/python", "src/main.py"]
