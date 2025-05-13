@@ -39,25 +39,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY ./ /trezor-user-env
 WORKDIR /trezor-user-env
 
-# Install a virtualenv for the app
 RUN python3 -m venv /venv
 ENV PATH="/venv/bin:$PATH"
-
-# Install Poetry manually (to use with this venv)
-RUN curl -sSL https://install.python-poetry.org | python3 - --version 1.8.5
-ENV PATH="/root/.local/bin:$PATH"
-
-# Disable Poetry's own venv handling (we're inside one)
-ENV POETRY_VIRTUALENVS_CREATE=false
-RUN poetry env use /venv/bin/python
-
-# Install deps
-RUN poetry install --no-root --without dev
-
-# Install trezorlib from Git
+RUN pip install --upgrade pip
+RUN pip install poetry==1.8.5
+RUN poetry export -f requirements.txt --output requirements.txt --without-hashes --without dev
+RUN pip install -r requirements.txt
 RUN pip install "git+https://github.com/trezor/trezor-firmware.git@main#egg=trezor&subdirectory=python"
 
-# Execute scripts and clean up
 RUN ./src/binaries/firmware/bin/download.sh
 RUN ./src/binaries/trezord-go/bin/download.sh
 RUN ./src/binaries/node-bridge/download.sh
