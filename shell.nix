@@ -1,7 +1,7 @@
 let
-  # the last commit from master as of 2024-04-02
-  nixpkgsCommit = "0b1fa3a2a11c334cfe3c44bcf285599e34018799";
-  nixpkgsSha256 = "12vjrwysfwyk7chplx57vq010f1vdz6sy94ai0kc90kkbvblgr6d";
+  # the last commit from master as of 2025-06-25
+  nixpkgsCommit = "992f916556fcfaa94451ebc7fc6e396134bbf5b1";
+  nixpkgsSha256 = "0wbqb6sy58q3mnrmx67ffdx8rq10jg4cvh4jx3rrbr1pqzpzsgxc";
 
   nixpkgsUrl = "https://github.com/NixOS/nixpkgs/archive/${nixpkgsCommit}.tar.gz";
 in
@@ -15,7 +15,7 @@ stdenv.mkDerivation {
   buildInputs = [
     autoPatchelfHook
     python311
-    poetry
+    (poetry.withPlugins (ps: [ ps.poetry-plugin-shell ]))
     SDL2
     SDL2_image
     xorg.xhost
