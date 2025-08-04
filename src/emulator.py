@@ -114,13 +114,17 @@ def get_device() -> Transport:
 
 
 def is_running() -> bool:
-    # When emulator is spawned and killed by user, it has 'defunct' in its process
-    check_cmd = "ps -ef | grep 'trezor-emu' | grep -v 'defunct' | grep -v 'grep'"
+    # Need to use special flags, as just `ps -ef` truncates the lines to 80 chars
+    check_cmd = "ps -eo pid,ppid,args"
     process = Popen(check_cmd, shell=True, stdout=PIPE, stderr=PIPE)
     stdout, stderr = [part.decode() for part in process.communicate()]
     if stderr:
         log(f"Error when checking emulator process: {stderr}", "red")
-    return bool(stdout)
+    # Looking for the emulator process in the output
+    # When emulator is spawned and killed by user, it has 'defunct' in its process
+    return bool(stdout) and any(
+        "trezor-emu" in line and "defunct" not in line for line in stdout.splitlines()
+    )
 
 
 def get_status() -> dict[str, Any]:
