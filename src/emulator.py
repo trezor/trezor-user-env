@@ -179,7 +179,7 @@ def start_from_url(
                 try:
                     urllib.request.urlretrieve(url, emu_path)
                 except HTTPError as e:
-                    err = f"HTTP error when downloading emulator from {url}, err: {e}"
+                    err = f"HTTP error when downloading emulator from {url}, err: {repr(e)}"
                     log(err, "red")
                     raise RuntimeError(err)
             else:
@@ -450,7 +450,7 @@ def connect_to_debuglink(
     try:
         yield client
     except Exception as e:
-        log(f"Error when operating debuglink: {e}", "red")
+        log(f"Error when operating debuglink: {repr(e)}", "red")
 
         # If not bridge, raise immediately
         if not needs_udp:
@@ -468,7 +468,7 @@ def connect_to_debuglink(
         try:
             client.close()
         except Exception as e:
-            log(f"Error when closing debuglink: {e}", "red")
+            log(f"Error when closing debuglink: {repr(e)}", "red")
 
 
 def setup_device(
@@ -517,7 +517,7 @@ def press_yes() -> None:
         with connect_to_debuglink() as debug:
             debug.press_yes()
     except Exception as e:
-        log(f"Error when pressing YES: {e}", "red")
+        log(f"Error when pressing YES: {repr(e)}", "red")
 
 
 def press_no() -> None:
@@ -1030,7 +1030,7 @@ def _serialize_protobuf_message(msg: protobuf.MessageType) -> dict[str, Any]:
                 result[key] = value
         except Exception as e:
             log(
-                f"Error serializing field {field.name} of: {e}",
+                f"Error serializing field {field.name} of: {repr(e)}",
                 "red",
             )
     return result
