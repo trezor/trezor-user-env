@@ -395,7 +395,7 @@ class ResponseGetter:
         """Creates response for exception case."""
         traceback_string = traceback.format_exc()
         log(traceback_string, "red")
-        error_msg = f"{type(e).__name__} - {e}"
+        error_msg = f"{type(e).__name__} - {repr(e)}"
         response = {
             "success": False,
             "id": self.request_id,
@@ -434,7 +434,7 @@ async def handler(websocket, path) -> None:
             log("Client exiting with a failure. Goodbye", "red")
             return
         except Exception as e:
-            log(f"Error in handler: {e}", "red")
+            log(f"Error in handler: {repr(e)}", "red")
             return
 
 

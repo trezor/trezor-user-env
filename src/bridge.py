@@ -177,7 +177,7 @@ def stop(proxy: bool = True) -> None:
             BRIDGE.terminate()
             BRIDGE.wait(timeout=5)
         except Exception as e:
-            log(f"Termination failed: {e}, killing process.", "yellow")
+            log(f"Termination failed: {repr(e)}, killing process.", "yellow")
             BRIDGE.kill()
             BRIDGE.wait()
 
