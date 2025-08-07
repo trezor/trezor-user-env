@@ -23,7 +23,7 @@ types-requests = "^2.32.0.20250328"
 types-psutil = "^7.0.0.20250401"
 
 [tool.mypy]
-exclude = "^trezor-suite/"
+exclude = "^(trezor-suite|trezor-firmware)/"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
