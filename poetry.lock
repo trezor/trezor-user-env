@@ -587,6 +587,21 @@ files = [
 ]
 
 [[package]]
+name = "noiseprotocol"
+version = "0.3.1"
+description = "Implementation of Noise Protocol Framework"
+optional = false
+python-versions = "~=3.5"
+groups = ["main"]
+files = [
+    {file = "noiseprotocol-0.3.1-py3-none-any.whl", hash = "sha256:2e1a603a38439636cf0ffd8b3e8b12cee27d368a28b41be7dbe568b2abb23111"},
+    {file = "noiseprotocol-0.3.1.tar.gz", hash = "sha256:b092a871b60f6a8f07f17950dc9f7098c8fe7d715b049bd4c24ee3752b90d645"},
+]
+
+[package.dependencies]
+cryptography = ">=2.8"
+
+[[package]]
 name = "packaging"
 version = "25.0"
 description = "Core utilities for Python packages"
@@ -953,15 +968,13 @@ files = [
 
 [[package]]
 name = "trezor"
-version = "0.13.10"
+version = "0.14.0"
 description = "Python library for communicating with Trezor Hardware Wallet"
 optional = false
 python-versions = ">=3.8"
 groups = ["main"]
-files = [
-    {file = "trezor-0.13.10-py3-none-any.whl", hash = "sha256:7c85dc2c47998765c84d309fc753d2b116c943d447289157895488899c95706d"},
-    {file = "trezor-0.13.10.tar.gz", hash = "sha256:7a0b6ae4628dd0c31a5ceb51258918d9bbdd3ad851388837225826b228ee504f"},
-]
+files = []
+develop = false
 
 [package.dependencies]
 click = ">=7,<8.2"
@@ -971,10 +984,11 @@ cryptography = ">=41"
 ecdsa = ">=0.9"
 libusb1 = ">=1.6.4"
 mnemonic = ">=0.20"
+noiseprotocol = ">=0.3.1,<0.4.0"
 requests = ">=2.4.0"
 shamir-mnemonic = ">=0.3.0"
 slip10 = ">=1.0.1"
-typing-extensions = ">=4.7.1"
+typing_extensions = ">=4.7.1"
 
 [package.extras]
 ethereum = ["web3 (>=5)"]
@@ -983,6 +997,10 @@ full = ["Pillow (>=10)", "PyQt5", "hidapi (>=0.7.99.post20)", "stellar-sdk (>=6)
 hidapi = ["hidapi (>=0.7.99.post20)"]
 qt-widgets = ["PyQt5"]
 stellar = ["stellar-sdk (>=6)"]
+
+[package.source]
+type = "directory"
+url = "trezor-firmware/python"
 
 [[package]]
 name = "types-psutil"
@@ -1123,4 +1141,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.11"
-content-hash = "b5784069abfa32aa3f40b8bfa3f5554494ad97917c867a8346a3817cbc7be06f"
+content-hash = "de4ffe77a3394ccc99a2086eb5724b95bce025c21adf276491c66765eb08a408"
