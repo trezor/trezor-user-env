@@ -388,17 +388,11 @@ def get_current_screen() -> str:
 
 
 @contextmanager
-def connect_to_client(
-    needs_udp: bool = False,
-) -> Generator[TrezorClientDebugLink, None, None]:
+def connect_to_client() -> Generator[TrezorClientDebugLink, None, None]:
     """Connect to the emulator and yield a client instance.
     Disconnect after the action is done.
     """
-    # Some functionalities might need UDP, not to mess with bridge
-    if needs_udp:
-        cli = TrezorClientDebugLink(wait_for_udp_device())
-    else:
-        cli = TrezorClientDebugLink(get_device())
+    cli = TrezorClientDebugLink(get_device())
 
     client = cli.get_new_client()
     time.sleep(SLEEP)

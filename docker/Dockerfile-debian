@@ -50,7 +50,7 @@ COPY ./poetry.lock /trezor-user-env/
 RUN poetry self add poetry-plugin-export
 RUN poetry export -f requirements.txt --output requirements.txt --without-hashes --without dev
 RUN pip install -r requirements.txt
-RUN pip install "git+https://github.com/trezor/trezor-firmware.git@84cd0ba68123a7aa9471092ce5a87890439d0c3f#egg=trezor&subdirectory=python"
+RUN pip install "git+https://github.com/trezor/trezor-firmware.git@022c7fe8bee9bd373c724bf88f618a75658de625#egg=trezor&subdirectory=python"
 
 # Copy the rest of the files
 COPY ./ /trezor-user-env
