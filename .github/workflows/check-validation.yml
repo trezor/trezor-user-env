@@ -12,10 +12,12 @@ jobs:
         with:
           nix_path: nixpkgs=channel:nixos-unstable
 
+      - name: latest trezorlib
+        run: git clone --depth=1 https://github.com/trezor/trezor-firmware.git
       - name: "Install poetry"
         run: nix-shell --run "poetry install --no-root"
-      - name: Run style check
-        run: nix-shell --run "poetry run make style_check"
-      # TODO: there is a mismatch between trezorlib versions we need to solve
-      # - name: Run code check
-      #   run: nix-shell --run "poetry run make code_check"
+      #- name: Run style check
+      #  run: nix-shell --run "poetry run make style_check"
+      ## TODO: there is a mismatch between trezorlib versions we need to solve
+      - name: Run code check
+        run: nix-shell --run "poetry run make code_check"
