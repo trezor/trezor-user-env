@@ -515,7 +515,6 @@ def press_no() -> None:
 
 
 # enter recovery word or pin
-# enter pin not possible for T2, it is locked, for T1 it is possible
 # change pin possible, use input(word=pin-string)
 def input(value: str) -> None:
     with connect_to_debuglink() as debug:
@@ -553,6 +552,15 @@ def assert_seed_words(debug: DebugLink, amount: int) -> None:
     real_amount = len(seed_words)
     assert real_amount == amount, f"Expected seed words: {amount}, got: {real_amount}"
 
+def use_pin_sequence(sequence) -> None:
+    with connect_to_client() as client:
+        client.use_pin_sequence(sequence)
+        time.sleep(SLEEP)
+
+def lock() -> None:
+    with connect_to_client() as client:
+        client.lock()
+        time.sleep(SLEEP)
 
 def read_and_confirm_mnemonic() -> None:
     if not VERSION_RUNNING:
