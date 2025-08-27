@@ -23,13 +23,14 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Build and push bitcoin-regtest
+      - name: Build and push trezor-user-env
         uses: docker/build-push-action@v6
         with:
           context: .
           file: ./docker/Dockerfile-debian
           platforms: linux/amd64,linux/arm64
           push: true
+          # todo: using github.sha does not take into account downloaded binaries in Dockerfile.debian => sha stays same
           tags: |
             ghcr.io/${{ github.repository_owner }}/trezor-user-env:${{ github.sha }}
             ghcr.io/${{ github.repository_owner }}/trezor-user-env:latest
