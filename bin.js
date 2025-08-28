@@ -1,0 +1,1 @@
+../trezor-suite/packages/transport-bridge/dist/bin.js
