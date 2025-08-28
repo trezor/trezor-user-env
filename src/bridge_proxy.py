@@ -32,7 +32,7 @@ def start() -> None:
         log("WARNING: Bridge proxy is already initialized, cannot be run again", "red")
         return
 
-    file_path = os.path.join(os.path.dirname(__file__), "bridge_proxy_server.py")
+    file_path = os.path.join(os.path.dirname(__file__), "async_bridge_proxy_server.py")
 
     command_list = ["python", file_path]
 
