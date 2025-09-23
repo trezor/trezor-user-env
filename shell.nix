@@ -1,7 +1,7 @@
 let
-  # the last commit from master as of 2025-06-25
-  nixpkgsCommit = "992f916556fcfaa94451ebc7fc6e396134bbf5b1";
-  nixpkgsSha256 = "0wbqb6sy58q3mnrmx67ffdx8rq10jg4cvh4jx3rrbr1pqzpzsgxc";
+  # the last commit from master as of 2025-09-23
+  nixpkgsCommit = "7ea43b194fff615fe75741cf258988d6571623e0";
+  nixpkgsSha256 = "09nbk2q4w3v8x3v4r2y2s7v3nk8n4wqzxgykkp7na9bhijry2zla";
 
   nixpkgsUrl = "https://github.com/NixOS/nixpkgs/archive/${nixpkgsCommit}.tar.gz";
 in
