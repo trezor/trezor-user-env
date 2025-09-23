@@ -15,7 +15,7 @@ stdenv.mkDerivation {
   buildInputs = [
     autoPatchelfHook
     python311
-    (poetry.withPlugins (ps: [ ps.poetry-plugin-shell ]))
+    uv
     SDL2
     SDL2_image
     xorg.xhost

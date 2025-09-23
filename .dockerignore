@@ -9,3 +9,5 @@ docker/compose.yml
 **/__pycache__
 **/.mypy_cache
 **/.pytest_cache
+.venv
+venv

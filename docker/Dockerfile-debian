@@ -34,23 +34,17 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     patchelf \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Need to export the installed libraries from poetry to requirements.txt,
-# so it can be installed by pip, which is then needed for the custom
-# trezorlib installation from git.
-RUN python3 -m venv /venv
-ENV PATH="/venv/bin:$PATH"
-RUN pip install --upgrade pip
-RUN pip install poetry==2.1.3
+# Install uv for package management
+COPY --from=ghcr.io/astral-sh/uv:0.8.20 /uv /uvx /bin/
 
-# Copy just poetry files
+# Copy project configuration files
 WORKDIR /trezor-user-env
 COPY ./pyproject.toml /trezor-user-env/
-COPY ./poetry.lock /trezor-user-env/
+COPY ./uv.lock /trezor-user-env/
+COPY ./.python-version /trezor-user-env/
 
-RUN poetry self add poetry-plugin-export
-RUN poetry export -f requirements.txt --output requirements.txt --without-hashes --without dev
-RUN pip install -r requirements.txt
-RUN pip install "git+https://github.com/trezor/trezor-firmware.git@3bb9aa2579781f8ff9a8c5ea94e7a4c08b2c9645#egg=trezor&subdirectory=python"
+# Install dependencies with uv (it will create .venv automatically)
+RUN uv sync
 
 # Copy the rest of the files
 COPY ./ /trezor-user-env
@@ -62,4 +56,4 @@ RUN ./src/binaries/node-bridge/download.sh
 RUN cd src/binaries/firmware/bin && ./patch-bin.sh
 
 # Command to run on container start
-CMD ["/venv/bin/python", "src/main.py"]
+CMD ["uv", "run", "python", "src/main.py"]

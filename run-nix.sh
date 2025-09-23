@@ -10,4 +10,4 @@ if [[ $SYSTEM_ARCH == aarch64* ]]; then
 fi
 
 echo "Starting trezor-user-env server"
-nix-shell --run "poetry run python src/main.py"
+nix-shell --run "uv run python src/main.py"

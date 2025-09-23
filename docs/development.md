@@ -6,7 +6,7 @@ In case you need to modify something in trezor-user-env you have two options.
 
 ### Natively in NixOS
 
-If you are using NixOS you can do the changes locally and then run the controller yourself. Run it via `nix-shell --run 'poetry run python src/main.py'` (or just `python src/main.py` in `Poetry` shell). Make sure you have run `src/binaries/{firmware,trezord-go}/bin/download.sh` beforehand otherwise you'll have old binaries.
+If you are using NixOS you can do the changes locally and then run the controller yourself. Run it via `nix-shell --run 'uv run python src/main.py'`. Make sure you have run `src/binaries/{firmware,trezord-go}/bin/download.sh` beforehand otherwise you'll have old binaries.
 
 This is suitable for smaller changes or things you can check via the HTML dashboard easily. However, if you are adding some functionality to trezor-user-env mainly because of Suite end-to-end tests, it is probably better to go the CI way (below). Otherwise you would need to run the whole Suite test suite locally.
 

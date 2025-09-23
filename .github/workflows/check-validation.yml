@@ -12,10 +12,10 @@ jobs:
         with:
           nix_path: nixpkgs=channel:nixos-unstable
 
-      - name: "Install poetry"
-        run: nix-shell --run "poetry install --no-root"
+      - name: "Install dependencies with uv"
+        run: nix-shell --run "uv sync"
       - name: Run style check
-        run: nix-shell --run "poetry run make style_check"
+        run: nix-shell --run "uv run make style_check"
       # TODO: there is a mismatch between trezorlib versions we need to solve
       # - name: Run code check
-      #   run: nix-shell --run "poetry run make code_check"
+      #   run: nix-shell --run "uv run make code_check"
