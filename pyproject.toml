@@ -7,7 +7,7 @@ authors = ["SatoshiLabs <info@satoshilabs.com>"]
 [tool.poetry.dependencies]
 python = "^3.11"
 termcolor = "^1.1.0"
-trezor = "^0.13.10"
+trezor = { path = "./trezor-firmware/python" }
 websockets = "^10.1"
 psutil = "^5.8.0"
 Pillow = "^10.0.0"
@@ -23,7 +23,7 @@ types-requests = "^2.32.0.20250328"
 types-psutil = "^7.0.0.20250401"
 
 [tool.mypy]
-exclude = "^trezor-suite/"
+exclude = "^(trezor-suite|trezor-firmware)/"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
