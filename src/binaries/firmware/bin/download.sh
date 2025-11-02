@@ -67,6 +67,8 @@ files=(
   "T3T1/trezor-emu-core-T3T1-v2.8.10${suffix}"
   "T3T1/trezor-emu-core-T3T1-v2.9.0${suffix}"
   "T3T1/trezor-emu-core-T3T1-v2.9.1${suffix}"
+  # T3W1
+  "T3W1/trezor-emu-core-T3W1-v2.9.3${suffix}"
 )
 
 for file_path in "${files[@]}"; do
