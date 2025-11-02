@@ -95,6 +95,35 @@
             </section>
 
             <section>
+                <h3>Tropic Square Model Server</h3>
+                <div>
+                    <i>Control Tropic Square model server (required for T3W1 emulator).</i><br />
+                    <button class="positive" @click="tropicStart()">Start</button>
+                    <button class="negative" @click="tropicStop()">Stop</button>
+                    <input
+                        id="tropicUseLogfile"
+                        type="checkbox"
+                        v-model="tropic.outputToLogfile"
+                    />
+                    <label
+                        class="underlined"
+                        title="Save tropic model logs into logfile. Otherwise, logs are shown in console."
+                        for="tropicUseLogfile"
+                        >Logs into logfile</label
+                    ><br />
+                </div>
+                <div>
+                    <div :style="{ color: tropic.statusColor }">
+                        <b>Status: <span>{{ tropic.status }}</span></b>
+                    </div>
+                    <div class="explain-note">
+                        The Tropic Square model server is automatically started when launching
+                        a T3W1 emulator, but can also be controlled manually here.
+                    </div>
+                </div>
+            </section>
+
+            <section>
                 <h3>Emulator</h3>
                 <div class="explain-note">
                     Use left and right arrow keys to emulate the Trezor

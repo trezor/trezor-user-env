@@ -15,7 +15,7 @@ channel_data.json
 .vscode
 .mypy_cache
 docker/version.txt
-logs/debugging.log
-logs/emulator_bridge.log
+logs/*.log
 logs/screens
 trezor-suite
+.model_config_save.yaml

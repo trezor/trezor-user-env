@@ -15,6 +15,11 @@ const app = createApp({
                 statusColor: "black",
                 hasSuiteLocal: false,
             },
+            tropic: {
+                outputToLogfile: true,
+                status: "unknown",
+                statusColor: "black",
+            },
             emulators: {
                 versions: {
                     T1B1: {
@@ -264,6 +269,17 @@ const app = createApp({
                 type: "bridge-stop",
             });
         },
+        tropicStart() {
+            this.sendMessage({
+                type: "tropic-start",
+                output_to_logfile: this.tropic.outputToLogfile,
+            });
+        },
+        tropicStop() {
+            this.sendMessage({
+                type: "tropic-stop",
+            });
+        },
         emulatorStart(model) {
             const emulator = this.emulators.versions[model];
             if (!emulator) {
@@ -345,6 +361,9 @@ const app = createApp({
             if ("emulator_status" in dataObject) {
                 this.reflectEmulatorSituation(dataObject.emulator_status);
             }
+            if ("tropic_status" in dataObject) {
+                this.reflectTropicSituation(dataObject.tropic_status);
+            }
             if ("regtest_status" in dataObject) {
                 this.reflectRegtestSituation(dataObject.regtest_status);
             }
@@ -374,6 +393,13 @@ const app = createApp({
                 this.writeEmulatorStatus("Stopped", "red");
             }
         },
+        reflectTropicSituation(status) {
+            if (status.is_running) {
+                this.writeTropicStatus(`Running - ${status.version}`, "green");
+            } else {
+                this.writeTropicStatus("Stopped", "red");
+            }
+        },
         reflectRegtestSituation(is_running) {
             if (is_running) {
                 this.writeRegtestStatus("Running", "green");
@@ -388,6 +414,10 @@ const app = createApp({
         writeEmulatorStatus(status, color = "black") {
             this.emulators.status = status;
             this.emulators.statusColor = color;
+        },
+        writeTropicStatus(status, color = "black") {
+            this.tropic.status = status;
+            this.tropic.statusColor = color;
         },
         writeRegtestStatus(status, color = "black") {
             this.regtest.status = status;
