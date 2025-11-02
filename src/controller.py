@@ -15,6 +15,7 @@ import binaries
 import bridge
 import emulator
 import helpers
+import tropic_model
 from bitcoin_regtest.rpc import BTCJsonRPC
 
 if TYPE_CHECKING:
@@ -32,6 +33,7 @@ if TYPE_CHECKING:
         bridge_status: bool | Any
         emulator_status: bool | Any
         regtest_status: bool | Any
+        tropic_status: bool | Any
         background_check: bool
 
     ResponseType = Union[NormalResponse, BackgroundCheckResponse]
@@ -115,20 +117,25 @@ class ResponseGetter:
             bridge_status = bridge.get_status()
             emulator_status = emulator.get_status()
             regtest_status = is_regtest_active()
+            tropic_status = tropic_model.get_status()
             return {
                 "response": "Background check done",
                 "bridge_status": bridge_status,
                 "emulator_status": emulator_status,
                 "regtest_status": regtest_status,
+                "tropic_status": tropic_status,
                 "background_check": True,
             }
         elif self.command == "exit":
             emulator.stop()
             bridge.stop()
+            tropic_model.stop()
             log("Exiting", "red")
             exit(1)
         elif self.command.startswith("bridge"):
             return self.run_bridge_command()
+        elif self.command.startswith("tropic"):
+            return self.run_tropic_command()
         elif self.command.startswith("emulator"):
             return self.run_emulator_command()
         elif self.command.startswith("regtest"):
@@ -157,6 +164,20 @@ class ResponseGetter:
             return {
                 "success": False,
                 "error": f"Unknown bridge command - {self.command}",
+            }
+
+    def run_tropic_command(self) -> "ResponseType":
+        if self.command == "tropic-start":
+            output_to_logfile = self.request_dict.get("output_to_logfile", True)
+            tropic_model.start(output_to_logfile=output_to_logfile)
+            return {"response": "Tropic Square model server started"}
+        elif self.command == "tropic-stop":
+            tropic_model.stop()
+            return {"response": "Tropic Square model server stopped"}
+        else:
+            return {
+                "success": False,
+                "error": f"Unknown tropic command - {self.command}",
             }
 
     def run_emulator_command(self) -> "ResponseType":
@@ -189,6 +210,12 @@ class ResponseGetter:
             if model != PREV_RUNNING_MODEL:
                 wipe = True
             PREV_RUNNING_MODEL = model
+
+            # Auto-start Tropic Square model server for T3W1 emulator
+            if model == "T3W1" and not tropic_model.is_running():
+                log("T3W1 requires Tropic model server, starting automatically...")
+                tropic_model.start(output_to_logfile=output_to_logfile)
+
             emulator.start(
                 version=version,
                 model=model,

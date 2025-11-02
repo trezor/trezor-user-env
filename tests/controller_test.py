@@ -30,6 +30,7 @@ pytestmark = pytest.mark.asyncio
 commands_success = [
     {"type": "ping"},
     {"type": "log", "text": "abc"},
+    {"type": "tropic-start"},
     {"type": "bridge-start", "version": BRIDGE_TO_TEST},
     {"type": "emulator-start", "version": EMU_TO_TEST_TT, "wipe": True},
     {"type": "background-check"},
@@ -53,12 +54,14 @@ commands_success = [
     {"type": "emulator-get-debug-state"},
     {"type": "emulator-stop"},
     {"type": "bridge-stop"},
+    {"type": "tropic-stop"},
 ]
 
 # These could be run in any order, they are not dependent on each other
 commands_failure = [
     {"type": "pong"},  # unexisting general command
     {"type": "bridge-explode"},  # unexisting bridge command
+    {"type": "tropic-explode"},  # unexisting tropic command
     {"type": "emulator-show-seed"},  # unexisting emulator command
     {"type": "log", "string": "key should be text not string"},  # bad key
     {
@@ -117,20 +120,24 @@ def shutdown_controller() -> None:
 
 
 async def _test_start_stop(
-    websocket, component: str, version: str, model: str = ""
+    websocket, component: str, version: str = "", model: str = ""
 ) -> None:
-    """Making sure emulator/bridge can be successfully started and stopped."""
+    """Making sure emulator/bridge/tropic can be successfully started and stopped."""
     background_check_payload = {"type": "background-check"}
     if component == "bridge":
         status_key = "bridge_status"
         start_payload = {"type": "bridge-start", "version": version}
         stop_payload = {"type": "bridge-stop"}
+    elif component == "tropic":
+        status_key = "tropic_status"
+        start_payload = {"type": "tropic-start"}
+        stop_payload = {"type": "tropic-stop"}
     elif component == "emulator":
         status_key = "emulator_status"
         start_payload = {"type": "emulator-start", "version": version, "model": model}
         stop_payload = {"type": "emulator-stop"}
     else:
-        raise RuntimeError(f"Only emulator and bridge are supported, not {component}")
+        raise RuntimeError(f"Only emulator, bridge and tropic are supported, not {component}")
 
     # Not running at the beginning
     await websocket.send(json.dumps(background_check_payload))
@@ -151,8 +158,12 @@ async def _test_start_stop(
     print(response)
     assert response["success"]
     assert response[status_key]["is_running"]
-    version_to_check = f"{version} ({model})" if model else version
-    assert response[status_key]["version"] == version_to_check
+    if component != "tropic":
+        version_to_check = f"{version} ({model})" if model else version
+        assert response[status_key]["version"] == version_to_check
+    else:
+        # Tropic has its own version (tvl-2.3)
+        assert response[status_key]["version"] is not None
 
     # Stopping it
     await websocket.send(json.dumps(stop_payload))
@@ -177,6 +188,10 @@ async def _test(websocket, payload: dict, success: bool = True) -> None:
 
 async def test_bridge_start_stop(websocket) -> None:
     await _test_start_stop(websocket, component="bridge", version=BRIDGE_TO_TEST)
+
+
+async def test_tropic_start_stop(websocket) -> None:
+    await _test_start_stop(websocket, component="tropic")
 
 
 async def test_emulator_tt_start_stop(websocket) -> None:

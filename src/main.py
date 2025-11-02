@@ -8,11 +8,13 @@ import controller
 import dashboard
 import emulator
 import helpers
+import tropic_model
 
 
 def cleanup() -> None:
     emulator.stop()
     bridge.stop()
+    tropic_model.stop()
 
 
 atexit.register(cleanup)
