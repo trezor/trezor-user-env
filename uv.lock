@@ -596,7 +596,7 @@ wheels = [
 [[package]]
 name = "trezor"
 version = "0.14.0"
-source = { git = "https://github.com/trezor/trezor-firmware.git?subdirectory=python&rev=d69e262a6d3ffb49328987ec06c79691dcd334e6#d69e262a6d3ffb49328987ec06c79691dcd334e6" }
+source = { git = "https://github.com/trezor/trezor-firmware.git?subdirectory=python&rev=fc95bb93fcc2e54dce5be63f5b2a94c551c26267#fc95bb93fcc2e54dce5be63f5b2a94c551c26267" }
 dependencies = [
     { name = "click" },
     { name = "construct" },
@@ -641,7 +641,7 @@ requires-dist = [
     { name = "pillow", specifier = ">=10.0.0,<11" },
     { name = "psutil", specifier = ">=5.8.0,<6" },
     { name = "termcolor", specifier = ">=1.1.0,<2" },
-    { name = "trezor", git = "https://github.com/trezor/trezor-firmware.git?subdirectory=python&rev=d69e262a6d3ffb49328987ec06c79691dcd334e6" },
+    { name = "trezor", git = "https://github.com/trezor/trezor-firmware.git?subdirectory=python&rev=fc95bb93fcc2e54dce5be63f5b2a94c551c26267" },
     { name = "websockets", specifier = ">=12.0" },
 ]
 

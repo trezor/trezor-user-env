@@ -4,9 +4,8 @@ src/binaries/firmware/repo
 src/binaries/trezord-go/repo
 __pycache__
 src/binaries/firmware/bin/*
-!src/binaries/firmware/bin/download.sh
+!src/binaries/firmware/bin/*.sh
 !src/binaries/firmware/bin/download_latest_gh.py
-!src/binaries/firmware/bin/patch-bin.sh
 !src/binaries/firmware/bin/arm
 !src/binaries/trezord-go/bin/download.sh
 src/binaries/node-bridge/bin.js
