@@ -17,6 +17,7 @@ if not os.path.exists(LOG_DIR):
 
 LOG_FILENAME = str(LOG_DIR / "debugging.log")
 EMU_BRIDGE_LOG = str(LOG_DIR / "emulator_bridge.log")
+TROPIC_MODEL_LOG = str(LOG_DIR / "tropic_model.log")
 
 
 logging.basicConfig(

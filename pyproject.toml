@@ -10,6 +10,7 @@ dependencies = [
     "websockets>=12.0",
     "psutil>=5.8.0,<6",
     "Pillow>=10.0.0,<11",
+    "tvl @ https://github.com/tropicsquare/ts-tvl/releases/download/2.3/tvl-2.3-py3-none-any.whl",
 ]
 
 [dependency-groups]
