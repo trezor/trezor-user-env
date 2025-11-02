@@ -137,7 +137,9 @@ async def _test_start_stop(
         start_payload = {"type": "emulator-start", "version": version, "model": model}
         stop_payload = {"type": "emulator-stop"}
     else:
-        raise RuntimeError(f"Only emulator, bridge and tropic are supported, not {component}")
+        raise RuntimeError(
+            f"Only emulator, bridge and tropic are supported, not {component}"
+        )
 
     # Not running at the beginning
     await websocket.send(json.dumps(background_check_payload))
