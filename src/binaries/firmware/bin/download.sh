@@ -50,6 +50,7 @@ files=(
   "T2T1/trezor-emu-core-T2T1-v2.8.10${suffix}"
   "T2T1/trezor-emu-core-T2T1-v2.9.0${suffix}"
   "T2T1/trezor-emu-core-T2T1-v2.9.1${suffix}"
+  "T2T1/trezor-emu-core-T2T1-v2.9.4${suffix}"
   # T3B1
   "T3B1/trezor-emu-core-T3B1-v2.8.3${suffix}"
   "T3B1/trezor-emu-core-T3B1-v2.8.7${suffix}"
@@ -57,6 +58,7 @@ files=(
   "T3B1/trezor-emu-core-T3B1-v2.8.10${suffix}"
   "T3B1/trezor-emu-core-T3B1-v2.9.0${suffix}"
   "T3B1/trezor-emu-core-T3B1-v2.9.1${suffix}"
+  "T3B1/trezor-emu-core-T3B1-v2.9.4${suffix}"
   # T3T1
   "T3T1/trezor-emu-core-T3T1-v2.7.2${suffix}"
   "T3T1/trezor-emu-core-T3T1-v2.8.0${suffix}"
@@ -67,8 +69,10 @@ files=(
   "T3T1/trezor-emu-core-T3T1-v2.8.10${suffix}"
   "T3T1/trezor-emu-core-T3T1-v2.9.0${suffix}"
   "T3T1/trezor-emu-core-T3T1-v2.9.1${suffix}"
+  "T3T1/trezor-emu-core-T3T1-v2.9.4${suffix}"
   # T3W1
   "T3W1/trezor-emu-core-T3W1-v2.9.3${suffix}"
+  "T3W1/trezor-emu-core-T3W1-v2.9.4${suffix}"
 )
 
 for file_path in "${files[@]}"; do
