@@ -6,7 +6,7 @@ authors = [{ name = "SatoshiLabs", email = "info@satoshilabs.com" }]
 requires-python = ">=3.11, <4"
 dependencies = [
     "termcolor>=1.1.0,<2",
-    "trezor @ git+https://github.com/trezor/trezor-firmware.git@fc95bb93fcc2e54dce5be63f5b2a94c551c26267#subdirectory=python",
+    "trezor @ git+https://github.com/trezor/trezor-firmware.git@2111ad8ab6280e5f44e565b7f6a99d5a3e341177#subdirectory=python",
     "websockets>=12.0",
     "psutil>=5.8.0,<6",
     "Pillow>=10.0.0,<11",
