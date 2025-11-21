@@ -314,6 +314,13 @@ class ResponseGetter:
             y = self.request_dict["y"]
             emulator.click(x=x, y=y)
             return {"response": f"Clicked in emulator: x: {x}, y: {y}"}
+        elif self.command == "emulator-use_pin_sequence":
+            sequence = self.request_dict["sequence"]
+            emulator.use_pin_sequence(sequence)
+            return {"response": f"Seq: {sequence}"}
+        elif self.command == "emulator-lock":
+            emulator.lock()
+            return {"response": f"Device locked"}
         elif self.command == "emulator-read-and-confirm-mnemonic":
             emulator.read_and_confirm_mnemonic()
             return {"response": "Read and confirm mnemonic"}
