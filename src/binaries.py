@@ -150,6 +150,11 @@ def sort_firmwares(version: str) -> Tuple[int, ...]:
 
 
 def explore_bridges() -> None:
+    if LOCAL_SUITE_NODE_BRIDGE_BIN_JS.exists():
+        BRIDGES.append(LOCAL_SUITE_NODE_BRIDGE_ID)
+    if NODE_BRIDGE_BIN_JS.exists():
+        BRIDGES.append(NODE_BRIDGE_ID)
+
     # Send only suitable bridges for ARM/non-ARM
     if IS_ARM:
         BRIDGES.append(f"2.0.33{ARM_IDENTIFIER}")
@@ -157,11 +162,6 @@ def explore_bridges() -> None:
     else:
         BRIDGES.append("2.0.33")
         BRIDGES.append("2.0.32")
-
-    if NODE_BRIDGE_BIN_JS.exists():
-        BRIDGES.append(NODE_BRIDGE_ID)
-    if LOCAL_SUITE_NODE_BRIDGE_BIN_JS.exists():
-        BRIDGES.append(LOCAL_SUITE_NODE_BRIDGE_ID)
 
 
 def patch_emulators_for_nix(dir_to_patch: str = "") -> None:
