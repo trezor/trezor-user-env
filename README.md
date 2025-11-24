@@ -28,21 +28,36 @@ Supported platforms are Linux and macOS (both Intel and Silicon).
 ### Steps
 
 1. Clone this repo and enter the directory
-2. Run `./run.sh` it will determine your platform and launch trezor-user-env. See `./run.sh --help` for some additional arguments.
+2. Run `./run.sh` - it will determine your platform and launch trezor-user-env. See `./run.sh --help` for some additional arguments.
 3. Open http://localhost:9002.
+
+```
+git clone https://github.com/trezor/trezor-user-env.git
+cd trezor-user-env
+./run.sh
+```
+
+### Connecting to Trezor Suite
+
+Trezor Suite normally relies on it's own bundled Bridge. To use the Bridge from `trezor-user-env` instead, you need to disable the bundled Bridge in Suite's debug settings.
+
+1. To enable debug settings, open Trezor Suite -> Settings and 5x click on the "Settings" title at the top of the page.
+2. Go to the "Debug" tab, scroll down to "Transport backends" and disable "Bridge server".
+3. Also disable "Run on startup" if you want to remember this setting for next launches of Suite.
+4. If you want to use a real device again, make sure to re-enable the "Bridge server" option.
 
 ## Basic terminology
 
 - **Controller**
-  - Websocket server running on *localhost:9001*
+  - Websocket server running on _localhost:9001_
   - Has the functionality to control trezor components (run emulators, bridges, etc.)
   - Used by Dashboard (below) or by automated end-to-end tests in Trezor Suite
 - **Dashboard**
-  - HTML page being accessible on *localhost:9002*
+  - HTML page being accessible on _localhost:9002_
   - Instructs the websocket server what to do by predefined functionality
   - Used by developers testing their firmware/suite applications manually
 - **Bridge**
-  - Service running on *localhost:21325*
+  - Service running on _localhost:21325_
   - Connection between the trezor device (or running emulator) and the host
   - Used by applications needing to communicate with trezor device (for example Suite)
 - **Bridge proxy**
