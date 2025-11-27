@@ -10,9 +10,7 @@ from typing import TYPE_CHECKING
 from psutil import Popen
 
 import binaries
-import bridge_proxy
 import helpers
-from bridge_proxy import PORT as BRIDGE_PROXY_PORT
 
 if TYPE_CHECKING:
     from typing_extensions import TypedDict
@@ -61,13 +59,12 @@ def is_port_in_use(port: int) -> bool:
         return s.connect_ex(("0.0.0.0", port)) == 0
 
 
-def check_bridge_and_proxy_status() -> None:
-    """Reporting the status of bridge and proxy, for debugging purposes"""
+def check_bridge_status() -> None:
+    """Reporting the status of bridge, for debugging purposes"""
     log(f"Is bridge running - {is_port_in_use(BRIDGE_PORT)}")
-    log(f"Is bridge proxy running - {is_port_in_use(BRIDGE_PROXY_PORT)}")
 
 
-def start(version: str, proxy: bool = False, output_to_logfile: bool = True) -> None:
+def start(version: str, output_to_logfile: bool = True) -> None:
     log("Starting")
     global BRIDGE
     global VERSION_RUNNING
@@ -87,7 +84,7 @@ def start(version: str, proxy: bool = False, output_to_logfile: bool = True) -> 
     #   not to still think the bridge is running
     if BRIDGE is not None and not is_running():
         log("Bridge was probably killed by user manually, resetting local state")
-        stop(proxy=proxy)
+        stop()
 
     if BRIDGE is not None:
         log("WARNING: Bridge is already running, not spawning a new one", "red")
@@ -158,14 +155,11 @@ def start(version: str, proxy: bool = False, output_to_logfile: bool = True) -> 
 
     VERSION_RUNNING = version
 
-    if proxy:
-        bridge_proxy.start()
-
     time.sleep(0.5)
-    check_bridge_and_proxy_status()
+    check_bridge_status()
 
 
-def stop(proxy: bool = True) -> None:
+def stop() -> None:
     log("Stopping")
     global BRIDGE
     global VERSION_RUNNING
@@ -190,8 +184,5 @@ def stop(proxy: bool = True) -> None:
         BRIDGE = None
         VERSION_RUNNING = None
 
-    if proxy:
-        bridge_proxy.stop()
-
     time.sleep(0.5)
-    check_bridge_and_proxy_status()
+    check_bridge_status()

@@ -42,7 +42,6 @@ if TYPE_CHECKING:
 IP = "0.0.0.0"
 PORT = 9001
 LOG_COLOR = "blue"
-BRIDGE_PROXY = False  # is being set in main.py (when not disabled, will be True)
 REGTEST_RPC = BTCJsonRPC(
     url=os.getenv("REGTEST_RPC_URL") or "http://0.0.0.0:18021",
     user="rpc",
@@ -147,18 +146,12 @@ class ResponseGetter:
         if self.command == "bridge-start":
             version = self.request_dict.get("version", binaries.DEFAULT_BRIDGE)
             output_to_logfile = self.request_dict.get("output_to_logfile", True)
-            bridge.start(
-                version, proxy=BRIDGE_PROXY, output_to_logfile=output_to_logfile
-            )
+            bridge.start(version, output_to_logfile=output_to_logfile)
             response_text = f"Bridge version {version} started"
-            if BRIDGE_PROXY:
-                response_text += " with bridge proxy"
             return {"response": response_text}
         elif self.command == "bridge-stop":
-            bridge.stop(proxy=BRIDGE_PROXY)
+            bridge.stop()
             response_text = "Stopping bridge"
-            if BRIDGE_PROXY:
-                response_text += " + stopping bridge proxy"
             return {"response": response_text}
         else:
             return {

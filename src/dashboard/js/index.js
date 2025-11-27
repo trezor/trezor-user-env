@@ -200,8 +200,14 @@ const app = createApp({
                     this.emulators.versions[model].versions = options;
                     this.emulators.versions[model].selected = options[0];
                 }
-                this.bridges.selected = dataObject.bridges[0];
-                this.bridges.versions = dataObject.bridges;
+                const nodebridge = [];
+                const legacy = [];
+                dataObject.bridges.forEach((b) =>
+                    b.startsWith("2.") ? legacy.push(b) : nodebridge.push(b)
+                );
+                this.bridges.versions = nodebridge.concat(legacy);
+                this.bridges.selected = this.bridges.versions[0];
+
                 this.bridges.hasSuiteLocal = dataObject.bridges.includes(
                     "local-suite-node-bridge"
                 );

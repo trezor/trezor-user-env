@@ -60,8 +60,6 @@ Trezor Suite normally relies on it's own bundled Bridge. To use the Bridge from 
   - Service running on _localhost:21325_
   - Connection between the trezor device (or running emulator) and the host
   - Used by applications needing to communicate with trezor device (for example Suite)
-- **Bridge proxy**
-  - Proxies requests to the bridge
 - **Bitcoin regtest**
   - Bitcoind with [blockbook](https://github.com/trezor/blockbook) running in regtest mode
   - Default credentials for bitcoin backend
