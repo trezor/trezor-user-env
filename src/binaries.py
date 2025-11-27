@@ -43,7 +43,7 @@ BRIDGES: List[str] = []
 IS_ARM = os.uname().machine.startswith(("aarch64", "arm"))
 ARM_IDENTIFIER = "-arm"
 
-DEFAULT_BRIDGE = "2.0.33" if not IS_ARM else f"2.0.33{ARM_IDENTIFIER}"
+DEFAULT_BRIDGE = NODE_BRIDGE_ID
 
 
 def register_new_firmware(model: Model, version: str, location: str) -> None:

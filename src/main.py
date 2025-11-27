@@ -30,7 +30,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-v", "--verbosity", action="count", default=0)
     parser.add_argument("--work-dir")
-    parser.add_argument("--disable-bridge-proxy", action="store_true")
     args = parser.parse_args()
 
     effective_work_dir = args.work_dir
@@ -48,15 +47,6 @@ if __name__ == "__main__":
 
     binaries.explore(args)
     dashboard.start()
-
-    if args.disable_bridge_proxy:
-        log(
-            "Bridge proxy disabled. "
-            "Communication with Bridge needs to be done directly."
-        )
-    else:
-        log("Will create bridge proxy when spawning a bridge.")
-        controller.BRIDGE_PROXY = True
 
     if helpers.physical_trezor():
         log("Will support physical Trezor.")
