@@ -49,6 +49,8 @@ RUN uv sync
 # Copy the rest of the files
 COPY ./ /trezor-user-env
 
+# Cache-bust downloads when inputs change
+ARG CACHE_BUST=1
 RUN ./src/binaries/firmware/bin/download.sh
 RUN ./src/binaries/trezord-go/bin/download.sh
 RUN ./src/binaries/node-bridge/download.sh
