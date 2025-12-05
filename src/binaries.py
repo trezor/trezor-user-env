@@ -150,10 +150,18 @@ def sort_firmwares(version: str) -> Tuple[int, ...]:
 
 
 def explore_bridges() -> None:
+    # On macOS, only use node-bridge, skip 2.* legacy bridges
+    # Check env var (for docker on mac). when running on native mac, where sys.platform can be used, this exclusion is not needed
+    is_macos = os.getenv("MACOS") == "1"
+
     if LOCAL_SUITE_NODE_BRIDGE_BIN_JS.exists():
         BRIDGES.append(LOCAL_SUITE_NODE_BRIDGE_ID)
     if NODE_BRIDGE_BIN_JS.exists():
         BRIDGES.append(NODE_BRIDGE_ID)
+
+    # Skip 2.* bridges on macOS
+    if is_macos:
+        return
 
     # Send only suitable bridges for ARM/non-ARM
     if IS_ARM:
