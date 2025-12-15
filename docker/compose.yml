@@ -20,7 +20,7 @@ services:
     ports:
       - "9001:9001"
       - "9002:9002"
-      # 21325 is the legacy bridge port. It will not work on macOS (see bridge-proxy before this commit).
+      - "21325:21325" # legacy bridge port
       - "21328:21328" # new bridge port
     environment:
       - DISPLAY=docker.for.mac.host.internal:0
