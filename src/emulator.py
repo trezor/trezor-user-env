@@ -547,6 +547,14 @@ def assert_text_on_screen(debug: DebugLink, text: str) -> None:
     assert text.lower() in real_text.lower(), f"Expected text: {text}, got: {real_text}"
 
 
+def assert_text_not_on_screen(debug: DebugLink, text: str) -> None:
+    layout = debug.read_layout()
+    real_text = layout.text_content()
+    assert (
+        text.lower() not in real_text.lower()
+    ), f"Did not expect text: {text}, but found: {real_text}"
+
+
 def assert_seed_words(debug: DebugLink, amount: int) -> None:
     layout = debug.read_layout()
     seed_words = layout.seed_words()
@@ -700,6 +708,8 @@ def read_and_confirm_shamir_mnemonic(shares: int, threshold: int) -> None:
         read_and_confirm_shamir_mnemonic_t2t1(shares=shares, threshold=threshold)
     elif models.T3T1.internal_name in VERSION_RUNNING:
         read_and_confirm_shamir_mnemonic_t3t1(shares=shares, threshold=threshold)
+    elif models.T3W1.internal_name in VERSION_RUNNING:
+        read_and_confirm_shamir_mnemonic_t3w1(shares=shares, threshold=threshold)
     else:
         raise RuntimeError(f"Model {VERSION_RUNNING} not supported for this operation.")
 
@@ -958,6 +968,161 @@ def read_and_confirm_shamir_mnemonic_t3t1(shares: int, threshold: int) -> None:
 
         # Finish the backup
         debug.swipe_up()
+        time.sleep(SLEEP)
+
+
+def read_and_confirm_shamir_mnemonic_t3w1(shares: int, threshold: int) -> None:
+    """Performs a walkthrough of the whole Shamir backup on the device.
+
+    NOTE: does not support Super Shamir.
+    """
+    MIN_SHARES = 1
+    MAX_SHARES = 16
+    if shares < MIN_SHARES or shares > MAX_SHARES:
+        raise RuntimeError(
+            f"Number of shares must be between {MIN_SHARES} and {MAX_SHARES}."
+        )
+    if threshold > shares:
+        raise RuntimeError("Threshold cannot be bigger than number of shares.")
+
+    # For setting the right amount of shares/thresholds, we need location of buttons
+    MINUS_BUTTON_COORDS = (100, 300)
+    PLUS_BUTTON_COORDS = (200, 300)
+    RIGHT_BOTTOM_BUTTON_COORDS = (300, 450)
+    BOTTOM_BUTTON_COORDS = (150, 450)
+
+    with connect_to_debuglink() as debug:
+        # So that we can wait layout
+        debug.watch_layout(True)
+
+        # Click Continue to begin Shamir setup process
+        assert_text_on_screen(debug, "wallet backup contains multiple lists of words")
+        debug.click(BOTTOM_BUTTON_COORDS)
+        time.sleep(SLEEP)
+        assert_text_not_on_screen(
+            debug, "wallet backup contains multiple lists of words"
+        )
+
+        # Multi-share backup summary
+        debug.click(RIGHT_BOTTOM_BUTTON_COORDS)
+        time.sleep(SLEEP)
+
+        # Clicking the minus/plus button to set right number of shares (it starts at 5)
+        assert_text_on_screen(
+            debug, "How many wallet backup shares do you want to create?"
+        )
+        DEFAULT_SHARES = 5
+        needed_clicks = abs(shares - DEFAULT_SHARES)
+        if needed_clicks > 0:
+            if shares < DEFAULT_SHARES:
+                button_coords_to_click = MINUS_BUTTON_COORDS
+            else:
+                button_coords_to_click = PLUS_BUTTON_COORDS
+
+            for _ in range(needed_clicks):
+                debug.click(button_coords_to_click)
+                time.sleep(SLEEP)
+
+        # Confirm
+        debug.click(BOTTOM_BUTTON_COORDS)
+        time.sleep(SLEEP)
+
+        # Summary
+        debug.click(RIGHT_BOTTOM_BUTTON_COORDS)
+        time.sleep(SLEEP)
+
+        # When we have 1 or 2 shares, the threshold is set and cannot be changed
+        # (it will be 1 and 2 respectively)
+        # Otherwise assign it correctly by clicking the plus/minus button
+        if shares not in [1, 2]:
+            # Default threshold can be calculated from the share number
+            default_threshold = shares // 2 + 1
+            needed_clicks = abs(threshold - default_threshold)
+            if needed_clicks > 0:
+                if threshold < default_threshold:
+                    button_coords_to_click = MINUS_BUTTON_COORDS
+                else:
+                    button_coords_to_click = PLUS_BUTTON_COORDS
+
+                for _ in range(needed_clicks):
+                    debug.click(button_coords_to_click)
+                    time.sleep(SLEEP)
+
+        # Confirm
+        debug.click(BOTTOM_BUTTON_COORDS)
+        time.sleep(SLEEP)
+
+        # Summary
+        debug.click(RIGHT_BOTTOM_BUTTON_COORDS)
+        time.sleep(SLEEP)
+
+        # Summary
+        debug.click(RIGHT_BOTTOM_BUTTON_COORDS)
+        time.sleep(SLEEP)
+
+        assert_text_on_screen(debug, "following 20 words in order")
+        debug.click(BOTTOM_BUTTON_COORDS)
+        time.sleep(SLEEP)
+
+        # Loop through all the shares and fulfill all checks
+        for _ in range(shares):
+
+            # Scrolling through all the 20 words on next 5 pages
+            # While doing so, saving all the words on the screen for the "quiz" later
+            mnemonic: list[str] = []
+            for _ in range(20):
+                layout = debug.read_layout()
+                mnemonic.extend(layout.seed_words())
+                debug.swipe_up()
+                time.sleep(SLEEP)
+
+            assert len(mnemonic) == 20
+
+            # Exit Share #X screen
+            debug.click(RIGHT_BOTTOM_BUTTON_COORDS)
+            time.sleep(SLEEP)
+
+            # Hold to Confirm that I have written the seed down
+            debug.click(RIGHT_BOTTOM_BUTTON_COORDS)
+            time.sleep(SLEEP)
+
+            # Summary of Share #X check
+            assert_text_on_screen(debug, "do a quick check")
+            debug.click(BOTTOM_BUTTON_COORDS)
+            time.sleep(SLEEP)
+
+            # Answering 3 questions asking for a specific word
+            # Three word choices are displayed on screen; click the correct one
+            WORD_CHOICE_COORDS = [(150, 200), (150, 300), (150, 400)]
+            for _ in range(3):
+                layout = debug.read_layout()
+                assert_text_on_screen(debug, "Select word")
+                pattern = r"Select word #(\d+) from"
+                screen_text = layout.text_content()
+                match = re.search(pattern, screen_text)
+                if match is None:
+                    raise RuntimeError(
+                        f"Could not find word position in: {screen_text}"
+                    )
+
+                word_pos = int(match.group(1))
+                wanted_word = mnemonic[word_pos - 1].lower()
+
+                displayed_words = [w.lower() for w in screen_text.split()[-3:]]
+                if wanted_word not in displayed_words:
+                    raise RuntimeError(
+                        f"Wanted word '{wanted_word}' not found in displayed words: {displayed_words}"
+                    )
+                word_index = displayed_words.index(wanted_word)
+                debug.click(WORD_CHOICE_COORDS[word_index])
+                time.sleep(SLEEP)
+
+            # Finish this quiz
+            debug.click(BOTTOM_BUTTON_COORDS)
+            time.sleep(SLEEP)
+
+        # Finish the backup
+        debug.click(BOTTOM_BUTTON_COORDS)
         time.sleep(SLEEP)
 
 
