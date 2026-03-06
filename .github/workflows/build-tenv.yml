@@ -30,7 +30,8 @@ jobs:
           file: ./docker/Dockerfile-debian
           platforms: linux/amd64,linux/arm64
           push: true
-          # todo: using github.sha does not take into account downloaded binaries in Dockerfile.debian => sha stays same
+          build-args: |
+            CACHE_BUST=${{ github.run_id }}
           tags: |
             ghcr.io/${{ github.repository_owner }}/trezor-user-env:${{ github.sha }}
             ghcr.io/${{ github.repository_owner }}/trezor-user-env:latest
