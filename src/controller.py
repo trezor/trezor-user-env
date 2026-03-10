@@ -371,6 +371,12 @@ class ResponseGetter:
         elif self.command == "emulator-get-features":
             features = emulator.get_features_serialized()
             return {"response": features}
+        elif self.command == "emulator-nfc-tap":
+            response = emulator.nfc_tap(tag_id=str(self.request_dict["tag_id"]))
+            return {"response": response}
+        elif self.command == "emulator-nfc-clear":
+            response = emulator.nfc_clear(tag_id=str(self.request_dict["tag_id"]))
+            return {"response": response}
         else:
             return {
                 "success": False,

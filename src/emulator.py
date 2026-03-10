@@ -3,6 +3,7 @@ from __future__ import annotations
 import base64
 import os
 import re
+import shelve
 import stat
 import sys
 import threading
@@ -20,9 +21,17 @@ from psutil import Popen
 from trezorlib import debuglink, device, messages, models
 from trezorlib._internal.emulator import CoreEmulator, LegacyEmulator
 from trezorlib.client import TrezorClient, get_default_client
-from trezorlib.debuglink import DebugLink, TrezorClientDebugLink
+from trezorlib.debuglink import DebugLink, TrezorTestContext
 from trezorlib.exceptions import TrezorFailure
-from trezorlib.messages import Features, protobuf
+from trezorlib.messages import (
+    Features,
+    protobuf,
+    DebugLinkNfcConnected,
+    DebugLinkNfcRead,
+    DebugLinkNfcResponse,
+    DebugLinkNfcWrite,
+    Success,
+)
 from trezorlib.transport import Transport
 from trezorlib.transport.bridge import BridgeTransport
 from trezorlib.transport.udp import UdpTransport
@@ -40,6 +49,9 @@ ROOT_DIR = Path(__file__).resolve().parent.parent
 
 SCREEN_DIR = ROOT_DIR / "logs/screens"
 SCREEN_DIR.mkdir(exist_ok=True)
+
+NFC_DIR = ROOT_DIR / "nfc"
+NFC_DIR.mkdir(exist_ok=True)
 
 # When communicating with device via bridge/debuglink, this sleep is required
 #   otherwise there may appear weird race conditions in communications.
@@ -388,13 +400,12 @@ def get_current_screen() -> str:
 
 
 @contextmanager
-def connect_to_client() -> Generator[TrezorClientDebugLink, None, None]:
+def connect_to_client() -> Generator[TrezorTestContext, None, None]:
     """Connect to the emulator and yield a client instance.
     Disconnect after the action is done.
     """
-    cli = TrezorClientDebugLink(get_device())
+    client = TrezorTestContext(get_device())
 
-    client = cli.get_new_client()
     time.sleep(SLEEP)
 
     # Needs to be done because some older emulators require this explicitly
@@ -550,9 +561,9 @@ def assert_text_on_screen(debug: DebugLink, text: str) -> None:
 def assert_text_not_on_screen(debug: DebugLink, text: str) -> None:
     layout = debug.read_layout()
     real_text = layout.text_content()
-    assert (
-        text.lower() not in real_text.lower()
-    ), f"Did not expect text: {text}, but found: {real_text}"
+    assert text.lower() not in real_text.lower(), (
+        f"Did not expect text: {text}, but found: {real_text}"
+    )
 
 
 def assert_seed_words(debug: DebugLink, amount: int) -> None:
@@ -608,9 +619,9 @@ def read_and_confirm_mnemonic_t2t1() -> None:
         assert secret_bytes is not None
         mnem = secret_bytes.decode("utf-8")
         mnemonic = mnem.split()
-        assert (
-            len(mnemonic) == 12
-        ), f"Expected 12 words in mnemonic, got {len(mnemonic)}"
+        assert len(mnemonic) == 12, (
+            f"Expected 12 words in mnemonic, got {len(mnemonic)}"
+        )
         time.sleep(SLEEP)
 
         # Answering 3 questions asking for a specific word
@@ -666,9 +677,9 @@ def read_and_confirm_mnemonic_t3t1() -> None:
             mnemonic.extend(seed_words)
             time.sleep(SLEEP)
 
-        assert (
-            len(mnemonic) == word_amount
-        ), f"Expected {word_amount} words in mnemonic, got {len(mnemonic)}"
+        assert len(mnemonic) == word_amount, (
+            f"Expected {word_amount} words in mnemonic, got {len(mnemonic)}"
+        )
 
         assert_text_on_screen(debug, f"I wrote down all {word_amount} words in order")
         debug.press_yes()
@@ -1066,7 +1077,6 @@ def read_and_confirm_shamir_mnemonic_t3w1(shares: int, threshold: int) -> None:
 
         # Loop through all the shares and fulfill all checks
         for _ in range(shares):
-
             # Scrolling through all the 20 words on next 5 pages
             # While doing so, saving all the words on the screen for the "quiz" later
             mnemonic: list[str] = []
@@ -1299,6 +1309,35 @@ def set_for_backup() -> None:
 
     thread = threading.Thread(target=to_call, daemon=True)
     thread.start()
+
+
+def nfc_tap(tag_id: str) -> bool:
+    with shelve.open(NFC_DIR / tag_id) as db:
+        with connect_to_debuglink(needs_udp=True) as debug:
+            req = debug._call(DebugLinkNfcConnected())
+            while not isinstance(req, Success):
+                log(f"Received NFC request: {response_dict(req)}")
+                value = None
+                if isinstance(req, DebugLinkNfcWrite):
+                    if req.key is not None:
+                        value = db.pop(req.key, None)
+                        db[req.key] = req.value
+                elif isinstance(req, DebugLinkNfcRead):
+                    if req.key is not None:
+                        value = db.get(req.key, None)
+                else:
+                    raise NotImplementedError(req)
+
+                resp = DebugLinkNfcResponse(value=value)
+                log(f"Responding to NFC request: {response_dict(resp)}")
+                req = debug._call(resp)
+                return True
+
+
+def nfc_clear(tag_id: str) -> bool:
+    with shelve.open(NFC_DIR / tag_id) as db:
+        db.clear()
+        return True
 
 
 # For testing/debugging purposes

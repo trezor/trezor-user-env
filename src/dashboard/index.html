@@ -364,6 +364,23 @@
                     <button @click="emulatorGetFeatures();">
                         Get features
                     </button>
+                </div><div>
+                    <label for="shares-input">N4W1 tag</label>
+                    <input
+                    id="tag-id-input"
+                    type="number"
+                    value="1"
+                    size="3"
+                    min="1"
+                    max="100"
+                    v-model="emulatorCommands.nfcTagId"
+                    />
+                    <button @click="nfcTap();">
+                        Tap
+                    </button>
+                    <button @click="nfcClear();">
+                        Clear
+                    </button>
                 </div>
             </section>
 

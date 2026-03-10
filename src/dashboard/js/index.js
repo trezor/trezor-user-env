@@ -64,6 +64,7 @@ const app = createApp({
                 seed: "",
                 shamirShares: 3,
                 shamirThreshold: 2,
+                nfcTagId: 1,
             },
             server: {
                 command: '{"type": "specify"}',
@@ -548,6 +549,18 @@ const app = createApp({
                 type: "regtest-send-to-address",
                 btc_amount: this.regtest.sendAmount,
                 address: this.regtest.sendAddress,
+            });
+        },
+        nfcTap() {
+            this.sendMessage({
+                type: "emulator-nfc-tap",
+                tag_id: this.emulatorCommands.nfcTagId.toString(),
+            });
+        },
+        nfcClear() {
+            this.sendMessage({
+                type: "emulator-nfc-clear",
+                tag_id: this.emulatorCommands.nfcTagId.toString(),
             });
         },
         logEvent(text, color = "black") {

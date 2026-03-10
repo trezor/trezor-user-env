@@ -1,7 +1,10 @@
 services:
   trezor-user-env-unix:
     container_name: trezor-user-env.unix
-    image: ghcr.io/trezor/trezor-user-env
+    #image: ghcr.io/trezor/trezor-user-env
+    build:
+      context: ..
+      dockerfile: ./docker/Dockerfile-debian
     network_mode: "host"
     environment:
       - DISPLAY=$DISPLAY
@@ -16,7 +19,10 @@ services:
 
   trezor-user-env-mac:
     container_name: trezor-user-env.mac
-    image: ghcr.io/trezor/trezor-user-env
+    #image: ghcr.io/trezor/trezor-user-env
+    build:
+      context: ..
+      dockerfile: ./docker/Dockerfile-debian
     ports:
       - "9001:9001"
       - "9002:9002"
