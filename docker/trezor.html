@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Trezor Emulator</title>
+    <meta charset="utf-8">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        #screen {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+            background-color: #f4f4f4;
+            overflow: auto;
+            /* Allow scrolling if it doesn't fit the iframe for some reason */
+        }
+
+        canvas {
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            /* Subtle shadow for the emulator box if the background matches exactly */
+        }
+
+        /* Hide noVNC's own scrollbars if any */
+        .noVNC_canvas {
+            cursor: crosshair;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="screen"></div>
+
+    <script type="module">
+        import RFB from './core/rfb.js';
+
+        const host = window.location.hostname;
+        const port = window.location.port;
+        const password = "";
+
+        // Detect WebSocket protocol
+        const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
+        const url = `${protocol}://${host}:${port}/websockify`;
+
+        const rfb = new RFB(document.getElementById('screen'), url, {
+            credentials: { password: password }
+        });
+
+        rfb.scaleViewport = true;
+        rfb.resizeSession = false; // We want to keep the Xvfb size fixed
+
+        const focusCanvas = () => {
+            const canvas = document.querySelector('canvas');
+            if (!canvas) {
+                return;
+            }
+            canvas.tabIndex = -1;
+            canvas.focus({ preventScroll: true });
+        };
+
+        window.addEventListener('focus', () => {
+            setTimeout(focusCanvas, 0);
+        });
+
+        window.addEventListener('message', (event) => {
+            const messageType = event && event.data && event.data.type;
+            if (messageType !== 'trezor-focus-emulator') {
+                return;
+            }
+
+            if (typeof rfb.focus === 'function') {
+                rfb.focus();
+            }
+            setTimeout(focusCanvas, 0);
+        });
+
+        document.addEventListener('click', () => {
+            setTimeout(focusCanvas, 0);
+        }, true);
+
+        rfb.addEventListener("connect", () => {
+            console.log("Connected to Trezor Emulator Display");
+            if (typeof rfb.focus === 'function') {
+                rfb.focus();
+            }
+            setTimeout(focusCanvas, 0);
+        });
+
+        rfb.addEventListener("disconnect", (e) => {
+            console.log("Disconnected", e);
+        });
+    </script>
+</body>
+
+</html>
