@@ -87,6 +87,10 @@ const app = createApp({
                 header: "Notification",
                 isError: false,
             },
+            emulatorWasRunning: false,
+            emulatorPopoutTimer: null,
+            emulatorPopoutWindow: null,
+            emulatorLastStatus: null,
         };
     },
     created() {
@@ -103,6 +107,13 @@ const app = createApp({
                 this.notifications.showPopup = false;
             }
         });
+    },
+    computed: {
+        vncUrl() {
+            // Use custom trezor.html for a perfectly integrated UI
+            const host = window.location.hostname;
+            return `http://${host}:6080/trezor.html?autoconnect=1`;
+        },
     },
     watch: {
         'emulatorUrl.url': function (newUrl) {
@@ -390,6 +401,9 @@ const app = createApp({
             }
         },
         reflectEmulatorSituation(status) {
+            const startedNow = status.is_running && !this.emulatorWasRunning;
+            this.emulatorLastStatus = status;
+
             if (status.is_running) {
                 this.writeEmulatorStatus(
                     `Running - ${status.version}`,
@@ -398,6 +412,71 @@ const app = createApp({
             } else {
                 this.writeEmulatorStatus("Stopped", "red");
             }
+
+            if (startedNow) {
+                this.scheduleVncPopout(status);
+            }
+
+            if (!status.is_running) {
+                this.closeVncPopout();
+            }
+
+            this.emulatorWasRunning = status.is_running;
+        },
+        scheduleVncPopout(status) {
+            if (this.emulatorPopoutTimer) {
+                clearTimeout(this.emulatorPopoutTimer);
+            }
+
+            this.emulatorPopoutTimer = window.setTimeout(() => {
+                this.openVncPopout(status);
+                this.emulatorPopoutTimer = null;
+            }, 1000);
+        },
+        getFallbackViewport(model) {
+            const dimensions = {
+                T1B1: { width: 256, height: 128 },
+                T2T1: { width: 240, height: 240 },
+                T3B1: { width: 128, height: 64 },
+                T3T1: { width: 240, height: 240 },
+                T3W1: { width: 240, height: 320 },
+            };
+            return dimensions[model] || { width: 800, height: 800 };
+        },
+        getEmulatorViewport(status) {
+            const windowSize = status && status.window_size;
+            if (windowSize && windowSize.width && windowSize.height) {
+                return {
+                    width: windowSize.width,
+                    height: windowSize.height,
+                };
+            }
+
+            return this.getFallbackViewport(status && status.model);
+        },
+        resizePopoutViewport(popout, viewport) {
+            try {
+                const chromeWidth = Math.max(popout.outerWidth - popout.innerWidth, 0);
+                const chromeHeight = Math.max(popout.outerHeight - popout.innerHeight, 0);
+
+                popout.resizeTo(
+                    Math.max(viewport.width + chromeWidth, 200),
+                    Math.max(viewport.height + chromeHeight, 200)
+                );
+            } catch (_err) {
+                // Browser may block resize in some environments.
+            }
+        },
+        closeVncPopout() {
+            if (this.emulatorPopoutTimer) {
+                clearTimeout(this.emulatorPopoutTimer);
+                this.emulatorPopoutTimer = null;
+            }
+
+            if (this.emulatorPopoutWindow && !this.emulatorPopoutWindow.closed) {
+                this.emulatorPopoutWindow.close();
+            }
+            this.emulatorPopoutWindow = null;
         },
         reflectTropicSituation(status) {
             if (status.is_running) {
@@ -549,6 +628,161 @@ const app = createApp({
                 btc_amount: this.regtest.sendAmount,
                 address: this.regtest.sendAddress,
             });
+        },
+        openVncPopout(status = this.emulatorLastStatus) {
+            try {
+                const viewport = this.getEmulatorViewport(status || {});
+
+                if (this.emulatorPopoutWindow && !this.emulatorPopoutWindow.closed) {
+                    this.emulatorPopoutWindow.focus();
+                    this.resizePopoutViewport(this.emulatorPopoutWindow, viewport);
+                    return;
+                }
+
+                const width = viewport.width;
+                const height = viewport.height;
+                const left = (window.screen.width / 2) - (width / 2);
+                const top = (window.screen.height / 2) - (height / 2);
+                const popout = window.open(
+                    "about:blank",
+                    "TrezorEmulatorDisplay",
+                    `width=${width},height=${height},left=${left},top=${top},menubar=no,toolbar=no,location=no,status=no,resizable=yes,scrollbars=no`
+                );
+                if (!popout || popout.closed || typeof popout.closed == 'undefined') {
+                    this.showNotification("Pop-up was blocked by your browser. Please allow pop-ups for this site.", true);
+                    return;
+                }
+
+                this.emulatorPopoutWindow = popout;
+                this.resizePopoutViewport(popout, viewport);
+                const vncUrl = this.vncUrl;
+
+                popout.document.open();
+                popout.document.write(`<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Trezor Emulator Display</title>
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            overflow: hidden;
+            font-family: sans-serif;
+        }
+        #status {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 16px;
+            background: #000;
+            z-index: 1;
+        }
+        #frame {
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: none;
+            background: #000;
+        }
+    </style>
+</head>
+<body>
+    <div id="status">Waiting for emulator display...</div>
+    <iframe id="frame" allow="fullscreen" tabindex="-1"></iframe>
+    <script>
+        const targetUrl = ${JSON.stringify(vncUrl)};
+        const status = document.getElementById('status');
+        const frame = document.getElementById('frame');
+        const maxAttempts = 60;
+        let attempts = 0;
+        let frameLoaded = false;
+        const targetOrigin = (() => {
+            try {
+                return new URL(targetUrl).origin;
+            } catch (_err) {
+                return '*';
+            }
+        })();
+
+        const sendFocusRequest = () => {
+            try {
+                if (frame.contentWindow) {
+                    frame.contentWindow.postMessage({ type: 'trezor-focus-emulator' }, targetOrigin);
+                }
+            } catch (_err) {
+                // Cross-origin access is expected; postMessage is best-effort.
+            }
+        };
+
+        const focusEmulatorFrame = () => {
+            try {
+                frame.focus();
+                if (frame.contentWindow) {
+                    frame.contentWindow.focus();
+                }
+            } catch (_error) {
+                frame.focus();
+            }
+            sendFocusRequest();
+        };
+
+        frame.addEventListener('load', () => {
+            frameLoaded = true;
+            frame.style.display = 'block';
+            status.style.display = 'none';
+            setTimeout(focusEmulatorFrame, 0);
+            setTimeout(sendFocusRequest, 120);
+            setTimeout(sendFocusRequest, 300);
+        });
+
+        window.addEventListener('focus', () => {
+            setTimeout(focusEmulatorFrame, 0);
+        });
+
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) {
+                setTimeout(focusEmulatorFrame, 0);
+            }
+        });
+
+        const tryConnect = async () => {
+            if (frameLoaded) {
+                return;
+            }
+
+            attempts += 1;
+            try {
+                await fetch(targetUrl, { mode: 'no-cors', cache: 'no-store' });
+                if (!frame.src) {
+                    frame.src = targetUrl;
+                }
+                return;
+            } catch (error) {
+                if (attempts >= maxAttempts) {
+                    status.textContent = 'Emulator display is not reachable.';
+                    return;
+                }
+            }
+
+            setTimeout(tryConnect, 500);
+        };
+
+        tryConnect();
+    <\/script>
+</body>
+</html>`);
+                popout.document.close();
+            } catch (err) {
+                this.logEvent(`Pop-out error: ${err.message}`, "red");
+                this.showNotification(`Failed to open pop-out: ${err.message}`, true);
+            }
         },
         logEvent(text, color = "black") {
             const newLog = {

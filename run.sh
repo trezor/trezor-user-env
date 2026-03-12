@@ -6,9 +6,9 @@ CLEAR='\033[0m'
 
 TENV_REGTEST="trezor-user-env-regtest"
 DASHBOARD_URL="http://localhost:9002"
+NOVNC_URL="http://localhost:6080/vnc.html"
 SYSTEM=$(uname)
-XHOST_ADDRESS=""
-SERVICE_NAME=""
+SERVICE_NAME="trezor-user-env"
 OPEN=""
 PULL=1
 PHYSICAL_TREZOR=0
@@ -18,10 +18,10 @@ function usage() {
   if [ -n "$1" ]; then
     echo -e "$1";
   fi
-  echo "Usage: $0 [-r --no-regtest] [-p --no-pull]"
+  echo "Usage: $0 [-r --no-regtest] [-p --no-pull] [-t --trezor]"
   echo "  -r, --no-regtest      Run tenv only, no regtest"
   echo "  -p, --no-pull         Do not pull changes, neither git nor docker. Automatically set to True when not on 'master'"
-  echo "  -t, --trezor          Support for physical Trezor instead of an emulator. WARNING: only forks for Linux, not MacOS."
+  echo "  -t, --trezor          Support for physical Trezor instead of an emulator."
   echo ""
 }
 
@@ -34,21 +34,23 @@ while [[ "$#" > 0 ]]; do case $1 in
   *) usage "${RED}Unknown parameter passed: $1${CLEAR}\n"; exit 1; shift;;
 esac; done
 
+# Platform detection: set OPEN, REGTEST_RPC_URL and MACOS flag
 if [[ $SYSTEM == Linux* ]]; then
-    SERVICE_NAME="trezor-user-env-unix"
     OPEN="xdg-open"
+    export REGTEST_RPC_URL="http://localhost:18021"
+    export MACOS=0
+    echo -e "On system: Linux"
 
 elif [[ $SYSTEM == Darwin* ]]; then
-    XHOST_ADDRESS="127.0.0.1"
-    SERVICE_NAME="trezor-user-env-mac"
     OPEN="open"
+    export REGTEST_RPC_URL="http://host.docker.internal:18021"
+    export MACOS=1
+    echo -e "On system: macOS"
 
 else
     echo -e "${RED}Not a supported system: $SYSTEM${CLEAR}\n"
     exit 1
 fi
-
-echo -e "On system: $SYSTEM"
 
 if [[ $PULL -eq 1 ]]; then
     if [[ $BRANCH != "master" ]]; then
@@ -58,12 +60,16 @@ if [[ $PULL -eq 1 ]]; then
         git pull
     fi
 
-    echo -e "Downloading latest images"
-    docker compose -f ./docker/compose.yml pull $SERVICE_NAME $TENV_REGTEST
+    # Only pull if the image doesn't exist locally at all, or if we want to force updates
+    if [[ "$(docker images -q ghcr.io/trezor/trezor-user-env:latest 2> /dev/null)" == "" ]]; then
+        echo -e "Downloading latest images"
+        docker compose -f ./docker/compose.yml pull $SERVICE_NAME $TENV_REGTEST
+    else
+        echo -e "Local image ghcr.io/trezor/trezor-user-env:latest found, skipping pull to preserve local changes."
+        # Still pull regtest as it's less likely to be modified locally
+        docker compose -f ./docker/compose.yml pull $TENV_REGTEST
+    fi
 fi
-
-echo -e "Setup xhost for video device output"
-xhost "+$XHOST_ADDRESS"
 
 if [[ $TENV_REGTEST == "trezor-user-env-regtest" ]]; then
     echo -e "${GREEN}Starting trezor-user-env with Bitcoin regtest${CLEAR}\n"
@@ -71,16 +77,17 @@ else
     echo -e "${GREEN}Starting trezor-user-env${CLEAR}\n"
 fi
 
-# open localhost:9002 in web browser after the controller is launched
-(while ! $(curl $DASHBOARD_URL -s -o /dev/null); do sleep 1; done; $OPEN $DASHBOARD_URL)&
+echo -e "Emulator window will be available at: ${GREEN}${NOVNC_URL}${CLEAR}"
+
+# Open dashboard in browser once the controller is up; also open the noVNC viewer
+(while ! $(curl $DASHBOARD_URL -s -o /dev/null); do sleep 1; done; $OPEN $DASHBOARD_URL) &
 
 if [[ $PHYSICAL_TREZOR -eq 1 ]]; then
     echo "Will support physical Trezor instead of emulator."
-    # this env variable is being passed to the docker environment
     export PHYSICAL_TREZOR=1
 else
     export PHYSICAL_TREZOR=""
 fi
 
-# launch trezor-user-env
+# Launch trezor-user-env (Xvfb + noVNC are started inside the container by entrypoint.sh)
 docker compose -f ./docker/compose.yml up --force-recreate $SERVICE_NAME $TENV_REGTEST
