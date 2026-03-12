@@ -42,9 +42,11 @@ section {
 }
 
 @media (min-width: 1025px) {
+
     /* Adjust 600px to the breakpoint you desire */
     section {
-        flex: 1 1 47%; /* Two sections per row on larger screens */
+        flex: 1 1 47%;
+        /* Two sections per row on larger screens */
     }
 }
 
@@ -55,6 +57,7 @@ input {
     border: solid 1px;
     border-color: rgb(131, 130, 130);
 }
+
 select,
 input[type="submit"] {
     border-radius: 5px;
@@ -226,4 +229,11 @@ hr {
     text-align: center;
     padding: 10px 0;
     z-index: 1000;
+}
+
+/* Fix lint warnings */
+select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
 }

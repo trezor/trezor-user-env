@@ -1,31 +1,21 @@
 services:
-  trezor-user-env-unix:
-    container_name: trezor-user-env.unix
-    image: ghcr.io/trezor/trezor-user-env
-    network_mode: "host"
-    environment:
-      - DISPLAY=$DISPLAY
-      # NOTE: it is possible to combine docker container and hardware device,
-      # but only for Linux, and only if the Trezor bridge is running locally.
-      # Second option of running with HW device is running the whole `tenv` locally.
-      - PHYSICAL_TREZOR=$PHYSICAL_TREZOR
-    volumes:
-      - ./../trezor-suite:/trezor-user-env/trezor-suite
-      - ./../logs/screens:/trezor-user-env/logs/screens
-      - ./../src/binaries/firmware/bin/user_downloaded:/trezor-user-env/src/binaries/firmware/bin/user_downloaded
-
-  trezor-user-env-mac:
-    container_name: trezor-user-env.mac
+  trezor-user-env:
+    container_name: trezor-user-env
     image: ghcr.io/trezor/trezor-user-env
     ports:
       - "9001:9001"
       - "9002:9002"
       - "21325:21325" # legacy bridge port
       - "21328:21328" # new bridge port
+      - "6080:6080" # noVNC emulator display (http://localhost:6080/vnc.html)
     environment:
-      - DISPLAY=docker.for.mac.host.internal:0
-      - REGTEST_RPC_URL=http://host.docker.internal:18021
-      - MACOS=1  # Enable macOS-specific bridge configuration (excludes legacy 2.* bridges)
+      - PHYSICAL_TREZOR=$PHYSICAL_TREZOR
+      # REGTEST_RPC_URL is set by run.sh based on the host OS:
+      #   Linux:  http://localhost:18021
+      #   macOS:  http://host.docker.internal:18021
+      - REGTEST_RPC_URL=${REGTEST_RPC_URL:-http://host.docker.internal:18021}
+      # MACOS=1 disables legacy 2.* bridges (incompatible on macOS)
+      - MACOS=${MACOS:-0}
     volumes:
       - ./../trezor-suite:/trezor-user-env/trezor-suite
       - ./../logs/screens:/trezor-user-env/logs/screens

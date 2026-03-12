@@ -129,9 +129,54 @@ def is_running() -> bool:
 
 def get_status() -> dict[str, Any]:
     if helpers.physical_trezor():
-        return {"is_running": True, "version": "PHYSICAL_TREZOR"}
+        return {
+            "is_running": True,
+            "version": "PHYSICAL_TREZOR",
+            "model": None,
+            "window_size": None,
+        }
     else:
-        return {"is_running": is_running(), "version": VERSION_RUNNING}
+        running = is_running()
+        return {
+            "is_running": running,
+            "version": VERSION_RUNNING,
+            "model": MODEL_RUNNING,
+            "window_size": get_window_size() if running else None,
+        }
+
+
+def get_window_size() -> dict[str, int] | None:
+    """Return current emulator window size from X11 as width/height in pixels."""
+    try:
+        search_cmd = "xdotool search --onlyvisible --name 'Trezor' | tail -n1"
+        process = Popen(search_cmd, shell=True, stdout=PIPE, stderr=PIPE)
+        stdout, _stderr = [part.decode().strip() for part in process.communicate()]
+
+        win_id = stdout
+        if not win_id:
+            search_cmd = "xdotool search --onlyvisible --class 'SDL' | tail -n1"
+            process = Popen(search_cmd, shell=True, stdout=PIPE, stderr=PIPE)
+            stdout, _stderr = [part.decode().strip() for part in process.communicate()]
+            win_id = stdout
+
+        if not win_id:
+            return None
+
+        geom_cmd = f"xdotool getwindowgeometry --shell {win_id}"
+        process = Popen(geom_cmd, shell=True, stdout=PIPE, stderr=PIPE)
+        geom_stdout, _stderr = [part.decode() for part in process.communicate()]
+
+        width_match = re.search(r"^WIDTH=(\d+)$", geom_stdout, re.MULTILINE)
+        height_match = re.search(r"^HEIGHT=(\d+)$", geom_stdout, re.MULTILINE)
+        if not width_match or not height_match:
+            return None
+
+        return {
+            "width": int(width_match.group(1)),
+            "height": int(height_match.group(1)),
+        }
+    except Exception:
+        return None
 
 
 def get_url_identifier(url: str) -> str:

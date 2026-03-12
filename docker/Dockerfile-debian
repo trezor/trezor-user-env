@@ -7,7 +7,8 @@ ENV TERM=xterm \
     LC_ALL=C.UTF-8 \
     LANG=C.UTF-8 \
     GIT_SSL_CAINFO=/etc/ssl/certs/ca-certificates.crt \
-    NIX_SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt
+    NIX_SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt \
+    DISPLAY=:99
 
 # Install required packages
 RUN curl -sL https://deb.nodesource.com/setup_22.x  | bash -
@@ -22,6 +23,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     python3-venv \
     libsdl2-2.0-0 \
     libsdl2-image-2.0-0 \
+    xvfb \
+    x11vnc \
+    x11-utils \
+    novnc \
+    websockify \
+    xdotool \
     x11-xserver-utils \
     wget \
     unzip \
@@ -55,5 +62,15 @@ RUN ./src/binaries/node-bridge/download.sh
 # Patch emulator binaries
 RUN cd src/binaries/firmware/bin && ./patch-bin.sh
 
-# Command to run on container start
+# Copy and configure entrypoint
+COPY ./docker/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+# Add custom Trezor VNC client and patch noVNC lite as a fallback
+COPY ./docker/trezor.html /usr/share/novnc/trezor.html
+RUN sed -i 's/id="top_bar">/id="top_bar" style="display:none">/' /usr/share/novnc/vnc_lite.html
+
+# Entrypoint starts Xvfb + x11vnc + noVNC, then execs CMD
+# Emulator window viewable at http://localhost:6080/vnc.html
+ENTRYPOINT ["/entrypoint.sh"]
 CMD ["uv", "run", "python", "src/main.py"]
