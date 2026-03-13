@@ -20,6 +20,7 @@ else
   exit 1
 fi
 
+# WARNING: this disables CORS origin validation - only safe on localhost
 # Replace if (isOriginAllowed) with if (true)
 if grep -q "if (isOriginAllowed)" "$1"; then
   sed -i 's/if (isOriginAllowed)/if (true)/g' "$1"
