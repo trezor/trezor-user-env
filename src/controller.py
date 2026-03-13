@@ -39,7 +39,7 @@ if TYPE_CHECKING:
     ResponseType = Union[NormalResponse, BackgroundCheckResponse]
 
 
-IP = "0.0.0.0"
+IP = "127.0.0.1"
 PORT = 9001
 LOG_COLOR = "blue"
 REGTEST_RPC = BTCJsonRPC(

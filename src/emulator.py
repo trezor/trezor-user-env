@@ -9,6 +9,7 @@ import threading
 import time
 import urllib.request
 from contextlib import contextmanager
+from urllib.parse import urlparse
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
@@ -162,6 +163,12 @@ def start_from_url(
     if not model_identifier:
         raise RuntimeError(f"Unknown model {model}")
     emu_path = binaries.USER_DOWNLOADED_DIR / f"{model_identifier}{emu_name}"
+
+    # Validate that the download URL points to a trusted domain
+    parsed = urlparse(url)
+    allowed_domains = ["data.trezor.io", "gitlab.com", "github.com"]
+    if not any(parsed.hostname == d or (parsed.hostname and parsed.hostname.endswith("." + d)) for d in allowed_domains):
+        raise ValueError(f"download url must be from a trusted domain, got: {parsed.hostname}")
 
     # Downloading only if it does not yet exist (or forced)
     if force_update or not emu_path.is_file():

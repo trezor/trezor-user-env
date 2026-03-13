@@ -11,7 +11,7 @@ from socketserver import ThreadingMixIn
 
 import helpers
 
-IP = "0.0.0.0"
+IP = "127.0.0.1"
 PORT = 9002
 HTML_DIR = Path(__file__).parent.parent / "src" / "dashboard"
 LOG_COLOR = "yellow"
