@@ -47,6 +47,7 @@ const app = createApp({
                 screenshotMode: false,
                 animations: false,
                 outputToLogfile: false,
+                useVnc: false,
                 status: "unknown",
                 statusColor: "black",
             },
@@ -305,6 +306,7 @@ const app = createApp({
                 output_to_logfile: this.emulators.outputToLogfile,
                 save_screenshots: this.emulators.screenshotMode,
                 show_animations: this.emulators.animations,
+                use_vnc: this.emulators.useVnc,
             });
         },
         emulatorStartFromUrl() {
@@ -328,6 +330,7 @@ const app = createApp({
                 output_to_logfile: this.emulators.outputToLogfile,
                 save_screenshots: this.emulators.screenshotMode,
                 show_animations: this.emulators.animations,
+                use_vnc: this.emulators.useVnc,
             });
 
             this.emulatorDownloadMessage =
@@ -355,6 +358,7 @@ const app = createApp({
                 output_to_logfile: this.emulators.outputToLogfile,
                 save_screenshots: this.emulators.screenshotMode,
                 show_animations: this.emulators.animations,
+                use_vnc: this.emulators.useVnc,
             });
 
             this.emulatorDownloadMessage =
