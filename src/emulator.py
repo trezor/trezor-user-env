@@ -45,6 +45,11 @@ VERSION_RUNNING: str | None = None
 MODEL_RUNNING: binaries.Model | None = None
 EMULATOR: CoreEmulator | LegacyEmulator | None = None
 
+# VNC support
+VNC_DISPLAY = ":99"
+XVFB_PROCESS: Popen | None = None
+X11VNC_PROCESS: Popen | None = None
+
 ROOT_DIR = Path(__file__).resolve().parent.parent
 
 SCREEN_DIR = ROOT_DIR / "logs/screens"
@@ -67,6 +72,46 @@ LOG_COLOR = "magenta"
 
 def log(text: str, color: str = LOG_COLOR) -> None:
     helpers.log(f"EMULATOR: {text}", color)
+
+
+def start_vnc() -> None:
+    """Start Xvfb and x11vnc for VNC-based display (bypasses X11/XQuartz)."""
+    global XVFB_PROCESS, X11VNC_PROCESS
+
+    if XVFB_PROCESS is not None:
+        log("VNC already running")
+        return
+
+    log("Starting Xvfb virtual display...")
+    XVFB_PROCESS = Popen(
+        ["Xvfb", VNC_DISPLAY, "-screen", "0", "1024x768x24"],
+        stdout=PIPE,
+        stderr=PIPE,
+    )
+    time.sleep(0.5)
+
+    log("Starting x11vnc server...")
+    X11VNC_PROCESS = Popen(
+        ["x11vnc", "-display", VNC_DISPLAY, "-forever", "-nopw", "-shared"],
+        stdout=PIPE,
+        stderr=PIPE,
+    )
+    time.sleep(0.5)
+    log(f"VNC server started on display {VNC_DISPLAY}, connect via VNC client to port 5900")
+
+
+def stop_vnc() -> None:
+    """Stop Xvfb and x11vnc."""
+    global XVFB_PROCESS, X11VNC_PROCESS
+
+    if X11VNC_PROCESS is not None:
+        X11VNC_PROCESS.terminate()
+        X11VNC_PROCESS = None
+        log("x11vnc stopped")
+    if XVFB_PROCESS is not None:
+        XVFB_PROCESS.terminate()
+        XVFB_PROCESS = None
+        log("Xvfb stopped")
 
 
 # Hacking the bridge connection code to have a timeout
@@ -159,6 +204,7 @@ def start_from_url(
     force_update: bool = False,
     force_name: str | None = None,
     show_animations: bool = False,
+    use_vnc: bool = False,
 ) -> None:
     binaries.check_model(model)
 
@@ -218,6 +264,7 @@ def start_from_url(
         output_to_logfile=output_to_logfile,
         save_screenshots=save_screenshots,
         show_animations=show_animations,
+        use_vnc=use_vnc,
     )
 
 
@@ -229,6 +276,7 @@ def start_from_branch(
     output_to_logfile: bool = True,
     save_screenshots: bool = False,
     show_animations: bool = False,
+    use_vnc: bool = False,
 ) -> None:
     emu_name = "trezor-emu-core"
     if binaries.IS_ARM:
@@ -258,6 +306,7 @@ def start_from_branch(
         force_update=True,
         force_name=force_name,
         show_animations=show_animations,
+        use_vnc=use_vnc,
     )
 
 
@@ -268,6 +317,7 @@ def start(
     output_to_logfile: bool = True,
     save_screenshots: bool = False,
     show_animations: bool = False,
+    use_vnc: bool = False,
 ) -> None:
     global VERSION_RUNNING
     global EMULATOR
@@ -320,6 +370,11 @@ def start(
 
     if wipe and EMULATOR.storage.exists():
         EMULATOR.storage.unlink()
+
+    if use_vnc:
+        start_vnc()
+        os.environ["DISPLAY"] = VNC_DISPLAY
+        log(f"Using VNC display {VNC_DISPLAY} instead of X11")
 
     try:
         EMULATOR.start()
@@ -381,6 +436,8 @@ def stop() -> None:
         EMULATOR = None
         VERSION_RUNNING = None
         MODEL_RUNNING = None
+
+    stop_vnc()
 
 
 def get_current_screen() -> str:

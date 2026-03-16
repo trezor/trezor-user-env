@@ -208,6 +208,18 @@
                         >Screenshot mode</label
                     >
                     <br />
+                    <input
+                        id="useVnc"
+                        type="checkbox"
+                        v-model="emulators.useVnc"
+                    />
+                    <label
+                        class="underlined"
+                        title="Use VNC instead of X11. Starts a virtual display and VNC server inside the container. Connect with a VNC client to localhost:5900."
+                        for="useVnc"
+                        >Use VNC (instead of X11)</label
+                    >
+                    <br />
                 </div>
 
                 <hr />

@@ -23,6 +23,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libsdl2-2.0-0 \
     libsdl2-image-2.0-0 \
     x11-xserver-utils \
+    xvfb \
+    x11vnc \
     wget \
     unzip \
     curl \
