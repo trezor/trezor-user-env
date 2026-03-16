@@ -200,6 +200,7 @@ class ResponseGetter:
             output_to_logfile = self.request_dict.get("output_to_logfile", True)
             save_screenshots = self.request_dict.get("save_screenshots", False)
             show_animations = self.request_dict.get("show_animations", False)
+            use_vnc = self.request_dict.get("use_vnc", False)
             if model != PREV_RUNNING_MODEL:
                 wipe = True
             PREV_RUNNING_MODEL = model
@@ -216,6 +217,7 @@ class ResponseGetter:
                 output_to_logfile=output_to_logfile,
                 save_screenshots=save_screenshots,
                 show_animations=show_animations,
+                use_vnc=use_vnc,
             )
             response_text = f"Emulator version {version} ({model}) started"
             if wipe:
@@ -235,6 +237,7 @@ class ResponseGetter:
             output_to_logfile = self.request_dict.get("output_to_logfile", True)
             save_screenshots = self.request_dict.get("save_screenshots", False)
             show_animations = self.request_dict.get("show_animations", False)
+            use_vnc = self.request_dict.get("use_vnc", False)
             if model != PREV_RUNNING_MODEL:
                 wipe = True
             PREV_RUNNING_MODEL = model
@@ -245,6 +248,7 @@ class ResponseGetter:
                 output_to_logfile=output_to_logfile,
                 save_screenshots=save_screenshots,
                 show_animations=show_animations,
+                use_vnc=use_vnc,
             )
             response_text = f"Emulator downloaded from {url} and started"
             if wipe:
@@ -264,6 +268,7 @@ class ResponseGetter:
             output_to_logfile = self.request_dict.get("output_to_logfile", True)
             save_screenshots = self.request_dict.get("save_screenshots", False)
             show_animations = self.request_dict.get("show_animations", False)
+            use_vnc = self.request_dict.get("use_vnc", False)
             if model != PREV_RUNNING_MODEL:
                 wipe = True
             PREV_RUNNING_MODEL = model
@@ -275,6 +280,7 @@ class ResponseGetter:
                 output_to_logfile=output_to_logfile,
                 save_screenshots=save_screenshots,
                 show_animations=show_animations,
+                use_vnc=use_vnc,
             )
             response_text = f"Emulator downloaded from branch {branch} and started"
             if wipe:
