@@ -208,6 +208,18 @@
                         >Screenshot mode</label
                     >
                     <br />
+                    <input
+                        id="useVnc"
+                        type="checkbox"
+                        v-model="emulators.useVnc"
+                    />
+                    <label
+                        class="underlined"
+                        title="Use VNC instead of X11. Starts a virtual display and VNC server inside the container. Connect with a VNC client to localhost:5900."
+                        for="useVnc"
+                        >Use VNC (instead of X11)</label
+                    >
+                    <br />
                 </div>
 
                 <hr />
@@ -363,6 +375,23 @@
                 <div>
                     <button @click="emulatorGetFeatures();">
                         Get features
+                    </button>
+                </div><div>
+                    <label for="shares-input">N4W1 tag</label>
+                    <input
+                    id="tag-id-input"
+                    type="number"
+                    value="1"
+                    size="3"
+                    min="1"
+                    max="100"
+                    v-model="emulatorCommands.nfcTagId"
+                    />
+                    <button @click="nfcTap();">
+                        Tap
+                    </button>
+                    <button @click="nfcClear();">
+                        Clear
                     </button>
                 </div>
             </section>
