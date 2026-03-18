@@ -219,7 +219,9 @@ class ResponseGetter:
                 show_animations=show_animations,
                 use_vnc=use_vnc,
             )
-            response_text = f"Emulator version {version} ({model}) started"
+            response_text = (
+                f"Emulator version {version} ({model}) started. EM_DEVICE_STARTED"
+            )
             if wipe:
                 response_text += " and wiped to be empty"
 

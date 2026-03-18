@@ -257,3 +257,25 @@ hr {
         background-color: #252628;
     }
 }
+
+/* VNC viewer */
+.vnc-viewer {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+
+    border-radius: 8px;
+    min-height: 400px;
+}
+
+.vnc-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.vnc-iframe {
+    display: flex;
+    flex-grow: 1;
+    border: none;
+}

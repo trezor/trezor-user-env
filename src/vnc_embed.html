@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Trezor emulator</title>
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+        #screen {
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+    <script type="module" crossorigin="anonymous">
+        import RFB from './core/rfb.js';
+
+        function readQueryVariable(name, defaultValue) {
+            const re = new RegExp('.*[?&]' + name + '=([^&#]*)');
+            const match = document.location.href.match(re);
+            return match ? decodeURIComponent(match[1]) : defaultValue;
+        }
+
+        const host = readQueryVariable('host', window.location.hostname);
+        const port = readQueryVariable('port', window.location.port);
+        const path = readQueryVariable('path', 'websockify');
+
+        const proto = window.location.protocol === 'https:' ? 'wss' : 'ws';
+        let url = proto + '://' + host;
+        if (port) url += ':' + port;
+        url += '/' + path;
+
+        function connect() {
+            const rfb = new RFB(document.getElementById('screen'), url);
+            rfb.scaleViewport = true;
+            rfb.resizeSession = true;
+            rfb.background = "gray";
+            rfb.addEventListener('disconnect', () => {
+                setTimeout(connect, 1000);
+            });
+        }
+        connect();
+    </script>
+</head>
+<body>
+    <div id="screen"></div>
+</body>
+</html>
