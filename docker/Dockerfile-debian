@@ -25,6 +25,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     x11-xserver-utils \
     xvfb \
     x11vnc \
+    novnc \
+    websockify \
+    xdotool \
     wget \
     unzip \
     curl \
@@ -50,6 +53,9 @@ RUN uv sync
 
 # Copy the rest of the files
 COPY ./ /trezor-user-env
+
+# Custom minimal noVNC viewer (no borders/toolbar)
+RUN cp /trezor-user-env/src/vnc_embed.html /usr/share/novnc/vnc_embed.html
 
 RUN ./src/binaries/firmware/bin/download.sh
 RUN ./src/binaries/trezord-go/bin/download.sh
