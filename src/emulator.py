@@ -30,16 +30,12 @@ from trezorlib.transport.udp import UdpTransport
 import binaries
 import bridge
 import helpers
+import vnc
 
 # TODO: consider creating a class from this module to avoid these globals
 VERSION_RUNNING: str | None = None
 MODEL_RUNNING: binaries.Model | None = None
 EMULATOR: CoreEmulator | LegacyEmulator | None = None
-
-# VNC support
-VNC_DISPLAY = ":99"
-XVFB_PROCESS: Popen | None = None
-X11VNC_PROCESS: Popen | None = None
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
 
@@ -60,46 +56,6 @@ LOG_COLOR = "magenta"
 
 def log(text: str, color: str = LOG_COLOR) -> None:
     helpers.log(f"EMULATOR: {text}", color)
-
-
-def start_vnc() -> None:
-    """Start Xvfb and x11vnc for VNC-based display (bypasses X11/XQuartz)."""
-    global XVFB_PROCESS, X11VNC_PROCESS
-
-    if XVFB_PROCESS is not None:
-        log("VNC already running")
-        return
-
-    log("Starting Xvfb virtual display...")
-    XVFB_PROCESS = Popen(
-        ["Xvfb", VNC_DISPLAY, "-screen", "0", "1024x768x24"],
-        stdout=PIPE,
-        stderr=PIPE,
-    )
-    time.sleep(0.5)
-
-    log("Starting x11vnc server...")
-    X11VNC_PROCESS = Popen(
-        ["x11vnc", "-display", VNC_DISPLAY, "-forever", "-nopw", "-shared"],
-        stdout=PIPE,
-        stderr=PIPE,
-    )
-    time.sleep(0.5)
-    log(f"VNC server started on display {VNC_DISPLAY}, connect via VNC client to port 5900")
-
-
-def stop_vnc() -> None:
-    """Stop Xvfb and x11vnc."""
-    global XVFB_PROCESS, X11VNC_PROCESS
-
-    if X11VNC_PROCESS is not None:
-        X11VNC_PROCESS.terminate()
-        X11VNC_PROCESS = None
-        log("x11vnc stopped")
-    if XVFB_PROCESS is not None:
-        XVFB_PROCESS.terminate()
-        XVFB_PROCESS = None
-        log("Xvfb stopped")
 
 
 # Hacking the bridge connection code to have a timeout
@@ -327,7 +283,16 @@ def start(
             f"killing the already running one - {VERSION_RUNNING}",
             "red",
         )
-        stop()
+        # Only stop the emulator process, not VNC — start_display() will
+        # restart VNC cleanly if use_vnc is set, and stop() would cause
+        # port conflicts when VNC is immediately restarted.
+        assert EMULATOR.process is not None
+        emu_pid = EMULATOR.process.pid
+        EMULATOR.stop()
+        log(f"Emulator killed. PID: {emu_pid}.")
+        EMULATOR = None
+        VERSION_RUNNING = None
+        MODEL_RUNNING = None
 
     # Conditionally redirecting the output to a logfile instead of terminal/stdout
     if output_to_logfile:
@@ -360,9 +325,10 @@ def start(
         EMULATOR.storage.unlink()
 
     if use_vnc:
-        start_vnc()
-        os.environ["DISPLAY"] = VNC_DISPLAY
-        log(f"Using VNC display {VNC_DISPLAY} instead of X11")
+        vnc.start_display()
+        vnc.setup_env()
+    else:
+        vnc.stop()
 
     try:
         EMULATOR.start()
@@ -377,6 +343,9 @@ def start(
 
     # Verifying if the emulator is really running
     time.sleep(0.5)
+
+    if use_vnc:
+        vnc.start_capture()
     assert EMULATOR.process is not None
     if EMULATOR.process.poll() is not None:
         EMULATOR = None
@@ -425,7 +394,7 @@ def stop() -> None:
         VERSION_RUNNING = None
         MODEL_RUNNING = None
 
-    stop_vnc()
+    vnc.stop()
 
 
 def get_current_screen() -> str:
