@@ -1,0 +1,14 @@
+# Override file for local builds. Use with:
+#   docker compose -f compose.yml -f compose.local.yml up <service>
+services:
+  trezor-user-env-unix:
+    image: trezor-user-env:local
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile-debian
+
+  trezor-user-env-mac:
+    image: trezor-user-env:local
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile-debian
