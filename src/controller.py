@@ -319,6 +319,15 @@ class ResponseGetter:
             return {
                 "response": f"Read and confirm Shamir mnemonic for {shares} shares and threshold {threshold}."
             }
+        elif self.command == "emulator-read-and-confirm-atomic-shamir-mnemonic":
+            shares = self.request_dict.get("shares", 1)
+            threshold = self.request_dict.get("threshold", 1)
+            emulator.read_and_confirm_atomic_shamir_mnemonic(
+                shares=shares, threshold=threshold
+            )
+            return {
+                "response": f"Read and confirm atomic Shamir mnemonic for {shares} shares and threshold {threshold}."
+            }
         elif self.command == "emulator-allow-unsafe-paths":
             emulator.allow_unsafe()
             return {"response": "Allowed unsafe path"}
