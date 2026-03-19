@@ -1126,6 +1126,111 @@ def read_and_confirm_shamir_mnemonic_t3w1(shares: int, threshold: int) -> None:
         time.sleep(SLEEP)
 
 
+def read_and_confirm_atomic_shamir_mnemonic(shares: int, threshold: int) -> None:
+    """Handles atomic Shamir backup flow where device starts at number picker.
+
+    In atomic flow (resetDevice with skip_backup=false), the device shows the
+    share/threshold selection screens directly, without intro screens.
+    Only T2T1 needs special handling - T3T1/T3W1 work with existing functions.
+    """
+    if not VERSION_RUNNING:
+        raise RuntimeError("No emulator running.")
+
+    if models.T2T1.internal_name in VERSION_RUNNING:
+        _select_shares_and_threshold_t2t1(shares, threshold)
+        _confirm_shamir_backup_words_t2t1(shares)
+    elif models.T3T1.internal_name in VERSION_RUNNING:
+        read_and_confirm_shamir_mnemonic_t3t1(shares=shares, threshold=threshold)
+    elif models.T3W1.internal_name in VERSION_RUNNING:
+        read_and_confirm_shamir_mnemonic_t3w1(shares=shares, threshold=threshold)
+    else:
+        raise RuntimeError(
+            f"Model {VERSION_RUNNING} not supported for atomic Shamir flow."
+        )
+
+
+def _select_shares_and_threshold_t2t1(shares: int, threshold: int) -> None:
+    """Selects shares and threshold on T2T1 number picker screens."""
+    MINUS_BUTTON_COORDS = (60, 70)
+    PLUS_BUTTON_COORDS = (180, 70)
+    OK_BUTTON_COORDS = (200, 200)
+    DEFAULT_SHARES = 5
+
+    with connect_to_debuglink() as debug:
+        debug.watch_layout(True)
+
+        # Select number of shares (default is 5)
+        needed_clicks = abs(shares - DEFAULT_SHARES)
+        button = MINUS_BUTTON_COORDS if shares < DEFAULT_SHARES else PLUS_BUTTON_COORDS
+        for _ in range(needed_clicks):
+            debug.click(button)
+            time.sleep(SLEEP)
+        debug.click(OK_BUTTON_COORDS)
+        time.sleep(SLEEP)
+
+        # Confirm "set threshold" summary
+        debug.press_yes()
+        time.sleep(SLEEP)
+
+        # Select threshold (default is shares // 2 + 1)
+        if shares not in [1, 2]:
+            default_threshold = shares // 2 + 1
+            needed_clicks = abs(threshold - default_threshold)
+            button = (
+                MINUS_BUTTON_COORDS
+                if threshold < default_threshold
+                else PLUS_BUTTON_COORDS
+            )
+            for _ in range(needed_clicks):
+                debug.click(button)
+                time.sleep(SLEEP)
+
+        debug.press_yes()
+        time.sleep(SLEEP)
+
+
+def _confirm_shamir_backup_words_t2t1(shares: int) -> None:
+    """Confirms backup words for T2T1 Shamir backup."""
+    with connect_to_debuglink() as debug:
+        debug.watch_layout(True)
+
+        # "write down and check" summary
+        debug.press_yes()
+        time.sleep(SLEEP)
+
+        # "anywhere digital" warning
+        debug.press_yes()
+        time.sleep(SLEEP)
+
+        # Loop through all shares
+        for _ in range(shares):
+            mnemonic: list[str] = []
+            layout = debug.read_layout()
+            for _ in range(layout.page_count() - 1):
+                mnemonic.extend(layout.seed_words())
+                debug.swipe_up()
+                time.sleep(SLEEP)
+                layout = debug.read_layout()
+            mnemonic.extend(layout.seed_words())
+
+            debug.press_yes()
+            time.sleep(SLEEP)
+
+            # Answer 3 word verification questions
+            for _ in range(3):
+                layout = debug.read_layout()
+                word_pos = int(layout.text_content().split()[2])
+                debug.input(mnemonic[word_pos - 1].lower())
+                time.sleep(SLEEP)
+
+            debug.press_yes()
+            time.sleep(SLEEP)
+
+        # Finish backup
+        debug.press_yes()
+        time.sleep(SLEEP)
+
+
 def select_num_of_words(num_of_words: int = 12) -> None:
     with connect_to_debuglink() as debug:
         debug.input(str(num_of_words))
