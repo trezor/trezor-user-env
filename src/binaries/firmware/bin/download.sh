@@ -18,68 +18,40 @@ else
    exit 1
 fi
 
-# Define the emulators to download latest 10 versions
+# Define the emulators to download (latest patch per minor version series, max 5 per model)
 files=(
- # T1B1
-  "T1B1/trezor-emu-legacy-T1B1-v1.10.0${suffix}"
-  "T1B1/trezor-emu-legacy-T1B1-v1.10.1${suffix}"
-  "T1B1/trezor-emu-legacy-T1B1-v1.10.2${suffix}"
-  "T1B1/trezor-emu-legacy-T1B1-v1.10.3${suffix}"
-  "T1B1/trezor-emu-legacy-T1B1-v1.10.4${suffix}"
+  # T1B1
   "T1B1/trezor-emu-legacy-T1B1-v1.10.5${suffix}"
-  "T1B1/trezor-emu-legacy-T1B1-v1.11.1${suffix}"
   "T1B1/trezor-emu-legacy-T1B1-v1.11.2${suffix}"
-  "T1B1/trezor-emu-legacy-T1B1-v1.12.0${suffix}"
   "T1B1/trezor-emu-legacy-T1B1-v1.12.1${suffix}"
-  "T1B1/trezor-emu-legacy-T1B1-v1.13.0${suffix}"
   "T1B1/trezor-emu-legacy-T1B1-v1.13.1${suffix}"
   "T1B1/trezor-emu-legacy-T1B1-v1.14.0${suffix}"
+  "T1B1/trezor-emu-legacy-T1B1-v1.14.1${suffix}"
   # T2T1
-  "T2T1/trezor-emu-core-T2T1-v2.3.0${suffix}"
-  "T2T1/trezor-emu-core-T2T1-v2.5.1${suffix}"
-  "T2T1/trezor-emu-core-T2T1-v2.5.2${suffix}"
-  "T2T1/trezor-emu-core-T2T1-v2.5.3${suffix}"
-  "T2T1/trezor-emu-core-T2T1-v2.6.0${suffix}"
-  "T2T1/trezor-emu-core-T2T1-v2.6.3${suffix}"
   "T2T1/trezor-emu-core-T2T1-v2.6.4${suffix}"
-  "T2T1/trezor-emu-core-T2T1-v2.7.0${suffix}"
   "T2T1/trezor-emu-core-T2T1-v2.7.2${suffix}"
-  "T2T1/trezor-emu-core-T2T1-v2.8.1${suffix}"
-  "T2T1/trezor-emu-core-T2T1-v2.8.7${suffix}"
-  "T2T1/trezor-emu-core-T2T1-v2.8.8${suffix}"
-  "T2T1/trezor-emu-core-T2T1-v2.8.9${suffix}"
   "T2T1/trezor-emu-core-T2T1-v2.8.10${suffix}"
-  "T2T1/trezor-emu-core-T2T1-v2.9.0${suffix}"
-  "T2T1/trezor-emu-core-T2T1-v2.9.1${suffix}"
   "T2T1/trezor-emu-core-T2T1-v2.9.4${suffix}"
   "T2T1/trezor-emu-core-T2T1-v2.10.0${suffix}"
+  "T2T1/trezor-emu-core-T2T1-v2.11.0${suffix}"
   # T3B1
-  "T3B1/trezor-emu-core-T3B1-v2.8.3${suffix}"
-  "T3B1/trezor-emu-core-T3B1-v2.8.7${suffix}"
-  "T3B1/trezor-emu-core-T3B1-v2.8.9${suffix}"
   "T3B1/trezor-emu-core-T3B1-v2.8.10${suffix}"
-  "T3B1/trezor-emu-core-T3B1-v2.9.0${suffix}"
-  "T3B1/trezor-emu-core-T3B1-v2.9.1${suffix}"
   "T3B1/trezor-emu-core-T3B1-v2.9.4${suffix}"
   "T3B1/trezor-emu-core-T3B1-v2.10.0${suffix}"
+  "T3B1/trezor-emu-core-T3B1-v2.11.0${suffix}"
   # T3T1
   "T3T1/trezor-emu-core-T3T1-v2.7.2${suffix}"
-  "T3T1/trezor-emu-core-T3T1-v2.8.0${suffix}"
-  "T3T1/trezor-emu-core-T3T1-v2.8.1${suffix}"
-  "T3T1/trezor-emu-core-T3T1-v2.8.3${suffix}"
-  "T3T1/trezor-emu-core-T3T1-v2.8.7${suffix}"
-  "T3T1/trezor-emu-core-T3T1-v2.8.9${suffix}"
   "T3T1/trezor-emu-core-T3T1-v2.8.10${suffix}"
-  "T3T1/trezor-emu-core-T3T1-v2.9.0${suffix}"
-  "T3T1/trezor-emu-core-T3T1-v2.9.1${suffix}"
   "T3T1/trezor-emu-core-T3T1-v2.9.4${suffix}"
   "T3T1/trezor-emu-core-T3T1-v2.10.0${suffix}"
+  "T3T1/trezor-emu-core-T3T1-v2.11.0${suffix}"
   # T3W1
   "T3W1/trezor-emu-core-T3W1-v2.9.3${suffix}"
   "T3W1/trezor-emu-core-T3W1-v2.9.4${suffix}"
   "T3W1/trezor-emu-core-T3W1-v2.9.5${suffix}"
   "T3W1/trezor-emu-core-T3W1-v2.9.6${suffix}"
   "T3W1/trezor-emu-core-T3W1-v2.10.0${suffix}"
+  "T3W1/trezor-emu-core-T3W1-v2.11.0${suffix}"
 )
 
 for file_path in "${files[@]}"; do
