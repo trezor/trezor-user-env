@@ -47,7 +47,6 @@ const app = createApp({
                 screenshotMode: false,
                 animations: false,
                 outputToLogfile: false,
-                useVnc: true,
                 vncActive: false,
                 status: "unknown",
                 statusColor: "black",
@@ -195,9 +194,8 @@ const app = createApp({
 
             this.logEvent(`Response received: ${event.data}`, color);
 
-            // Show inline VNC viewer when emulator starts with VNC enabled
+            // Show inline VNC viewer when emulator starts
             if (
-                this.emulators.useVnc &&
                 "response" in dataObject &&
                 typeof dataObject.response === 'string' &&
                 dataObject.response.includes("EM_DEVICE_STARTED")
@@ -318,7 +316,6 @@ const app = createApp({
                 output_to_logfile: this.emulators.outputToLogfile,
                 save_screenshots: this.emulators.screenshotMode,
                 show_animations: this.emulators.animations,
-                use_vnc: this.emulators.useVnc,
             });
         },
         emulatorStartFromUrl() {
@@ -342,7 +339,6 @@ const app = createApp({
                 output_to_logfile: this.emulators.outputToLogfile,
                 save_screenshots: this.emulators.screenshotMode,
                 show_animations: this.emulators.animations,
-                use_vnc: this.emulators.useVnc,
             });
 
             this.emulatorDownloadMessage =
@@ -370,7 +366,6 @@ const app = createApp({
                 output_to_logfile: this.emulators.outputToLogfile,
                 save_screenshots: this.emulators.screenshotMode,
                 show_animations: this.emulators.animations,
-                use_vnc: this.emulators.useVnc,
             });
 
             this.emulatorDownloadMessage =

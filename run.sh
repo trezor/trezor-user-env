@@ -7,7 +7,6 @@ CLEAR='\033[0m'
 TENV_REGTEST="trezor-user-env-regtest"
 DASHBOARD_URL="http://localhost:9002"
 SYSTEM=$(uname)
-XHOST_ADDRESS=""
 SERVICE_NAME=""
 OPEN=""
 PULL=1
@@ -39,7 +38,6 @@ if [[ $SYSTEM == Linux* ]]; then
     OPEN="xdg-open"
 
 elif [[ $SYSTEM == Darwin* ]]; then
-    XHOST_ADDRESS="127.0.0.1"
     SERVICE_NAME="trezor-user-env-mac"
     OPEN="open"
 
@@ -61,9 +59,6 @@ if [[ $PULL -eq 1 ]]; then
     echo -e "Downloading latest images"
     docker compose -f ./docker/compose.yml pull $SERVICE_NAME $TENV_REGTEST
 fi
-
-echo -e "Setup xhost for video device output"
-xhost "+$XHOST_ADDRESS"
 
 if [[ $TENV_REGTEST == "trezor-user-env-regtest" ]]; then
     echo -e "${GREEN}Starting trezor-user-env with Bitcoin regtest${CLEAR}\n"
