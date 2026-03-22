@@ -4,7 +4,6 @@ services:
     image: ghcr.io/trezor/trezor-user-env
     network_mode: "host"
     environment:
-      - DISPLAY=$DISPLAY
       # NOTE: it is possible to combine docker container and hardware device,
       # but only for Linux, and only if the Trezor bridge is running locally.
       # Second option of running with HW device is running the whole `tenv` locally.
@@ -25,7 +24,6 @@ services:
       - "5900:5900"   # VNC port (when using VNC instead of X11)
       - "6080:6080"   # noVNC web viewer port
     environment:
-      - DISPLAY=docker.for.mac.host.internal:0
       - REGTEST_RPC_URL=http://host.docker.internal:18021
       - MACOS=1  # Enable macOS-specific bridge configuration (excludes legacy 2.* bridges)
     volumes:

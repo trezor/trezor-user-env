@@ -148,7 +148,6 @@ def start_from_url(
     force_update: bool = False,
     force_name: str | None = None,
     show_animations: bool = False,
-    use_vnc: bool = False,
 ) -> None:
     binaries.check_model(model)
 
@@ -208,7 +207,6 @@ def start_from_url(
         output_to_logfile=output_to_logfile,
         save_screenshots=save_screenshots,
         show_animations=show_animations,
-        use_vnc=use_vnc,
     )
 
 
@@ -220,7 +218,6 @@ def start_from_branch(
     output_to_logfile: bool = True,
     save_screenshots: bool = False,
     show_animations: bool = False,
-    use_vnc: bool = False,
 ) -> None:
     emu_name = "trezor-emu-core"
     if binaries.IS_ARM:
@@ -250,7 +247,6 @@ def start_from_branch(
         force_update=True,
         force_name=force_name,
         show_animations=show_animations,
-        use_vnc=use_vnc,
     )
 
 
@@ -261,7 +257,6 @@ def start(
     output_to_logfile: bool = True,
     save_screenshots: bool = False,
     show_animations: bool = False,
-    use_vnc: bool = False,
 ) -> None:
     global VERSION_RUNNING
     global EMULATOR
@@ -284,8 +279,8 @@ def start(
             "red",
         )
         # Only stop the emulator process, not VNC — start_display() will
-        # restart VNC cleanly if use_vnc is set, and stop() would cause
-        # port conflicts when VNC is immediately restarted.
+        # restart VNC cleanly, and stop() would cause port conflicts
+        # when VNC is immediately restarted.
         assert EMULATOR.process is not None
         emu_pid = EMULATOR.process.pid
         EMULATOR.stop()
@@ -324,11 +319,8 @@ def start(
     if wipe and EMULATOR.storage.exists():
         EMULATOR.storage.unlink()
 
-    if use_vnc:
-        vnc.start_display()
-        vnc.setup_env()
-    else:
-        vnc.stop()
+    vnc.start_display()
+    vnc.setup_env()
 
     try:
         EMULATOR.start()
@@ -344,8 +336,7 @@ def start(
     # Verifying if the emulator is really running
     time.sleep(0.5)
 
-    if use_vnc:
-        vnc.start_capture()
+    vnc.start_capture()
     assert EMULATOR.process is not None
     if EMULATOR.process.poll() is not None:
         EMULATOR = None
