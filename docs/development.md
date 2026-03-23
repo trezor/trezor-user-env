@@ -15,7 +15,12 @@ This is suitable for smaller changes or things you can check via the HTML dashbo
 The simpler but less flexible way is to let the GitHub Actions build it. You can create a branch, commit your changes and then push them. The GH Actions will build it for you and tag the appropriate docker image as `test`. You can then modify all scripts/commands and use `ghcr.io/trezor/trezor-user-env:test` instead of `ghcr.io/trezor/trezor-user-env` which defaults to the `latest` tag which equals trezor-user-env's master. Suite's docker-compose files in the `docker` subdirectory are the place where you want to change this.
 
 ### Use compose.local.yml
-Run `cd docker && docker compose -f compose.yml -f compose.local.yml up` to start the local version of trezor-user-env. The compose.local.yml should override the image with the local one.
+Run the following as per your platform start the local version of trezor-user-env. The compose.local.yml should override the image with the local one.
+```
+docker compose -f docker/compose.yml -f docker/compose.local.yml up trezor-user-env-unix
+docker compose -f docker/compose.yml -f docker/compose.local.yml up trezor-user-env-mac
+```
+Use `--build --force-recreate` in order to trigger image rebuild.
 
 ## Local development against Suite end-to-end tests
 
