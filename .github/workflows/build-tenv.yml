@@ -29,6 +29,8 @@ jobs:
           context: .
           file: ./docker/Dockerfile-debian
           platforms: linux/amd64,linux/arm64
+          build-args: |
+            EMULATOR_NIGHTLY_CACHE_BUST=${{ github.run_id }}-${{ github.run_attempt }}
           push: true
           # todo: using github.sha does not take into account downloaded binaries in Dockerfile.debian => sha stays same
           tags: |
