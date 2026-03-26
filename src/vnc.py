@@ -1,9 +1,8 @@
 """VNC server management for the emulator display.
 
 Provides a virtual display (Xvfb) with VNC access via x11vnc and
-a browser-based viewer via websockify + noVNC. The VNC output is
-automatically clipped to the emulator window so only the device
-screen is visible.
+a browser-based viewer via websockify + noVNC. The VNC output
+streams only the emulator window so only the device screen is visible.
 """
 
 from __future__ import annotations
@@ -42,8 +41,8 @@ def _kill_process(proc: Popen | None, name: str) -> None:
     _log(f"{name} stopped")
 
 
-def _find_window_clip() -> str | None:
-    """Find the emulator window on the VNC display and return a clip region (WxH+0+0)."""
+def _find_window_id() -> str | None:
+    """Find the emulator window on the VNC display and return its X window ID."""
     env = {**os.environ, "DISPLAY": DISPLAY}
 
     for _ in range(10):
@@ -63,29 +62,8 @@ def _find_window_clip() -> str | None:
                 continue
 
             window_id = window_ids[-1]
-            subprocess.run(
-                ["xdotool", "windowmove", window_id, "0", "0"],
-                env=env,
-                timeout=2,
-            )
-            time.sleep(0.2)
-
-            geo_result = subprocess.run(
-                ["xdotool", "getwindowgeometry", "--shell", window_id],
-                capture_output=True,
-                text=True,
-                timeout=2,
-                env=env,
-            )
-            geo = {}
-            for line in geo_result.stdout.strip().split("\n"):
-                if "=" in line:
-                    k, v = line.split("=", 1)
-                    geo[k] = v
-            if "WIDTH" in geo and "HEIGHT" in geo:
-                clip = f"{geo['WIDTH']}x{geo['HEIGHT']}+0+0"
-                _log(f"Emulator window detected: {clip}")
-                return clip
+            _log(f"Emulator window detected: {window_id}")
+            return window_id
         except Exception as e:
             _log(f"Window detection failed: {e}")
         time.sleep(0.5)
@@ -118,18 +96,18 @@ def start_display() -> None:
 
 
 def start_capture() -> None:
-    """Start x11vnc, clipping to the emulator window (no black borders)."""
+    """Start x11vnc, streaming only the emulator window by its ID."""
     global _x11vnc_process
 
     if _x11vnc_process is not None:
         _kill_process(_x11vnc_process, "x11vnc")
         _x11vnc_process = None
 
-    clip_arg = _find_window_clip()
+    window_id = _find_window_id()
 
     cmd = ["x11vnc", "-display", DISPLAY, "-forever", "-nopw", "-shared"]
-    if clip_arg:
-        cmd += ["-clip", clip_arg]
+    if window_id:
+        cmd += ["-id", window_id]
     else:
         _log("Could not detect emulator window, serving full display")
 
