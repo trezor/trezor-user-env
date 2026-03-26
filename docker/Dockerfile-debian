@@ -46,10 +46,16 @@ COPY ./.python-version /trezor-user-env/
 # Install dependencies with uv (it will create .venv automatically)
 RUN uv sync
 
+# Copy firmware downloader scripts separately so release emulator downloads can stay cached
+RUN mkdir -p /trezor-user-env/src/binaries/firmware/bin
+COPY ./src/binaries/firmware/bin/ /trezor-user-env/src/binaries/firmware/bin/
+RUN uv run python ./src/binaries/firmware/bin/download.py releases
+
 # Copy the rest of the files
 COPY ./ /trezor-user-env
 
-RUN ./src/binaries/firmware/bin/download.sh
+ARG EMULATOR_NIGHTLY_CACHE_BUST=static
+RUN echo "Nightly cache key: ${EMULATOR_NIGHTLY_CACHE_BUST}" >/dev/null && uv run python ./src/binaries/firmware/bin/download.py nightly
 RUN ./src/binaries/trezord-go/bin/download.sh
 RUN ./src/binaries/node-bridge/download.sh
 # Patch emulator binaries
