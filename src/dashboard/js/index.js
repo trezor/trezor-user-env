@@ -47,6 +47,7 @@ const app = createApp({
                 screenshotMode: false,
                 animations: false,
                 outputToLogfile: false,
+                vncActive: false,
                 status: "unknown",
                 statusColor: "black",
             },
@@ -192,6 +193,12 @@ const app = createApp({
             }
 
             this.logEvent(`Response received: ${event.data}`, color);
+
+            // Show inline VNC viewer when emulator starts
+            if (dataObject.emulator_started) {
+                this.emulators.vncActive = true;
+                this.$nextTick(() => this.reloadVnc());
+            }
 
             // Filling the possible options for the emulators/bridges
             if (dataObject.type === "client") {
@@ -509,7 +516,24 @@ const app = createApp({
                 type: "emulator-allow-unsafe-paths",
             });
         },
+        reloadVnc() {
+            const iframe = document.getElementById("vnc-iframe");
+            if (iframe) {
+                iframe.src = iframe.src;
+            }
+        },
+        openVncPopup() {
+            const w = 350;
+            const h = 666;
+            const left = (screen.width - w) / 2;
+            const top = (screen.height - h) / 2;
+            const popup = window.open("about:blank", "novnc-viewer", `popup=yes,width=${w},height=${h},left=${left},top=${top}`);
+            if (popup) {
+                popup.location.href = "http://localhost:6080/vnc_embed.html";
+            }
+        },
         emulatorStop() {
+            this.emulators.vncActive = false;
             this.sendMessage({
                 type: "emulator-stop",
             });

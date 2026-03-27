@@ -30,6 +30,7 @@ from trezorlib.transport.udp import UdpTransport
 import binaries
 import bridge
 import helpers
+import vnc
 
 # TODO: consider creating a class from this module to avoid these globals
 VERSION_RUNNING: str | None = None
@@ -277,7 +278,16 @@ def start(
             f"killing the already running one - {VERSION_RUNNING}",
             "red",
         )
-        stop()
+        # Only stop the emulator process, not VNC — start_display() will
+        # restart VNC cleanly, and stop() would cause port conflicts
+        # when VNC is immediately restarted.
+        assert EMULATOR.process is not None
+        emu_pid = EMULATOR.process.pid
+        EMULATOR.stop()
+        log(f"Emulator killed. PID: {emu_pid}.")
+        EMULATOR = None
+        VERSION_RUNNING = None
+        MODEL_RUNNING = None
 
     # Conditionally redirecting the output to a logfile instead of terminal/stdout
     if output_to_logfile:
@@ -309,6 +319,9 @@ def start(
     if wipe and EMULATOR.storage.exists():
         EMULATOR.storage.unlink()
 
+    vnc.start_display()
+    vnc.setup_env()
+
     try:
         EMULATOR.start()
         MODEL_RUNNING = model
@@ -322,6 +335,8 @@ def start(
 
     # Verifying if the emulator is really running
     time.sleep(0.5)
+
+    vnc.start_capture()
     assert EMULATOR.process is not None
     if EMULATOR.process.poll() is not None:
         EMULATOR = None
@@ -369,6 +384,8 @@ def stop() -> None:
         EMULATOR = None
         VERSION_RUNNING = None
         MODEL_RUNNING = None
+
+    vnc.stop()
 
 
 def get_current_screen() -> str:

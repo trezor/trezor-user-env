@@ -221,7 +221,7 @@ class ResponseGetter:
             if wipe:
                 response_text += " and wiped to be empty"
 
-            return {"response": response_text}
+            return {"response": response_text, "emulator_started": True}
         elif self.command == "emulator-start-from-url":
             url = self.request_dict["url"]
             model = self.request_dict["model"]
@@ -249,7 +249,7 @@ class ResponseGetter:
             response_text = f"Emulator downloaded from {url} and started"
             if wipe:
                 response_text += " and wiped to be empty"
-            return {"response": response_text}
+            return {"response": response_text, "emulator_started": True}
         elif self.command == "emulator-start-from-branch":
             branch = self.request_dict["branch"]
             model = self.request_dict["model"]
@@ -279,7 +279,7 @@ class ResponseGetter:
             response_text = f"Emulator downloaded from branch {branch} and started"
             if wipe:
                 response_text += " and wiped to be empty"
-            return {"response": response_text}
+            return {"response": response_text, "emulator_started": True}
         elif self.command == "emulator-stop":
             emulator.stop()
             return {"response": "Emulator stopped"}
