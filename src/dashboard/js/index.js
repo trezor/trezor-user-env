@@ -195,11 +195,7 @@ const app = createApp({
             this.logEvent(`Response received: ${event.data}`, color);
 
             // Show inline VNC viewer when emulator starts
-            if (
-                "response" in dataObject &&
-                typeof dataObject.response === 'string' &&
-                dataObject.response.includes("EM_DEVICE_STARTED")
-            ) {
+            if (dataObject.emulator_started) {
                 this.emulators.vncActive = true;
                 this.$nextTick(() => this.reloadVnc());
             }
