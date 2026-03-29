@@ -36,8 +36,27 @@
         function connect() {
             const rfb = new RFB(document.getElementById('screen'), url);
             rfb.scaleViewport = true;
-            rfb.resizeSession = true;
+            rfb.resizeSession = false;
             rfb.background = "gray";
+
+            // once connected, resize the popup to match the remote desktop
+            rfb.addEventListener('connect', () => {
+                // wait for the first frame so the canvas has real dimensions
+                setTimeout(() => {
+                    const canvas = document.querySelector('#screen canvas');
+                    if (canvas && window.opener) {
+                        const w = canvas.width;
+                        const h = canvas.height;
+                        if (w > 0 && h > 0) {
+                            window.resizeTo(
+                                w + (window.outerWidth - window.innerWidth),
+                                h + (window.outerHeight - window.innerHeight),
+                            );
+                        }
+                    }
+                }, 250);
+            });
+
             rfb.addEventListener('disconnect', () => {
                 setTimeout(connect, 1000);
             });

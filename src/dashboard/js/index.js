@@ -406,8 +406,13 @@ const app = createApp({
                     `Running - ${status.version}`,
                     "green"
                 );
+                if (!this.emulators.vncActive) {
+                    this.emulators.vncActive = true;
+                    this.$nextTick(() => this.reloadVnc());
+                }
             } else {
                 this.writeEmulatorStatus("Stopped", "red");
+                this.emulators.vncActive = false;
             }
         },
         reflectTropicSituation(status) {
