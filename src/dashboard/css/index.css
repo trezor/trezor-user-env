@@ -227,3 +227,33 @@ hr {
     padding: 10px 0;
     z-index: 1000;
 }
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        color-scheme: dark;
+    }
+
+    html,
+    body {
+        color: #a0a4ac;
+        background: #0c0d0e;
+    }
+
+    section,
+    .popup-content,
+    #ws-status div {
+        background-color: #151719;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4 {
+        color: #e6e7e9;
+    }
+
+    input,
+    select {
+        background-color: #252628;
+    }
+}

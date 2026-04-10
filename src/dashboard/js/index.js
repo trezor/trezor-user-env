@@ -169,7 +169,7 @@ const app = createApp({
                 return;
             }
 
-            let color = "black";
+            let color;
             if ("success" in dataObject) {
                 if (dataObject.success) {
                     color = "green";
@@ -550,7 +550,7 @@ const app = createApp({
                 address: this.regtest.sendAddress,
             });
         },
-        logEvent(text, color = "black") {
+        logEvent(text, color) {
             const newLog = {
                 text: `${currentTime()} - ${text}`,
                 color,
