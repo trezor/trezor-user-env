@@ -91,6 +91,15 @@
     - **shares**: `int` (default=1)
     - **threshold**: `int` (default=1)
 
+- **emulator-read-and-confirm-atomic-shamir-mnemonic**
+  - **action**: simulates the atomic Shamir backup process (e.g. for T3W1) where the device starts at the share-number picker screen
+  - **arguments**:
+    - **shares**: `int` (default=1)
+    - **threshold**: `int` (default=1)
+
+- **emulator-read-and-confirm-single-shamir-mnemonic**
+  - **action**: simulates the SLIP-39 Single-share Shamir backup process (Backup Type 3) which directly starts with the 20-word backup screen
+
 - **emulator-allow-unsafe-paths**
   - **action**: allow unsafe path on emulator
 
