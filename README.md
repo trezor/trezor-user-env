@@ -26,7 +26,7 @@ Supported platforms are Linux and macOS (both Intel and Silicon).
 
 1. Clone this repo and enter the directory
 2. Run `./run.sh` - it will determine your platform and launch trezor-user-env. See `./run.sh --help` for some additional arguments.
-3. Open http://localhost:9002. The emulator display is available via the browser-based VNC viewer embedded in the dashboard, or via a VNC client at `localhost:5900`.
+3. Open http://localhost:9002. The emulator display is available via the browser-based VNC viewer embedded in the dashboard, or via a VNC client at `localhost:15900`.
 
 ```
 git clone https://github.com/trezor/trezor-user-env.git

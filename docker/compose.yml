@@ -21,7 +21,7 @@ services:
       - "9002:9002"
       - "21325:21325" # legacy bridge port
       - "21328:21328" # new bridge port
-      - "5900:5900"   # VNC port (when using VNC instead of X11)
+      - "15900:5900"  # VNC port (using 15900 to avoid conflicts with local VNC servers)
       - "6080:6080"   # noVNC web viewer port
     environment:
       - REGTEST_RPC_URL=http://host.docker.internal:18021
