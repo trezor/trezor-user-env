@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useWebSocket } from './hooks/useWebSocket';
 import { Notification } from './components/Notification';
+import { Sidebar } from './components/Sidebar';
 import { BridgeSection } from './components/BridgeSection';
 import { TropicSection } from './components/TropicSection';
 import { EmulatorSection } from './components/EmulatorSection';
@@ -600,70 +601,76 @@ function App(): React.ReactElement {
         </div>
       )}
 
-      <div className="sections-container">
-        <BridgeSection
-          bridges={bridges}
-          setBridges={setBridges}
-          onStart={bridgeStart}
-          onStop={bridgeStop}
-        />
+      <div className="app-layout">
+        <Sidebar emulators={emulators} />
 
-        <TropicSection
-          tropic={tropic}
-          setTropic={setTropic}
-          onStart={tropicStart}
-          onStop={tropicStop}
-        />
+        <main className="app-main">
+          <div className="sections-container">
+            <BridgeSection
+              bridges={bridges}
+              setBridges={setBridges}
+              onStart={bridgeStart}
+              onStop={bridgeStop}
+            />
 
-        <EmulatorSection
-          emulators={emulators}
-          setEmulators={setEmulators}
-          emulatorUrl={emulatorUrl}
-          setEmulatorUrl={setEmulatorUrl}
-          emulatorBranch={emulatorBranch}
-          setEmulatorBranch={setEmulatorBranch}
-          emulatorDownloadMessage={emulatorDownloadMessage}
-          onStart={emulatorStart}
-          onStartFromUrl={emulatorStartFromUrl}
-          onStartFromBranch={emulatorStartFromBranch}
-          onStop={emulatorStop}
-        />
+            <TropicSection
+              tropic={tropic}
+              setTropic={setTropic}
+              onStart={tropicStart}
+              onStop={tropicStop}
+            />
 
-        <EmulatorCommandsSection
-          emulatorCommands={emulatorCommands}
-          setEmulatorCommands={setEmulatorCommands}
-          enablePassphrase={enablePassphrase}
-          setEnablePassphrase={setEnablePassphrase}
-          onWipe={emulatorWipe}
-          onPressYes={emulatorPressYes}
-          onPressNo={emulatorPressNo}
-          onSetup={emulatorSetup}
-          onResetDevice={emulatorResetDevice}
-          onResetDeviceShamir={emulatorResetDeviceShamir}
-          onReadAndConfirmMnemonic={readAndConfirmMnemonic}
-          onAllowUnsafe={emulatorAllowUnsafe}
-          onReadAndConfirmMnemonicShamir={readAndConfirmMnemonicShamir}
-          onSetBackupState={emulatorSetBackupState}
-          onGetFeatures={emulatorGetFeatures}
-        />
+            <EmulatorSection
+              emulators={emulators}
+              setEmulators={setEmulators}
+              emulatorUrl={emulatorUrl}
+              setEmulatorUrl={setEmulatorUrl}
+              emulatorBranch={emulatorBranch}
+              setEmulatorBranch={setEmulatorBranch}
+              emulatorDownloadMessage={emulatorDownloadMessage}
+              onStart={emulatorStart}
+              onStartFromUrl={emulatorStartFromUrl}
+              onStartFromBranch={emulatorStartFromBranch}
+              onStop={emulatorStop}
+            />
 
-        <RegtestSection
-          regtest={regtest}
-          setRegtest={setRegtest}
-          onMine={regtestMine}
-          onSend={regtestSend}
-        />
+            <EmulatorCommandsSection
+              emulatorCommands={emulatorCommands}
+              setEmulatorCommands={setEmulatorCommands}
+              enablePassphrase={enablePassphrase}
+              setEnablePassphrase={setEnablePassphrase}
+              onWipe={emulatorWipe}
+              onPressYes={emulatorPressYes}
+              onPressNo={emulatorPressNo}
+              onSetup={emulatorSetup}
+              onResetDevice={emulatorResetDevice}
+              onResetDeviceShamir={emulatorResetDeviceShamir}
+              onReadAndConfirmMnemonic={readAndConfirmMnemonic}
+              onAllowUnsafe={emulatorAllowUnsafe}
+              onReadAndConfirmMnemonicShamir={readAndConfirmMnemonicShamir}
+              onSetBackupState={emulatorSetBackupState}
+              onGetFeatures={emulatorGetFeatures}
+            />
 
-        <ServerSection
-          server={server}
-          setServer={setServer}
-          onSendCommand={sendServerCommand}
-          onPing={ping}
-          onExit={exit}
-          onCloseWebsocket={closeWebsocket}
-        />
+            <RegtestSection
+              regtest={regtest}
+              setRegtest={setRegtest}
+              onMine={regtestMine}
+              onSend={regtestSend}
+            />
 
-        <EventLogSection logs={logs} />
+            <ServerSection
+              server={server}
+              setServer={setServer}
+              onSendCommand={sendServerCommand}
+              onPing={ping}
+              onExit={exit}
+              onCloseWebsocket={closeWebsocket}
+            />
+
+            <EventLogSection logs={logs} />
+          </div>
+        </main>
       </div>
     </div>
   );

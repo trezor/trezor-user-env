@@ -437,6 +437,194 @@ hr {
     }
 }
 
+/* App layout */
+
+#root {
+    display: flex;
+    height: 100%;
+    min-height: 100vh;
+}
+
+.app-layout {
+    display: flex;
+    width: 100%;
+    min-height: 100vh;
+}
+
+.app-main {
+    flex: 1;
+    overflow-y: auto;
+    min-width: 0;
+}
+
+/* Sidebar */
+
+.sidebar {
+    display: flex;
+    flex-direction: column;
+    background-color: var(--bg-primary);
+    border-right: 1px solid var(--border-color);
+    height: 100vh;
+    position: sticky;
+    top: 0;
+    flex-shrink: 0;
+    transition: width 0.2s ease;
+    overflow: hidden;
+}
+
+.sidebar--expanded {
+    width: 260px;
+}
+
+.sidebar--collapsed {
+    width: 56px;
+}
+
+.sidebar-device-header {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-md);
+    border-bottom: 1px solid var(--border-color);
+    /* Prevent the header row from overflowing */
+    overflow: hidden;
+}
+
+.sidebar-device-icon {
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/*
+ * Key fix for truncation:
+ * flex: 1 lets this grow/shrink within the row while min-width: 0 overrides
+ * the default min-width: auto that prevents text from shrinking in flex items.
+ * Without min-width: 0 the text would overflow the container instead of
+ * being clipped and ellipsis would never appear.
+ */
+.sidebar-device-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.sidebar-device-name {
+    font-weight: 600;
+    font-size: var(--font-size-sm);
+    color: var(--text-primary);
+    /* Truncate long device names with ellipsis */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: block;
+}
+
+.sidebar-device-status {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    font-size: var(--font-size-xs);
+    color: var(--text-secondary);
+    /* Prevent status text from wrapping or overflowing */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.sidebar-device-status--connected {
+    color: var(--success);
+}
+
+.sidebar-device-status-icon {
+    flex-shrink: 0;
+}
+
+/*
+ * Key fix for chevron visibility:
+ * flex-shrink: 0 prevents the button from being squeezed out of view when the
+ * device-info text grows. The chevron is always fully visible regardless of
+ * how wide (or narrow) the sidebar is.
+ * margin-left: auto pushes it to the far right of the header row.
+ */
+.sidebar-toggle {
+    flex-shrink: 0;
+    margin-left: auto;
+    background: none;
+    border: none;
+    min-width: unset;
+    width: 28px;
+    height: 28px;
+    padding: 4px;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-sm);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.sidebar-toggle:hover {
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+    transform: none;
+    box-shadow: none;
+}
+
+.sidebar-toggle:active {
+    transform: none;
+    box-shadow: none;
+}
+
+.sidebar-chevron {
+    transition: transform 0.2s ease;
+    transform: rotate(0deg);
+}
+
+.sidebar-chevron--expanded {
+    transform: rotate(180deg);
+}
+
+.sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    padding: var(--spacing-sm);
+}
+
+.sidebar-nav-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: all 0.2s ease;
+    /* Prevent nav item text from overflowing */
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.sidebar-nav-item:hover {
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+    text-decoration: none;
+}
+
+.sidebar-nav-item svg {
+    flex-shrink: 0;
+}
+
 /* Utility Classes */
 
 a {
@@ -458,6 +646,10 @@ a:hover {
 
     .popup-content {
         max-width: calc(100% - var(--spacing-lg));
+    }
+
+    .sidebar--expanded {
+        width: 200px;
     }
 }
 
@@ -488,5 +680,40 @@ a:hover {
     input,
     select {
         background-color: #252628;
+    }
+
+    .sidebar {
+        background-color: #151719;
+        border-right-color: #2a2b2e;
+    }
+
+    .sidebar-device-header {
+        border-bottom-color: #2a2b2e;
+    }
+
+    .sidebar-device-name {
+        color: #e6e7e9;
+    }
+
+    .sidebar-device-status {
+        color: #a0a4ac;
+    }
+
+    .sidebar-toggle {
+        color: #a0a4ac;
+    }
+
+    .sidebar-toggle:hover {
+        background-color: #252628;
+        color: #e6e7e9;
+    }
+
+    .sidebar-nav-item {
+        color: #a0a4ac;
+    }
+
+    .sidebar-nav-item:hover {
+        background-color: #252628;
+        color: #e6e7e9;
     }
 }
