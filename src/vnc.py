@@ -10,6 +10,7 @@ from __future__ import annotations
 import os
 import subprocess
 import time
+from pathlib import Path
 from subprocess import DEVNULL
 
 from psutil import Popen
@@ -18,6 +19,25 @@ import helpers
 
 DISPLAY = ":42"
 NOVNC_URL = "http://localhost:6080/vnc_embed.html"
+
+# Directory containing noVNC web files (index.html, vnc_embed.html, etc.)
+_NOVNC_SEARCH_PATHS = [
+    "/usr/share/novnc",  # Debian/Docker
+    "/usr/share/noVNC",  # some distros
+    "/usr/share/webapps/novnc",  # Arch
+]
+
+
+def _find_novnc_web() -> str | None:
+    """Locate the noVNC web directory."""
+    env_path = os.environ.get("NOVNC_WEB")
+    if env_path and Path(env_path).is_dir():
+        return env_path
+    for p in _NOVNC_SEARCH_PATHS:
+        if Path(p).is_dir():
+            return p
+    return None
+
 
 _xvfb_process: Popen | None = None
 _x11vnc_process: Popen | None = None
@@ -86,9 +106,17 @@ def start_display() -> None:
     )
     time.sleep(0.5)
 
-    _log("Starting websockify + noVNC web viewer...")
+    novnc_web = _find_novnc_web()
+    websockify_cmd = ["websockify", "6080", "localhost:5900"]
+    if novnc_web:
+        websockify_cmd.insert(1, f"--web={novnc_web}")
+        _log(f"Starting websockify + noVNC web viewer (web root: {novnc_web})...")
+    else:
+        _log(
+            "Starting websockify (noVNC web files not found, VNC client still works)..."
+        )
     _websockify_process = Popen(
-        ["websockify", "--web=/usr/share/novnc", "6080", "localhost:5900"],
+        websockify_cmd,
         stdout=DEVNULL,
         stderr=DEVNULL,
     )

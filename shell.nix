@@ -4,12 +4,21 @@ let
   nixpkgsSha256 = "09nbk2q4w3v8x3v4r2y2s7v3nk8n4wqzxgykkp7na9bhijry2zla";
 
   nixpkgsUrl = "https://github.com/NixOS/nixpkgs/archive/${nixpkgsCommit}.tar.gz";
+
+  pkgs = import
+    (builtins.fetchTarball {
+      url = nixpkgsUrl;
+      sha256 = nixpkgsSha256;
+    }) { };
+
+  novnc = pkgs.fetchFromGitHub {
+    owner = "novnc";
+    repo = "noVNC";
+    rev = "v1.5.0";
+    sha256 = "sha256-3Q87bYsC824/8A85Kxdqlm+InuuR/D/HjVrYTJZfE9Y=";
+  };
 in
-with import
-  (builtins.fetchTarball {
-    url = nixpkgsUrl;
-    sha256 = nixpkgsSha256;
-  }) { };
+with pkgs;
 stdenv.mkDerivation {
   name = "trezor-user-env-controller";
   buildInputs = [
@@ -19,10 +28,25 @@ stdenv.mkDerivation {
     SDL2
     SDL2_image
     xorg.xhost
+    xorg.xorgserver # Xvfb
+    x11vnc
+    xdotool
+    python311Packages.websockify
     wget
     git
     curl
     nodejs # for node bridge
     procps
   ];
+  shellHook = ''
+    # Build a writable noVNC web root with our custom viewer
+    NOVNC_LOCAL="$PWD/.novnc"
+    if [ ! -d "$NOVNC_LOCAL/core" ]; then
+      mkdir -p "$NOVNC_LOCAL"
+      ln -sf ${novnc}/core "$NOVNC_LOCAL/core"
+      ln -sf ${novnc}/vendor "$NOVNC_LOCAL/vendor"
+      cp "$PWD/src/vnc_embed.html" "$NOVNC_LOCAL/vnc_embed.html"
+    fi
+    export NOVNC_WEB="$NOVNC_LOCAL"
+  '';
 }
