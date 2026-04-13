@@ -26,4 +26,8 @@ test:
 test_with_running_controller:
 	pytest -s --controller-already-runs
 
-.PHONY: check style_check style code_check test test_with_running_controller
+build_dashboard:
+	@echo [DASHBOARD BUILD]
+	@cd src/dashboard && npm install && npm run build
+
+.PHONY: check style_check style code_check test test_with_running_controller build_dashboard

@@ -13,7 +13,7 @@ import helpers
 
 IP = "0.0.0.0"
 PORT = 9002
-HTML_DIR = Path(__file__).parent.parent / "src" / "dashboard"
+HTML_DIR = Path(__file__).parent.parent / "src" / "dashboard" / "dist"
 LOG_COLOR = "yellow"
 
 

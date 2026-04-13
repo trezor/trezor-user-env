@@ -11,3 +11,5 @@ docker/compose.yml
 **/.pytest_cache
 .venv
 venv
+src/dashboard/node_modules
+src/dashboard/dist
