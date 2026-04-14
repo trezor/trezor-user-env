@@ -295,6 +295,11 @@ class ResponseGetter:
         elif self.command == "emulator-press-yes":
             emulator.press_yes()
             return {"response": "Pressed YES"}
+        elif self.command == "emulator-press-yes-multiple":
+            count = self.request_dict.get("count", 1)
+            delay = self.request_dict.get("delay", 0.1)
+            emulator.press_yes_multiple(count=count, delay=delay)
+            return {"response": f"Pressed YES {count} times"}
         elif self.command == "emulator-press-no":
             emulator.press_no()
             return {"response": "Pressed NO"}

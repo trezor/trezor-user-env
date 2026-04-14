@@ -68,6 +68,12 @@
 - **emulator-press-yes**
   - **action**: press yes button on the emulator
 
+- **emulator-press-yes-multiple**
+  - **action**: press the yes button multiple times with a delay between presses
+  - **arguments**:
+    - **count**: `int` (default=1)
+    - **delay**: `float` (default=0.1)
+
 - **emulator-press-no**
   - **action**: press no button on the emulator
 

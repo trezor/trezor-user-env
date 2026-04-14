@@ -545,6 +545,17 @@ def press_yes() -> None:
         debug.press_yes()
 
 
+def press_yes_multiple(count: int, delay: float = 0.1) -> None:
+    try:
+        with connect_to_debuglink() as debug:
+            for _ in range(count):
+                debug.press_yes()
+                if delay > 0:
+                    time.sleep(delay)
+    except Exception as e:
+        log(f"Error when pressing YES multiple times: {repr(e)}", "red")
+
+
 def press_no() -> None:
     with connect_to_debuglink() as debug:
         debug.press_no()
