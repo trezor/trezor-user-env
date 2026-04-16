@@ -273,6 +273,22 @@
 
                 <button class="negative" @click="emulatorStop();">Stop</button>
             </section>
+
+            <section v-if="emulators.vncActive" class="vnc-viewer">
+                <div class="vnc-toolbar">
+                    <h3>Device Display (VNC)</h3>
+                    <div>
+                        <button @click="reloadVnc();">Reload</button>
+                        <button @click="openVncPopup();">Open in popup</button>
+                    </div>
+                </div>
+                <iframe
+                    id="vnc-iframe"
+                    src="http://localhost:6080/vnc_embed.html"
+                    class="vnc-iframe"
+                ></iframe>
+            </section>
+
             <section>
                 <h3>Emulator commands</h3>
                 <div class="explain-note">
