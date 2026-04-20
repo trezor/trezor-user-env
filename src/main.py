@@ -8,6 +8,7 @@ import controller
 import dashboard
 import emulator
 import helpers
+import mcp_server
 import tropic_model
 
 
@@ -15,6 +16,7 @@ def cleanup() -> None:
     emulator.stop()
     bridge.stop()
     tropic_model.stop()
+    mcp_server.stop()
 
 
 atexit.register(cleanup)
@@ -47,6 +49,7 @@ if __name__ == "__main__":
 
     binaries.explore(args)
     dashboard.start()
+    mcp_server.start()
 
     if helpers.physical_trezor():
         log("Will support physical Trezor.")

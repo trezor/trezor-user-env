@@ -1,0 +1,11 @@
+[project]
+name = "trezor-emulator-mcp"
+version = "0.0.1"
+description = "MCP server for controlling the Trezor emulator"
+requires-python = ">=3.11"
+dependencies = [
+    "mcp>=1.0.0",
+    "websockets>=12.0",
+    "pillow>=10.0.0",
+    "vncdotool>=1.2.0",
+]
