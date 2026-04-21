@@ -519,11 +519,8 @@ def reset_device(
 
 
 def press_yes() -> None:
-    try:
-        with connect_to_debuglink() as debug:
-            debug.press_yes()
-    except Exception as e:
-        log(f"Error when pressing YES: {repr(e)}", "red")
+    with connect_to_debuglink() as debug:
+        debug.press_yes()
 
 
 def press_no() -> None:
