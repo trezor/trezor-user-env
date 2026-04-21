@@ -3,6 +3,7 @@ from __future__ import annotations
 import base64
 import os
 import re
+import shelve
 import stat
 import sys
 import threading
@@ -23,9 +24,13 @@ from trezorlib.client import TrezorClient, get_default_client
 from trezorlib.debuglink import DebugLink, TrezorTestContext
 from trezorlib.exceptions import TrezorFailure
 from trezorlib.messages import (
+    DebugLinkN4W1Connected,
+    DebugLinkN4W1Read,
+    DebugLinkN4W1Response,
+    DebugLinkN4W1Write,
     Features,
-    protobuf,
     Success,
+    protobuf,
 )
 from trezorlib.transport import Transport
 from trezorlib.transport.bridge import BridgeTransport
@@ -45,6 +50,9 @@ ROOT_DIR = Path(__file__).resolve().parent.parent
 
 SCREEN_DIR = ROOT_DIR / "logs/screens"
 SCREEN_DIR.mkdir(exist_ok=True)
+
+N4W1_DIR = ROOT_DIR / "n4w1"
+N4W1_DIR.mkdir(exist_ok=True)
 
 # When communicating with device via bridge/debuglink, this sleep is required
 #   otherwise there may appear weird race conditions in communications.
@@ -1420,6 +1428,35 @@ def set_for_backup() -> None:
 
     thread = threading.Thread(target=to_call, daemon=True)
     thread.start()
+
+
+def n4w1_tap(tag_id: str) -> bool:
+    with shelve.open(N4W1_DIR / tag_id) as db:
+        with connect_to_debuglink(needs_udp=True) as debug:
+            req = debug._call(DebugLinkN4W1Connected())
+            while not isinstance(req, Success):
+                log(f"Received N4W1 request: {response_dict(req)}")
+                value = None
+                if isinstance(req, DebugLinkN4W1Write):
+                    if req.key is not None:
+                        value = db.pop(req.key, None)
+                        db[req.key] = req.value
+                elif isinstance(req, DebugLinkN4W1Read):
+                    if req.key is not None:
+                        value = db.get(req.key, None)
+                else:
+                    raise NotImplementedError(req)
+
+                resp = DebugLinkN4W1Response(value=value)
+                log(f"Responding to N4W1 request: {response_dict(resp)}")
+                req = debug._call(resp)
+            return True
+
+
+def n4w1_clear(tag_id: str) -> bool:
+    with shelve.open(N4W1_DIR / tag_id) as db:
+        db.clear()
+        return True
 
 
 # For testing/debugging purposes

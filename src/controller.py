@@ -380,6 +380,12 @@ class ResponseGetter:
         elif self.command == "emulator-get-features":
             features = emulator.get_features_serialized()
             return {"response": features}
+        elif self.command == "emulator-n4w1-tap":
+            response = emulator.n4w1_tap(tag_id=str(self.request_dict["tag_id"]))
+            return {"response": response}
+        elif self.command == "emulator-n4w1-clear":
+            response = emulator.n4w1_clear(tag_id=str(self.request_dict["tag_id"]))
+            return {"response": response}
         else:
             return {
                 "success": False,
