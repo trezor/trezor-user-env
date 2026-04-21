@@ -20,9 +20,13 @@ from psutil import Popen
 from trezorlib import debuglink, device, messages, models
 from trezorlib._internal.emulator import CoreEmulator, LegacyEmulator
 from trezorlib.client import TrezorClient, get_default_client
-from trezorlib.debuglink import DebugLink, TrezorClientDebugLink
+from trezorlib.debuglink import DebugLink, TrezorTestContext
 from trezorlib.exceptions import TrezorFailure
-from trezorlib.messages import Features, protobuf
+from trezorlib.messages import (
+    Features,
+    protobuf,
+    Success,
+)
 from trezorlib.transport import Transport
 from trezorlib.transport.bridge import BridgeTransport
 from trezorlib.transport.udp import UdpTransport
@@ -405,13 +409,12 @@ def get_current_screen() -> str:
 
 
 @contextmanager
-def connect_to_client() -> Generator[TrezorClientDebugLink, None, None]:
+def connect_to_client() -> Generator[TrezorTestContext, None, None]:
     """Connect to the emulator and yield a client instance.
     Disconnect after the action is done.
     """
-    cli = TrezorClientDebugLink(get_device())
+    client = TrezorTestContext(get_device())
 
-    client = cli.get_new_client()
     time.sleep(SLEEP)
 
     # Needs to be done because some older emulators require this explicitly
@@ -425,7 +428,6 @@ def connect_to_client() -> Generator[TrezorClientDebugLink, None, None]:
     finally:
         if watch_layout:
             client.watch_layout(False)
-        client.close_transport()
 
 
 @contextmanager
