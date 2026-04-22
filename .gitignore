@@ -1,5 +1,6 @@
 .DS_Store
 .idea
+.venv
 src/binaries/firmware/repo
 src/binaries/trezord-go/repo
 __pycache__
@@ -18,6 +19,7 @@ channel_data.json
 docker/version.txt
 logs/*.log
 logs/screens
+logs/mcp-screenshots
 trezor-suite
 .model_config_save.yaml
 .novnc

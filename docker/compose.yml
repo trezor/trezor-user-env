@@ -11,6 +11,7 @@ services:
     volumes:
       - ./../trezor-suite:/trezor-user-env/trezor-suite
       - ./../logs/screens:/trezor-user-env/logs/screens
+      - ./../logs/mcp-screenshots:/trezor-user-env/logs/mcp-screenshots
       - ./../src/binaries/firmware/bin/user_downloaded:/trezor-user-env/src/binaries/firmware/bin/user_downloaded
 
   trezor-user-env-mac:
@@ -23,12 +24,14 @@ services:
       - "21328:21328" # new bridge port
       - "15900:5900"  # VNC port (using 15900 to avoid conflicts with local VNC servers)
       - "6080:6080"   # noVNC web viewer port
+      - "9003:9003"   # MCP server port (SSE transport)
     environment:
       - REGTEST_RPC_URL=http://host.docker.internal:18021
       - MACOS=1  # Enable macOS-specific bridge configuration (excludes legacy 2.* bridges)
     volumes:
       - ./../trezor-suite:/trezor-user-env/trezor-suite
       - ./../logs/screens:/trezor-user-env/logs/screens
+      - ./../logs/mcp-screenshots:/trezor-user-env/logs/mcp-screenshots
       - ./../src/binaries/firmware/bin/user_downloaded:/trezor-user-env/src/binaries/firmware/bin/user_downloaded
 
   trezor-user-env-regtest:
