@@ -65,6 +65,7 @@ const app = createApp({
                 seed: "",
                 shamirShares: 3,
                 shamirThreshold: 2,
+                n4w1TagId: 1,
             },
             server: {
                 command: '{"type": "specify"}',
@@ -577,6 +578,18 @@ const app = createApp({
                 type: "regtest-send-to-address",
                 btc_amount: this.regtest.sendAmount,
                 address: this.regtest.sendAddress,
+            });
+        },
+        n4w1Tap() {
+            this.sendMessage({
+                type: "emulator-n4w1-tap",
+                tag_id: this.emulatorCommands.n4w1TagId.toString(),
+            });
+        },
+        n4w1Clear() {
+            this.sendMessage({
+                type: "emulator-n4w1-clear",
+                tag_id: this.emulatorCommands.n4w1TagId.toString(),
             });
         },
         logEvent(text, color) {

@@ -3,6 +3,7 @@ from __future__ import annotations
 import base64
 import os
 import re
+import shelve
 import stat
 import sys
 import threading
@@ -20,9 +21,17 @@ from psutil import Popen
 from trezorlib import debuglink, device, messages, models
 from trezorlib._internal.emulator import CoreEmulator, LegacyEmulator
 from trezorlib.client import TrezorClient, get_default_client
-from trezorlib.debuglink import DebugLink, TrezorClientDebugLink
+from trezorlib.debuglink import DebugLink, TrezorTestContext
 from trezorlib.exceptions import TrezorFailure
-from trezorlib.messages import Features, protobuf
+from trezorlib.messages import (
+    DebugLinkN4W1Connected,
+    DebugLinkN4W1Read,
+    DebugLinkN4W1Response,
+    DebugLinkN4W1Write,
+    Features,
+    Success,
+    protobuf,
+)
 from trezorlib.transport import Transport
 from trezorlib.transport.bridge import BridgeTransport
 from trezorlib.transport.udp import UdpTransport
@@ -41,6 +50,9 @@ ROOT_DIR = Path(__file__).resolve().parent.parent
 
 SCREEN_DIR = ROOT_DIR / "logs/screens"
 SCREEN_DIR.mkdir(exist_ok=True)
+
+N4W1_DIR = ROOT_DIR / "n4w1"
+N4W1_DIR.mkdir(exist_ok=True)
 
 # When communicating with device via bridge/debuglink, this sleep is required
 #   otherwise there may appear weird race conditions in communications.
@@ -405,13 +417,12 @@ def get_current_screen() -> str:
 
 
 @contextmanager
-def connect_to_client() -> Generator[TrezorClientDebugLink, None, None]:
+def connect_to_client() -> Generator[TrezorTestContext, None, None]:
     """Connect to the emulator and yield a client instance.
     Disconnect after the action is done.
     """
-    cli = TrezorClientDebugLink(get_device())
+    client = TrezorTestContext(get_device())
 
-    client = cli.get_new_client()
     time.sleep(SLEEP)
 
     # Needs to be done because some older emulators require this explicitly
@@ -425,7 +436,6 @@ def connect_to_client() -> Generator[TrezorClientDebugLink, None, None]:
     finally:
         if watch_layout:
             client.watch_layout(False)
-        client.close_transport()
 
 
 @contextmanager
@@ -1418,6 +1428,35 @@ def set_for_backup() -> None:
 
     thread = threading.Thread(target=to_call, daemon=True)
     thread.start()
+
+
+def n4w1_tap(tag_id: str) -> bool:
+    with shelve.open(N4W1_DIR / tag_id) as db:
+        with connect_to_debuglink(needs_udp=True) as debug:
+            req = debug._call(DebugLinkN4W1Connected())
+            while not isinstance(req, Success):
+                log(f"Received N4W1 request: {response_dict(req)}")
+                value = None
+                if isinstance(req, DebugLinkN4W1Write):
+                    if req.key is not None:
+                        value = db.pop(req.key, None)
+                        db[req.key] = req.value
+                elif isinstance(req, DebugLinkN4W1Read):
+                    if req.key is not None:
+                        value = db.get(req.key, None)
+                else:
+                    raise NotImplementedError(req)
+
+                resp = DebugLinkN4W1Response(value=value)
+                log(f"Responding to N4W1 request: {response_dict(resp)}")
+                req = debug._call(resp)
+            return True
+
+
+def n4w1_clear(tag_id: str) -> bool:
+    with shelve.open(N4W1_DIR / tag_id) as db:
+        db.clear()
+        return True
 
 
 # For testing/debugging purposes

@@ -57,6 +57,8 @@ commands_success = [
     {"type": "emulator-wipe"},
     {"type": "emulator-reset-device"},
     {"type": "emulator-get-debug-state"},
+    {"type": "emulator-n4w1-tap", "tag_id": "1"},
+    {"type": "emulator-n4w1-clear", "tag_id": "1"},
     {"type": "emulator-stop"},
     {"type": "bridge-stop"},
     {"type": "tropic-stop"},
