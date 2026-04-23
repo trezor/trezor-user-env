@@ -1,483 +1,856 @@
-<html>
+<!doctype html>
+<html lang="en" data-theme="dark">
     <head>
-        <title>Trezor Device Controller client</title>
+        <title>Trezor User Environment</title>
         <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="shortcut icon" href="static/favicon.ico" />
         <link rel="stylesheet" type="text/css" href="css/index.css" />
     </head>
 
     <body>
-        <div id="app" style="display: none">
+        <!--
+            Dashboard for trezor-user-env.
+            Structure maps 1:1 with docs/dashboard-overview.md (sections 1–13).
+        -->
+        <div id="app" style="display: none" :class="{ 'is-waiting': isWaitingForResponse }">
+
+            <!-- ========================================================
+                 §2 Error modal — blocking dialog for backend failures
+                 ======================================================== -->
             <div
                 v-if="notifications.showPopup"
                 id="notifications-popup"
-                class="popup"
+                class="error-modal"
                 @click="notifications.showPopup = false"
+                role="alertdialog"
+                aria-modal="true"
+                aria-labelledby="error-modal-title"
             >
-                <div
-                    :class="[
-                        'popup-content',
-                        'half-page-margins',
-                        {'red-border': notifications.isError},
-                        {'green-border': !notifications.isError}
-                    ]"
-                    @click.stop
-                >
-                    <span
-                        class="close-button"
-                        @click="notifications.showPopup = false"
-                        >&times;</span
-                    >
-                    <h1>{{ notifications.header }}</h1>
-                    <div style="font-size: xx-large">
-                        {{ notifications.text }}
+                <div class="error-modal-content" @click.stop>
+                    <span class="close-button" @click="notifications.showPopup = false" aria-label="Close">×</span>
+                    <h1 id="error-modal-title">{{ notifications.header }}</h1>
+                    <div class="error-modal-text">{{ notifications.text }}</div>
+                </div>
+            </div>
+
+
+            <!-- ========================================================
+                 SHELL
+                 ======================================================== -->
+            <div class="shell">
+
+                <!-- Top bar — spans full width -->
+                <div class="topbar">
+                    <div class="topbar-brand">
+                        <svg class="topbar-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 66">
+                            <path d="M158.104 20.017h26.741v7.037L170.302 46.76h14.543v8.288h-26.741V48.01l14.544-19.705h-14.544zm90.233 22.05c3.284-1.25 6.725-4.535 6.725-10.321 0-7.037-4.848-11.573-12.042-11.573H226.6v34.874h9.07V43.318h3.44l6.412 11.729H256zm-6.412-6.88h-6.255v-7.038h6.255c2.346 0 3.91 1.408 3.91 3.44 0 2.19-1.564 3.597-3.91 3.597M204.55 19.547c-10.634 0-18.14 7.663-18.14 17.984s7.662 17.984 18.14 17.984c10.477 0 18.297-7.663 18.297-17.984s-7.663-17.984-18.297-17.984m0 27.836c-5.317 0-8.914-4.066-8.914-9.852 0-5.943 3.597-9.852 8.914-9.852s9.07 4.066 9.07 9.852-3.753 9.852-9.07 9.852m-76.16-27.366h25.334v8.132H137.46v5.16h15.795v7.976H137.46v5.63h16.264v8.132H128.39zm-89.92-4.848C38.47 6.881 31.276 0 22.518 0S6.57 6.88 6.57 15.17v4.847H0v34.874l22.52 10.477 22.518-10.477V20.173H38.47zm-23.77 0c0-3.91 3.44-7.037 7.818-7.037s7.82 3.128 7.82 7.037v4.848H14.7zm21.267 34.092L22.52 55.516 9.07 49.261V28.305h26.898zm88.2-17.515c0-7.037-4.847-11.573-12.04-11.573H95.706v34.874h9.07V43.318h3.44l6.412 11.729h10.478l-7.663-12.98c3.284-1.25 6.725-4.535 6.725-10.321m-13.136 3.44h-6.255V28.15h6.255c2.346 0 3.91 1.408 3.91 3.44 0 2.19-1.564 3.597-3.91 3.597m-47.697-15.17h28.306v8.288h-9.696v26.742h-9.07V28.305h-9.54z"/>
+                        </svg>
+                        <span class="topbar-brand-sep"></span>
+                        <span class="topbar-brand-name">Emulator</span>
+                    </div>
+                    <div class="topbar-spacer"></div>
+                    <span v-if="isWaitingForResponse" class="topbar-spinner" title="Waiting for response…"></span>
+                    <div class="topbar-actions">
+                        <button class="btn btn--sm" @click="openFlyout('flyEmu')">
+                            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                            Emulator setup
+                        </button>
+                        <button v-if="emulators.vncActive" class="btn btn--sm btn--danger" @click="emulatorStop()">
+                            <svg viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="1"/></svg>
+                            Stop
+                        </button>
+                        <button v-else class="btn btn--sm btn--primary" @click="emulatorStart(selectedEmulatorModel)">
+                            <svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21"/></svg>
+                            Start emulator
+                        </button>
+                        <button class="btn btn--sm btn--icon btn--ghost topbar-theme" @click="toggleTheme()" :aria-label="theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'" :title="theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'">
+                            <svg v-if="theme === 'dark'" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="6.34" y2="6.34"/><line x1="17.66" y1="17.66" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="6.34" y2="17.66"/><line x1="17.66" y1="6.34" x2="19.78" y2="4.22"/></svg>
+                            <svg v-else viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                        </button>
                     </div>
                 </div>
-            </div>
 
-            <div class="waiting-for-response" v-if="isWaitingForResponse">
-                WAITING FOR RESPONSE (ignoring all inputs)
-            </div>
+                <!-- ========== SIDEBAR ========== -->
+                <aside class="sidebar">
 
-            <div v-if="!ws" id="ws-status">
-                <div>
-                    Websocket server not connected.
-                    <button @click="setupWebSocket()">Connect</button>
+
+                    <!-- §1 Connection state — only shown when WS is lost -->
+                    <div v-if="!ws && wsReconnecting" class="reconnect-state reconnect-state--retrying">
+                        <span class="topbar-spinner" style="width:12px;height:12px;border-width:1.5px;border-color:var(--amber);border-top-color:transparent"></span>
+                        <span>Reconnecting…</span>
+                    </div>
+                    <button
+                        v-else-if="!ws"
+                        class="btn btn--full reconnect-state reconnect-state--lost"
+                        @click="wsRetries = 0; setupWebSocket()"
+                    >Reconnect</button>
+
+                    <!-- Sidebar main header — mirrors .card-head h3 on the right -->
+                    <div class="sb-main-head">
+                        <h3>Control</h3>
+                    </div>
+
+                    <!-- Services -->
+                    <div class="sb-hd">
+                        <span>Services</span>
+                        <span class="sb-legend-tip">
+                            <span class="sb-legend-title">Dots show live service state</span>
+                            <span class="sb-legend-row"><span class="sb-legend-dot sb-legend-dot--ok"></span>running</span>
+                            <span class="sb-legend-row"><span class="sb-legend-dot sb-legend-dot--err"></span>stopped</span>
+                            <span class="sb-legend-row"><span class="sb-legend-dot sb-legend-dot--unk"></span>unknown</span>
+                        </span>
+                    </div>
+
+                    <!-- §4 Emulator -->
+                    <button :class="['sb-item', { 'sb-item--on': openFly === 'flyEmu' }]" @click="openFlyout('flyEmu')">
+                        <svg class="sb-item-icon" viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="3"/><line x1="10" y1="18" x2="14" y2="18"/></svg>
+                        <span class="sb-item-text">
+                            <span class="sb-item-label">Emulator</span>
+                            <span v-if="emulators.runningVersion" class="sb-item-version">{{ emulators.runningVersion }}</span>
+                        </span>
+                        <span
+                            :class="[
+                                'sb-item-dot',
+                                { 'sb-item-dot--ok':  emulators.statusColor === 'green' },
+                                { 'sb-item-dot--err': emulators.statusColor === 'red' },
+                                { 'sb-item-dot--unk': emulators.statusColor === 'black' }
+                            ]"
+                        ></span>
+                    </button>
+
+                    <!-- §3 Bridge -->
+                    <button :class="['sb-item', { 'sb-item--on': openFly === 'flyBrg' }]" @click="openFlyout('flyBrg')">
+                        <svg class="sb-item-icon" viewBox="0 0 24 24"><path d="M4 16 C4 12 8 9 12 9 C16 9 20 12 20 16"/><line x1="2" y1="16" x2="22" y2="16"/><line x1="12" y1="13" x2="12" y2="20"/></svg>
+                        <span class="sb-item-text">
+                            <span class="sb-item-label">Bridge</span>
+                            <span v-if="bridges.runningVersion" class="sb-item-version">{{ bridges.runningVersion }}</span>
+                        </span>
+                        <span
+                            :class="[
+                                'sb-item-dot',
+                                { 'sb-item-dot--ok':  bridges.statusColor === 'green' },
+                                { 'sb-item-dot--err': bridges.statusColor === 'red' },
+                                { 'sb-item-dot--unk': bridges.statusColor === 'black' }
+                            ]"
+                        ></span>
+                    </button>
+
+                    <!-- §5 Tropic Square — conditional on Safe 7 (T3W1) -->
+                    <button
+                        v-if="showTropicSection"
+                        :class="['sb-item', { 'sb-item--on': openFly === 'flyTropic' }]"
+                        @click="openFlyout('flyTropic')"
+                    >
+                        <svg class="sb-item-icon" viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="1"/><circle cx="12" cy="12" r="3"/></svg>
+                        <span class="sb-item-text">
+                            <span class="sb-item-label">Tropic Square</span>
+                            <span v-if="tropic.runningVersion" class="sb-item-version">{{ tropic.runningVersion }}</span>
+                        </span>
+                        <span
+                            :class="[
+                                'sb-item-dot',
+                                { 'sb-item-dot--ok':  tropic.statusColor === 'green' },
+                                { 'sb-item-dot--err': tropic.statusColor === 'red' },
+                                { 'sb-item-dot--unk': tropic.statusColor === 'black' }
+                            ]"
+                        ></span>
+                    </button>
+                    <button
+                        v-else
+                        class="sb-item sb-item--disabled"
+                        aria-disabled="true"
+                        @click.prevent
+                        data-tooltip="Only available when Trezor Safe 7 (T3W1) is selected or running."
+                    >
+                        <svg class="sb-item-icon" viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="1"/><circle cx="12" cy="12" r="3"/></svg>
+                        <span class="sb-item-label">Tropic Square</span>
+                    </button>
+
+                    <!-- §6 Regtest -->
+                    <button :class="['sb-item', { 'sb-item--on': openFly === 'flyReg' }]" @click="openFlyout('flyReg')">
+                        <svg class="sb-item-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9 8h5a2 2 0 0 1 0 4H9zm0 4h6a2 2 0 0 1 0 4H9z"/></svg>
+                        <span class="sb-item-text">
+                            <span class="sb-item-label">Regtest</span>
+                        </span>
+                        <span
+                            :class="[
+                                'sb-item-dot',
+                                { 'sb-item-dot--ok':  regtest.statusColor === 'green' },
+                                { 'sb-item-dot--err': regtest.statusColor === 'red' },
+                                { 'sb-item-dot--unk': regtest.statusColor === 'black' }
+                            ]"
+                        ></span>
+                    </button>
+
+                    <!-- §7 Tools -->
+                    <div class="sb-hd">Tools</div>
+
+                    <button :class="['sb-item', { 'sb-item--on': openFly === 'flyRaw' }]" @click="openFlyout('flyRaw')">
+                        <svg class="sb-item-icon" viewBox="0 0 24 24"><polyline points="8 6 2 12 8 18"/><polyline points="16 6 22 12 16 18"/></svg>
+                        <span class="sb-item-label">Server</span>
+                    </button>
+
+
+                </aside>
+
+                <!-- ========== MAIN ========== -->
+                <!-- Canvas -->
+                    <div class="canvas">
+
+                        <!-- §8 Device display (VNC live view) -->
+                        <section class="card device-card">
+                            <div class="card-head">
+                                <h3>
+                                    <template v-if="emulators.runningModel">
+                                        {{ emulators.versions[emulators.runningModel]?.header }}
+                                        <span class="card-head-tag">{{ emulators.runningModel }}</span>
+                                    </template>
+                                    <template v-else>Device</template>
+                                </h3>
+                                <div class="card-head-right">
+                                    <button
+                                        class="btn btn--sm btn--ghost"
+                                        :disabled="!emulators.vncActive"
+                                        @click="reloadVnc()"
+                                        data-tooltip="Reload live view"
+                                        data-tooltip-pos="right"
+                                    >
+                                        <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+                                        Reload
+                                    </button>
+                                    <button
+                                        class="btn btn--sm btn--ghost"
+                                        :disabled="!emulators.vncActive"
+                                        @click="openVncPopup()"
+                                        data-tooltip="Open the emulator in a separate, resizable window"
+                                        data-tooltip-pos="right"
+                                        aria-label="Open the emulator in a separate window"
+                                    >
+                                        <svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                                        Pop out
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="device-stage">
+                                <iframe
+                                    v-if="emulators.vncActive"
+                                    id="vnc-iframe"
+                                    :src="vncUrl"
+                                    class="vnc-iframe"
+                                ></iframe>
+                                <div v-else class="device-empty">
+                                    <div class="device-empty-icon">
+                                        <svg viewBox="0 0 24 24">
+                                            <rect x="6" y="2" width="12" height="20" rx="3"/>
+                                            <line x1="10" y1="18" x2="14" y2="18"/>
+                                        </svg>
+                                    </div>
+                                    <h4>No emulator running</h4>
+
+                                    <ol v-if="bridges.statusColor === 'red'" class="device-empty-steps">
+                                        <li>
+                                            <span class="device-empty-num">1</span>
+                                            <div>
+                                                <b>Start the Bridge service</b>
+                                                <span>Required for host apps and the emulator to talk to one another.</span>
+                                                <button class="btn btn--sm" @click="openFlyout('flyBrg')">Open Bridge</button>
+                                            </div>
+                                        </li>
+                                        <li>
+                                            <span class="device-empty-num">2</span>
+                                            <div>
+                                                <b>Pick a model and start the emulator</b>
+                                                <span>The live device view will appear here.</span>
+                                                <button class="btn btn--sm btn--primary" @click="openFlyout('flyEmu')">Open Emulator setup</button>
+                                            </div>
+                                        </li>
+                                    </ol>
+
+                                    <p v-else>Pick a device model and press <b>Start</b>. The live view will appear here.</p>
+                                    <button v-if="bridges.statusColor === 'green'" class="btn btn--primary" @click="openFlyout('flyEmu')">
+                                        Open Emulator setup
+                                    </button>
+                                </div>
+                            </div>
+                        </section>
+
+                        <!-- §9 Emulator commands -->
+                        <section class="card cmd-card">
+                            <div class="card-head">
+                                <h3>Commands</h3>
+                                <div class="card-head-right">
+                                    <span class="info-tip" data-tooltip="auto-confirmed via debug link">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="cmd-body">
+
+                                <!-- §9.1 Simulate — button-input models only (T1B1, T3B1) -->
+                                <div v-if="emulatorHasButtons" class="cmd-sec">
+                                    <h5>Simulate</h5>
+                                    <div class="row2">
+                                        <button class="cmd-btn" @click="emulatorPressYes()" data-tooltip="Simulates pressing the physical confirm button on the device">
+                                            <span>Yes / confirm</span>
+                                        </button>
+                                        <button class="cmd-btn" @click="emulatorPressNo()" data-tooltip="Simulates pressing the physical cancel button on the device" data-tooltip-pos="right">
+                                            <span>No / cancel</span>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- §9.2 Setup — seed -->
+                                <div class="cmd-sec">
+                                    <h5>Setup — seed</h5>
+                                    <label class="opt-tile" style="width: 100%" data-tooltip="Applies to the next Load seed action — does not affect an already-loaded seed.">
+                                        <input type="checkbox" v-model="enablePassphrase" />
+                                        <span class="opt-tile-name">Passphrase protection</span>
+                                    </label>
+                                    <div class="row2" style="margin-top: 7px">
+                                        <button class="cmd-btn cmd-btn--seed" @click="emulatorSetup('all')" data-tooltip="Loads the &quot;all&quot; test seed — a 12-word mnemonic covering all supported coin types">
+                                            <span class="cmd-btn-seed-label">Load "all"</span>
+                                            <span class="cmd-btn-tag">12 words</span>
+                                        </button>
+                                        <button class="cmd-btn cmd-btn--seed" @click="emulatorSetup('academic')" data-tooltip="Loads the &quot;academic&quot; test seed — a 20-word mnemonic used in test suites">
+                                            <span class="cmd-btn-seed-label">Load "academic"</span>
+                                            <span class="cmd-btn-tag">20 words</span>
+                                        </button>
+                                    </div>
+                                    <div style="display: flex; gap: 6px; margin-top: 6px">
+                                        <input
+                                            class="input"
+                                            type="text"
+                                            placeholder="Custom mnemonic…"
+                                            v-model="emulatorCommands.seed"
+                                            style="flex: 1; min-width: 0"
+                                        />
+                                        <button class="btn btn--sm" @click="emulatorSetup()" data-tooltip="Load the mnemonic typed in the field" data-tooltip-pos="right">Load</button>
+                                    </div>
+                                </div>
+
+                                <!-- §9.2 Setup — lifecycle -->
+                                <div class="cmd-sec">
+                                    <h5>Setup — lifecycle</h5>
+                                    <button class="cmd-btn cmd-btn--danger" style="width:100%;margin-bottom:6px" @click="emulatorWipe()" data-tooltip="Wipes the emulator — removes all data and returns to factory state">Wipe</button>
+                                    <div class="row2">
+                                        <button class="cmd-btn" @click="emulatorResetDevice()" data-tooltip="Initializes a new wallet on the emulator (standard single-seed setup)">Reset</button>
+                                        <button class="cmd-btn" @click="emulatorResetDeviceShamir()" data-tooltip="Initializes a new wallet using Shamir Secret Sharing backup" data-tooltip-pos="right">Reset w/ Shamir</button>
+                                    </div>
+                                </div>
+
+                                <!-- §9.3 Verify & debug -->
+                                <div class="cmd-sec">
+                                    <h5>Verify &amp; debug</h5>
+
+                                    <button class="cmd-btn" style="margin-bottom: 7px" @click="readAndConfirmMnemonic()" data-tooltip="Reads the current seed phrase from the emulator and simulates confirming each word on the device">
+                                        <span>Read &amp; confirm mnemonic</span>
+                                    </button>
+
+                                    <div class="shamir-group">
+                                        <div class="shamir-dials">
+                                            <div class="dial">
+                                                <button type="button" class="dial-step" @click="emulatorCommands.shamirShares = Math.max(1, (emulatorCommands.shamirShares || 1) - 1)" aria-label="Decrease shares">−</button>
+                                                <div class="dial-stack">
+                                                    <span class="dial-label">shares</span>
+                                                    <input
+                                                        class="dial-input"
+                                                        type="number" min="1" max="20"
+                                                        v-model.number="emulatorCommands.shamirShares"
+                                                    />
+                                                </div>
+                                                <button type="button" class="dial-step" @click="emulatorCommands.shamirShares = Math.min(20, (emulatorCommands.shamirShares || 0) + 1)" aria-label="Increase shares">+</button>
+                                            </div>
+                                            <div class="dial">
+                                                <button type="button" class="dial-step" @click="emulatorCommands.shamirThreshold = Math.max(1, (emulatorCommands.shamirThreshold || 1) - 1)" aria-label="Decrease threshold">−</button>
+                                                <div class="dial-stack">
+                                                    <span class="dial-label">threshold</span>
+                                                    <input
+                                                        class="dial-input"
+                                                        type="number" min="1" max="20"
+                                                        v-model.number="emulatorCommands.shamirThreshold"
+                                                    />
+                                                </div>
+                                                <button type="button" class="dial-step" @click="emulatorCommands.shamirThreshold = Math.min(20, (emulatorCommands.shamirThreshold || 0) + 1)" aria-label="Increase threshold">+</button>
+                                            </div>
+                                        </div>
+                                        <button class="cmd-btn" @click="readAndConfirmMnemonicShamir()" data-tooltip="Reads and confirms all Shamir shares using the configured shares and threshold values">
+                                            <span>Read &amp; confirm Shamir</span>
+                                        </button>
+                                    </div>
+
+                                    <div class="row2">
+                                        <button class="cmd-btn" @click="emulatorGetFeatures()" data-tooltip="Fetches and logs the device feature flags and capabilities">
+                                            <span>Get features</span>
+                                        </button>
+                                        <button class="cmd-btn" @click="emulatorSetBackupState()" data-tooltip="Marks the backup as done — useful for skipping the backup prompt in test flows" data-tooltip-pos="right">
+                                            <span>Set backup state</span>
+                                        </button>
+                                    </div>
+
+                                    <button class="cmd-btn cmd-btn--warn" style="margin-top: 7px" @click="emulatorAllowUnsafe()" data-tooltip="Allows the emulator to derive keys from unusual paths — use only for specific test flows.">
+                                        <span>Safety checks off</span>
+                                    </button>
+                                </div>
+
+                                <!-- §9.4 N4W1 NFC — T3W1 only -->
+                                <div v-if="showTropicSection" class="cmd-sec">
+                                    <h5>N4W1 NFC tag</h5>
+                                    <div style="display:flex;gap:6px;align-items:center">
+                                        <span style="font-size:11.5px;color:var(--muted);white-space:nowrap">Tag ID</span>
+                                        <input
+                                            class="input"
+                                            type="number"
+                                            min="1"
+                                            max="100"
+                                            v-model.number="emulatorCommands.n4w1TagId"
+                                            style="width:58px;flex-shrink:0;text-align:center;padding:6px 8px"
+                                        />
+                                        <button class="cmd-btn" style="flex:1" @click="n4w1Tap()" data-tooltip="Simulate an NFC tag tap on the emulator">Tap</button>
+                                        <button class="cmd-btn" style="flex:1" @click="n4w1Clear()" data-tooltip="Clear the NFC tag data stored for this tag ID" data-tooltip-pos="right">Clear</button>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </section>
+
+                        <!-- §10 Event log -->
+                        <section class="card log-card">
+                            <div class="card-head">
+                                <h3>
+                                    Event log
+                                    <span class="card-head-tag">{{ logs.length }} events</span>
+                                </h3>
+                                <div class="card-head-right log-filters">
+                                    <button
+                                        v-for="f in logFilterOptions"
+                                        :key="f.k"
+                                        :class="['log-filter', { 'log-filter--on': logFilter === f.k }]"
+                                        @click="logFilter = f.k"
+                                    >{{ f.label }}</button>
+                                    <button class="log-tools-clear" @click="logs = []; unseenLogs = 0">Clear</button>
+                                </div>
+                            </div>
+                            <button
+                                v-if="unseenLogs > 0"
+                                class="log-unseen-chip"
+                                @click="clearUnseen()"
+                            >↑ {{ unseenLogs }} new event<span v-if="unseenLogs !== 1">s</span></button>
+                            <div class="log-entries" ref="logContainer" @scroll="onLogScroll">
+                                <p
+                                    v-for="log in filteredLogs"
+                                    :key="log.id"
+                                    :style="{ color: log.color }"
+                                >{{ log.text }}</p>
+                                <div v-if="!filteredLogs.length" class="log-empty">
+                                    <span v-if="logFilter !== 'all' && logs.length">No {{ logFilter }} events yet.</span>
+                                    <span v-else>No events yet. Start the bridge or emulator to see outbound requests and backend responses.</span>
+                                </div>
+                            </div>
+                        </section>
+
+                    </div>
                 </div>
-            </div>
-    <div class="sections-container">
 
-            <section>
-        <h3>Bridge</h3>
-        <div>
-            <i>Start Bridge with emulator support.</i><br />
-            <select v-model="bridges.selected">
-                <option
-                            v-for="option in bridges.versions"
+            <!-- ========================================================
+                 FLYOUTS (module configuration panels)
+                 ======================================================== -->
+            <div
+                :class="['flyout-backdrop', { 'flyout-backdrop--on': openFly }]"
+                @click="closeFlyouts()"
+            ></div>
+
+            <!-- §4 Emulator -->
+            <aside :class="['flyout', { 'flyout--open': openFly === 'flyEmu', 'flyout--locked': !!emulatorDownloadMessage }]">
+                <div class="flyout-head">
+                    <div class="flyout-head-title">
+                        <h2>Emulator</h2>
+                        <div class="flyout-head-desc">
+                            Pick a device model and firmware version, toggle launch options, then start.
+                        </div>
+                    </div>
+                    <button class="flyout-close" @click="closeFlyouts()" aria-label="Close panel" title="Close panel">
+                        <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    </button>
+                </div>
+                <div class="flyout-body">
+
+                    <label class="field-label">Device model</label>
+                    <div class="models">
+                        <button
+                            v-for="(details, model) in emulators.versions"
+                            :key="model"
+                            type="button"
+                            :class="[
+                                'model',
+                                { 'model--selected': selectedEmulatorModel === model },
+                                { 'model--running':  emulators.runningModel  === model }
+                            ]"
+                            @click="selectedEmulatorModel = model"
+                        >
+                            <div class="model-id">{{ model }}</div>
+                            <div class="model-name">{{ details.header }}</div>
+                            <div class="model-type">{{ details.inputType }}</div>
+                        </button>
+                    </div>
+
+                    <label class="field-label">Firmware version</label>
+                    <select
+                        class="select"
+                        v-model="emulators.versions[selectedEmulatorModel].selected"
+                    >
+                        <option
+                            v-for="option in emulators.versions[selectedEmulatorModel].versions"
                             :key="option"
                             :value="option"
-                        >
-                            {{ option }}
-                        </option>
+                        >{{ option }}</option>
                     </select>
-                    <button class="positive" @click="bridgeStart()">Start</button>
-                    <button class="negative" @click="bridgeStop()">Stop</button>
-                    <input
-                        id="bridgeUseLogfile"
-                        type="checkbox"
-                        v-model="bridges.outputToLogfile"
-                    />
-                    <label
-                        class="underlined"
-                        title="Save bridge logs into logfile. Otherwise, logs are shown in console."
-                        for="bridgeUseLogfile"
-                        >Logs into logfile</label
-                    ><br />
-                </div>
-                <div>
-                    <div :style="{ color: bridges.statusColor }">
-                        <b>Status: <span>{{ bridges.status }}</span></b>
+
+                    <label class="field-label">
+                        Launch options
+                        <span class="field-label-note">(applies to the next start)</span>
+                    </label>
+                    <div class="opt-grid">
+                        <label class="opt-tile" data-tooltip="Enable UI animations on the emulator display">
+                            <input id="animations" type="checkbox" v-model="emulators.animations" />
+                            <span class="opt-tile-name">Animations</span>
+                        </label>
+                        <label class="opt-tile" data-tooltip="Wipe the device state each time the emulator starts">
+                            <input id="wipeDevice" type="checkbox" v-model="emulators.wipeDevice" />
+                            <span class="opt-tile-name">Wipe on start</span>
+                        </label>
+                        <label class="opt-tile" data-tooltip="Redirect emulator output to a log file instead of stdout">
+                            <input id="emulatorUseLogfile" type="checkbox" v-model="emulators.outputToLogfile" />
+                            <span class="opt-tile-name">Log to file</span>
+                        </label>
+                        <label class="opt-tile" data-tooltip="Removes the red debug marker from screenshots and saves captures to logs/screens">
+                            <input id="emulatorSaveScreenshots" type="checkbox" v-model="emulators.screenshotMode" />
+                            <span class="opt-tile-name">Screenshot mode</span>
+                        </label>
                     </div>
-                    <div class="explain-note">
-                        You may also check bridge status page on
-                        <a href="http://0.0.0.0:21328/status/" target="_blank">
-                            http://0.0.0.0:21328/status/
-                        </a>
-                        when the bridge is running
 
-                        <div v-if="bridges.hasSuiteLocal" :style="{ color: 'green' }">
-                            You have mounted local Suite - local node bridge is available.
-                        </div>
-                        <div v-else>
-                            Local Suite is not mounted - if needed, run `ln -s [local-suite-path] trezor-suite` in root dir and restart server.
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <section>
-                <h3>Tropic Square Model Server</h3>
-                <div>
-                    <i>Control Tropic Square model server (required for T3W1 emulator).</i><br />
-                    <button class="positive" @click="tropicStart()">Start</button>
-                    <button class="negative" @click="tropicStop()">Stop</button>
-                    <input
-                        id="tropicUseLogfile"
-                        type="checkbox"
-                        v-model="tropic.outputToLogfile"
-                    />
-                    <label
-                        class="underlined"
-                        title="Save tropic model logs into logfile. Otherwise, logs are shown in console."
-                        for="tropicUseLogfile"
-                        >Logs into logfile</label
-                    ><br />
-                </div>
-                <div>
-                    <div :style="{ color: tropic.statusColor }">
-                        <b>Status: <span>{{ tropic.status }}</span></b>
-                    </div>
-                    <div class="explain-note">
-                        The Tropic Square model server is automatically started when launching
-                        a T3W1 emulator, but can also be controlled manually here.
-                    </div>
-                </div>
-            </section>
-
-            <section>
-                <h3>Emulator</h3>
-                <div class="explain-note">
-                    Use left and right arrow keys to emulate the Trezor
-                    One/Safe3 buttons. Mouse clicks for other models.
-                </div>
-
-                <br />
-
-                <div :style="{ color: emulators.statusColor }">
-                    <b>Status: <span>{{ emulators.status }}</span></b>
-                </div>
-
-                <div
-                    v-for="(details, model) in emulators.versions"
-                    :key="model"
-                >
-                    <h4>{{details.header}} ({{ model }})</h4>
-                    <select v-model="details.selected">
-                        <option
-                            v-for="option in details.versions"
-                            :key="option"
-                            :value="option"
-                        >
-                            {{ option }}
-                        </option>
-                    </select>
-                    <button class="positive" @click="emulatorStart(model);">Start</button>
-                </div>
-
-                <div>
-                    <input
-                        id="animations"
-                        type="checkbox"
-                        v-model="emulators.animations"
-                    />
-                    <label
-                        class="underlined"
-                        title="Animations will be turned on."
-                        for="animations"
-                        >Show animations</label
+                    <button
+                        type="button"
+                        :class="['disclosure', { 'disclosure-on': customFirmwareOpen }]"
+                        @click="customFirmwareOpen = !customFirmwareOpen"
                     >
-                    <br />
-                    <input
-                        id="wipeDevice"
-                        type="checkbox"
-                        v-model="emulators.wipeDevice"
-                    />
-                    <label
-                        class="underlined"
-                        title="Device will be started without seed or any other settings."
-                        for="wipeDevice"
-                        >Start with wiped/empty device</label
-                    >
-                    <br />
-                    <input
-                        id="emulatorUseLogfile"
-                        type="checkbox"
-                        v-model="emulators.outputToLogfile"
-                    />
-                    <label
-                        class="underlined"
-                        title="Save emulator logs into logfile. Otherwise, logs are shown in console."
-                        for="emulatorUseLogfile"
-                        >Logs into logfile</label
-                    >
-                    <br />
-                    <input
-                        id="emulatorSaveScreenshots"
-                        type="checkbox"
-                        v-model="emulators.screenshotMode"
-                    />
-                    <label
-                        class="underlined"
-                        title="
-                No square in top right corner.
-                Screenshots are saved under `logs/screens`.
-                NOTE:
-                - does not work for T1
-                - the first screen does contain the square, no way to change it."
-                        for="emulatorSaveScreenshots"
-                        >Screenshot mode</label
-                    >
-                    <br />
-                </div>
-
-                <hr />
-
-                <div>
-                    <input
-                        type="text"
-                        placeholder="Full emulator URL. Do not forget to specify correct model"
-                        style="width: 40%"
-                        v-model="emulatorUrl.url"
-                    />
-                    <select v-model="emulatorUrl.model">
-                        <option
-                            v-for="(details, model) in emulators.versions"
-                            :value="model"
-                            :key="model"
-                        >
-                            {{ details.header }}
-                        </option>
-                    </select>
-                    <button class="positive" @click="emulatorStartFromUrl();">
-                        Start from URL
+                        <svg class="disclosure-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 6 15 12 9 18"/></svg>
+                        <span>Custom firmware</span>
+                        <span class="disclosure-note">URL or branch build (overrides model &amp; firmware above)</span>
                     </button>
-                </div>
 
-                <div>
-                    <input
-                        type="text"
-                        placeholder="Firmware branch. Do not forget to specify correct model"
-                        style="width: 30%"
-                        v-model="emulatorBranch.branch"
-                    />
-                    <select v-model="emulatorBranch.model">
-                        <option
-                            v-for="(details, model) in emulators.versions"
-                            :value="model"
-                            :key="model"
-                        >
-                            {{ details.header }}
-                        </option>
-                    </select>
-                        <input
-                        id="emulatorBtcOnly"
-                        type="checkbox"
-                        v-model="emulatorBranch.btcOnly"
-                    />
-                    <label
-                        class="underlined"
-                        title="Use BTC-only version of the emulator."
-                        for="emulatorBtcOnly"
-                        >BTC-only</label
-                    >
-                    <button class="positive" @click="emulatorStartFromBranch();">
-                        Start from branch
-                    </button>
-                </div>
+                    <div v-if="customFirmwareOpen" class="disclosure-body">
+                        <div class="segmented" role="tablist">
+                            <button
+                                type="button"
+                                role="tab"
+                                :class="{ 'segmented-on': customFirmwareSource === 'url' }"
+                                @click="customFirmwareSource = 'url'"
+                            >From URL</button>
+                            <button
+                                type="button"
+                                role="tab"
+                                :class="{ 'segmented-on': customFirmwareSource === 'branch' }"
+                                @click="customFirmwareSource = 'branch'"
+                            >From branch</button>
+                        </div>
 
-                <div class="user-info" v-if="emulatorDownloadMessage">
-                    {{ emulatorDownloadMessage }}
-                </div>
+                        <div v-if="customFirmwareSource === 'url'" class="custom-src">
+                            <input class="input" type="text" placeholder="https://data.trezor.io/firmware/…" v-model="emulatorUrl.url" />
+                            <select class="select" v-model="emulatorUrl.model">
+                                <option value="" disabled>Confirm / correct the model…</option>
+                                <option v-for="(details, model) in emulators.versions" :key="model" :value="model">
+                                    {{ details.header }} ({{ model }})
+                                </option>
+                            </select>
+                            <button class="btn btn--full" @click="emulatorStartFromUrl()">
+                                Launch from URL
+                            </button>
+                        </div>
 
-                <hr />
-
-                <button class="negative" @click="emulatorStop();">Stop</button>
-            </section>
-
-            <section v-if="emulators.vncActive" class="vnc-viewer">
-                <div class="vnc-toolbar">
-                    <h3>Device Display (VNC)</h3>
-                    <div>
-                        <button @click="reloadVnc();">Reload</button>
-                        <button @click="openVncPopup();">Open in popup</button>
-                    </div>
-                </div>
-                <iframe
-                    id="vnc-iframe"
-                    src="http://localhost:6080/vnc_embed.html"
-                    class="vnc-iframe"
-                ></iframe>
-            </section>
-
-            <section>
-                <h3>Emulator commands</h3>
-                <div class="explain-note">
-                    These commands are auto-confirmed using the emulator's debug
-                    link.
-                </div>
-                <br />
-                <div>
-                    <div class="wipe-yes-no">
-                        <button @click="emulatorWipe();">Wipe</button>
-                        <div>
-                            <button class="positive" @click="emulatorPressYes();">Press yes</button>
-                            <button class="negative" @click="emulatorPressNo();">Press no</button>
+                        <div v-else class="custom-src">
+                            <input class="input" type="text" placeholder="e.g. feature/new-ui" v-model="emulatorBranch.branch" />
+                            <select class="select" v-model="emulatorBranch.model">
+                                <option value="" disabled>Model…</option>
+                                <option v-for="(details, model) in emulators.versions" :key="model" :value="model">
+                                    {{ details.header }} ({{ model }})
+                                </option>
+                            </select>
+                            <label class="opt-tile opt-tile--inline">
+                                <input id="emulatorBtcOnly" type="checkbox" v-model="emulatorBranch.btcOnly" />
+                                <span class="opt-tile-name">BTC-only build variant</span>
+                            </label>
+                            <button class="btn btn--full" @click="emulatorStartFromBranch()">
+                                Launch from branch
+                            </button>
                         </div>
                     </div>
-                    <input
-                        id="enablePassphrase"
-                        type="checkbox"
-                        v-model="enablePassphrase"
-                    />
-                    <label
-                        class="underlined"
-                        title="Passphrase protection will be enabled with loading seed."
-                        for="enablePassphrase"
-                        >Enable passphrase protection with Load</label
+
+                    <!-- Firmware download indicator -->
+                    <div v-if="emulatorDownloadMessage" class="dl-banner">
+                        <span class="dl-banner-spinner"></span>
+                        <div><b>Downloading firmware…</b> {{ emulatorDownloadMessage }}</div>
+                    </div>
+
+                    <div class="flyout-actions">
+                        <button class="btn btn--primary" @click="emulatorStart(selectedEmulatorModel)">
+                            Start emulator
+                        </button>
+                        <button class="btn btn--danger" @click="emulatorStop()">
+                            Stop
+                        </button>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- §3 Bridge -->
+            <aside :class="['flyout', { 'flyout--open': openFly === 'flyBrg' }]">
+                <div class="flyout-head">
+                    <div class="flyout-head-title">
+                        <h2>Bridge <span class="mono">· trezord</span></h2>
+                        <div class="flyout-head-desc">
+                            The <code>trezord</code> service that lets host applications talk to the device / emulator.
+                            Pick a version while stopped, then start.
+                        </div>
+                    </div>
+                    <button class="flyout-close" @click="closeFlyouts()" aria-label="Close panel" title="Close panel">
+                        <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    </button>
+                </div>
+                <div class="flyout-body">
+
+                    <label class="field-label">Version</label>
+                    <div v-if="bridges.statusColor === 'green'" class="field-hint" style="margin-top: 0; margin-bottom: 8px">
+                        Stop the bridge to change version.
+                    </div>
+                    <div class="vlist">
+                        <button
+                            v-for="v in modernBridgeVersions"
+                            :key="v"
+                            type="button"
+                            :class="['vitem', { 'vitem--selected': bridges.selected === v }]"
+                            :disabled="bridges.statusColor === 'green'"
+                            @click="bridges.selected = v"
+                        >
+                            <span class="vitem-name">{{ v }}</span>
+                            <span v-if="bridges.statusColor === 'green' && bridges.selected === v" class="vitem-badge">running</span>
+                        </button>
+                        <div v-if="modernBridgeVersions.length && legacyBridgeVersions.length" class="vlist-divider">legacy</div>
+                        <button
+                            v-for="v in legacyBridgeVersions"
+                            :key="v"
+                            type="button"
+                            :class="['vitem', { 'vitem--selected': bridges.selected === v }]"
+                            :disabled="bridges.statusColor === 'green'"
+                            @click="bridges.selected = v"
+                        >
+                            <span class="vitem-name">{{ v }}</span>
+                            <span v-if="bridges.statusColor === 'green' && bridges.selected === v" class="vitem-badge">running</span>
+                        </button>
+                    </div>
+
+                    <label class="field-label">Output</label>
+                    <label class="opt-tile" style="width: 100%" data-tooltip="Redirect bridge output to a log file instead of stdout">
+                        <input id="bridgeUseLogfile" type="checkbox" v-model="bridges.outputToLogfile" />
+                        <span class="opt-tile-name">Log to file</span>
+                    </label>
+
+                    <label class="field-label">On page load</label>
+                    <label class="opt-tile" style="width: 100%" data-tooltip="Remember the selected bridge version and start it automatically when the dashboard loads.">
+                        <input id="bridgeAutoStart" type="checkbox" v-model="bridges.autoStart" />
+                        <span class="opt-tile-name">Auto-start</span>
+                    </label>
+
+                    <label class="field-label">
+                        Status page
+                        <span class="field-label-note">· available while running</span>
+                    </label>
+                    <a
+                        class="btn btn--full"
+                        :href="bridges.statusColor === 'green' ? 'http://0.0.0.0:21328/status/' : '#'"
+                        :style="{ pointerEvents: bridges.statusColor === 'green' ? 'auto' : 'none', opacity: bridges.statusColor === 'green' ? 1 : .5 }"
+                        target="_blank"
+                        rel="noopener"
                     >
-                    <br/>
-                    <input
-                        type="text"
-                        placeholder="input seed"
-                        v-model="emulatorCommands.seed"
-                    />
-                    <button @click="emulatorSetup();">Load seed</button>
-                    <br/>
-                    <button @click="emulatorSetup('all');">
-                        Load ALL seed
+                        <svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                        Open 0.0.0.0:21328/status/
+                    </a>
+
+                    <!-- Local Trezor Suite detection (advanced — collapsed by default) -->
+                    <button
+                        type="button"
+                        :class="['disclosure', { 'disclosure-on': suiteMountOpen }]"
+                        @click="suiteMountOpen = !suiteMountOpen"
+                    >
+                        <svg class="disclosure-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 6 15 12 9 18"/></svg>
+                        <span>Local Trezor Suite bridge</span>
+                        <span :class="['disclosure-note', { 'disclosure-note--ok': bridges.hasSuiteLocal }]">
+                            {{ bridges.hasSuiteLocal ? 'detected' : 'not mounted' }}
+                        </span>
                     </button>
-                    <button @click="emulatorSetup('academic');">
-                        Load ACADEMIC seed
+
+                    <div v-if="suiteMountOpen" class="disclosure-body">
+                        <div v-if="bridges.hasSuiteLocal" class="mount-card mount-card--ok">
+                            <svg class="mount-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+                            <div>
+                                <h4>Local Trezor Suite detected</h4>
+                                <p class="mount-card-desc">The <code>local-suite-node-bridge</code> version is available in the list above.</p>
+                            </div>
+                        </div>
+                        <div v-else class="mount-card">
+                            <div class="mount-card-hd">
+                                <h4>Local Trezor Suite not mounted</h4>
+                            </div>
+                            <p class="mount-card-desc">
+                                Mount a local Suite checkout to expose the <code>local-suite-node-bridge</code> version — useful when testing against a Suite feature branch.
+                            </p>
+                            <div class="mount-steps">
+                                <div class="mount-step">
+                                    <span class="mount-step-num">1</span>
+                                    <div class="mount-step-body">
+                                        <span class="mount-step-text">From the repo root, create a symlink to your local Suite checkout:</span>
+                                        <div class="code-row">
+                                            <code>ln -s [local-suite-path] trezor-suite</code>
+                                            <button
+                                                type="button"
+                                                :class="['copy-btn', { 'copy-btn--on': copyFlash === 'ln -s [local-suite-path] trezor-suite' }]"
+                                                @click="copyToClipboard('ln -s [local-suite-path] trezor-suite')"
+                                            >
+                                                <svg v-if="copyFlash !== 'ln -s [local-suite-path] trezor-suite'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                                                <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+                                                <span>{{ copyFlash === 'ln -s [local-suite-path] trezor-suite' ? 'Copied' : 'Copy' }}</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mount-step">
+                                    <span class="mount-step-num">2</span>
+                                    <div class="mount-step-body">
+                                        <span class="mount-step-text">Restart the trezor-user-env server.</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flyout-actions">
+                        <button
+                            v-if="bridges.statusColor !== 'green'"
+                            class="btn btn--primary"
+                            @click="bridgeStart()"
+                        >Start bridge</button>
+                        <button
+                            v-else
+                            class="btn btn--primary"
+                            disabled
+                        >Running</button>
+                        <button class="btn btn--danger" @click="bridgeStop()">Stop bridge</button>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- §5 Tropic Square (conditional) -->
+            <aside :class="['flyout', { 'flyout--open': openFly === 'flyTropic' }]">
+                <div class="flyout-head">
+                    <div class="flyout-head-title">
+                        <h2>Tropic Square <span class="mono">· simulator</span></h2>
+                        <div class="flyout-head-desc">
+                            Simulator for the Tropic Square secure element.
+                            Required for Trezor Safe 7 — starts automatically when the T3W1 emulator is started.
+                        </div>
+                    </div>
+                    <button class="flyout-close" @click="closeFlyouts()" aria-label="Close panel" title="Close panel">
+                        <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                     </button>
                 </div>
-                <div>
-                    <button @click="emulatorResetDevice();">Reset</button>
-                    <button @click="emulatorResetDeviceShamir();">
-                        Reset with Shamir
-                    </button>
+                <div class="flyout-body">
 
+                    <label class="field-label">Status</label>
+                    <span :class="['status-pill', tropicStatusClass]">{{ tropic.status }}</span>
+
+                    <label class="field-label">Output</label>
+                    <label class="opt-tile" style="width: 100%" data-tooltip="Redirect Tropic output to a log file instead of stdout">
+                        <input id="tropicUseLogfile" type="checkbox" v-model="tropic.outputToLogfile" />
+                        <span class="opt-tile-name">Log to file</span>
+                    </label>
+
+                    <div class="flyout-actions">
+                        <button class="btn btn--primary" @click="tropicStart()">Start</button>
+                        <button class="btn btn--danger" @click="tropicStop()">Stop</button>
+                    </div>
                 </div>
-                <div>
-                    <button @click="readAndConfirmMnemonic();">
-                        Read and confirm mnemonic
-                    </button>
-                    <br/>
-                    <button @click="emulatorAllowUnsafe();">
-                        Allow unsafe (safety checks)
-                    </button>
-                </div>
-                <div>
-                    <label for="shares-input">Shares</label>
-                    <input
-                    id="shares-input"
-                    type="number"
-                    value="3"
-                    size="3"
-                    min="1"
-                    max="20"
-                    v-model="emulatorCommands.shamirShares"
-                    />
-                    <label for="threshold-input">Threshold</label>
-                    <input
-                    id="threshold-input"
-                    type="number"
-                    value="2"
-                    size="3"
-                    min="1"
-                    max="20"
-                    v-model="emulatorCommands.shamirThreshold"
-                    />
-                    <button @click="readAndConfirmMnemonicShamir();">
-                        Read and confirm mnemonic Shamir
+            </aside>
+
+            <!-- §6 Regtest -->
+            <aside :class="['flyout', { 'flyout--open': openFly === 'flyReg' }]">
+                <div class="flyout-head">
+                    <div class="flyout-head-title">
+                        <h2>Regtest</h2>
+                        <div class="flyout-head-desc">
+                            Local Bitcoin regression-test network (bitcoind + blockbook) for on-chain test scenarios.
+                        </div>
+                    </div>
+                    <button class="flyout-close" @click="closeFlyouts()" aria-label="Close panel" title="Close panel">
+                        <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                     </button>
                 </div>
-                <div>
-                    <button @click="emulatorSetBackupState();">
-                        Set backup state
+                <div class="flyout-body">
+
+                    <label class="field-label">Status</label>
+                    <span :class="['status-pill', regtestStatusClass]">{{ regtest.status }}</span>
+
+                    <label class="field-label">Mine blocks</label>
+                    <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 8px">
+                        <input class="input" type="number" min="1" max="10000" v-model.number="regtest.mineBlocks" placeholder="1…10000" />
+                        <input class="input" type="text" v-model="regtest.mineAddress" placeholder="Optional miner address" />
+                    </div>
+                    <div class="field-hint">Count <b>1 – 10 000</b>, default <b>1</b>.</div>
+                    <button class="btn btn--full" style="margin-top: 10px" @click="regtestMine()">Mine</button>
+
+                    <label class="field-label">Send BTC</label>
+                    <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 8px">
+                        <input class="input" type="number" step="any" v-model.number="regtest.sendAmount" placeholder="BTC" />
+                        <input class="input" type="text" v-model="regtest.sendAddress" placeholder="Destination address" />
+                    </div>
+                    <div class="field-hint">Default amount <b>10 BTC</b>.</div>
+                    <button class="btn btn--full" style="margin-top: 10px" @click="regtestSend()">Send</button>
+                </div>
+            </aside>
+
+            <!-- §7 Raw command -->
+            <aside :class="['flyout', { 'flyout--open': openFly === 'flyRaw' }]">
+                <div class="flyout-head">
+                    <div class="flyout-head-title">
+                        <h2>Server</h2>
+                        <div class="flyout-head-desc">
+                            Escape hatch. Send any JSON payload to the backend, ping for connectivity,
+                            close the connection, or request the server to exit.
+                        </div>
+                    </div>
+                    <button class="flyout-close" @click="closeFlyouts()" aria-label="Close panel" title="Close panel">
+                        <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                     </button>
                 </div>
-                <div>
-                    <button @click="emulatorGetFeatures();">
-                        Get features
-                    </button>
-                </div><div>
-                    <label for="tag-id-input">N4W1 tag</label>
-                    <input
-                    id="tag-id-input"
-                    type="number"
-                    value="1"
-                    size="3"
-                    min="1"
-                    max="100"
-                    v-model="emulatorCommands.n4w1TagId"
-                    />
-                    <button @click="n4w1Tap();">
-                        Tap
-                    </button>
-                    <button @click="n4w1Clear();">
-                        Clear
-                    </button>
+                <div class="flyout-body">
+                    <label class="field-label">Payload</label>
+                    <textarea id="server-input" class="textarea" rows="4" v-model="server.command"></textarea>
+                    <button class="btn btn--primary btn--full" style="margin-top: 10px" @click="sendServerCommand()">Send</button>
+
+                    <label class="field-label" style="margin-top: 20px">Server</label>
+                    <div class="row3">
+                        <button class="btn" @click="ping()">Ping server</button>
+                        <button class="btn" @click="closeWebsocket()">Close WebSocket</button>
+                        <button class="btn btn--danger" @click="exit()">Exit server</button>
+                    </div>
+
+                    <div class="info-block" style="margin-top: 16px">
+                        <span class="mono">ws://127.0.0.1:9001</span>
+                    </div>
                 </div>
-            </section>
-
-            <section>
-                <h3>Regtest</h3>
-
-                <div :style="{ color: regtest.statusColor }">
-                    <b>Status: <span>{{ regtest.status }}</span></b>
-                </div>
-
-                <label for="regtest-mine-blocks">Blocks</label>
-                <input
-                    id="regtest-mine-blocks"
-                    type="number"
-                    size="5"
-                    min="1"
-                    max="10000"
-                    v-model="regtest.mineBlocks"
-                />
-                <br />
-                <label for="regtest-mine-address"
-                    >Optional address of a miner</label
-                >
-                <input
-                    id="regtest-mine-address"
-                    size="62"
-                    v-model="regtest.mineAddress"
-                />
-                <br />
-                <button @click="regtestMine();">Mine regtest block(s)</button>
-
-                <hr />
-
-                <label for="regtest-send-amount">BTC amount</label>
-                <input
-                    id="regtest-send-amount"
-                    type="number"
-                    size="10"
-                    step="any"
-                    v-model="regtest.sendAmount"
-                />
-                <br />
-                <label for="regtest-send-address">Regtest address</label>
-                <input
-                    id="regtest-send-address"
-                    size="62"
-                    v-model="regtest.sendAddress"
-                />
-                <br />
-                <button @click="regtestSend();">
-                    Send regtest BTC to address
-                </button>
-            </section>
-
-            <section>
-                <h3>Server</h3>
-                <textarea
-                    id="server-input"
-                    rows="3"
-                    v-model="server.command"
-                ></textarea>
-                <br />
-                <button @click="sendServerCommand();">Send JSON</button>
-                <hr />
-                <button @click="ping();">Ping server</button>
-                <button @click="exit();">Exit server</button>
-                <button @click="closeWebsocket();">Close websocket</button>
-            </section>
+            </aside>
 
 
-            <section>
-                <h3>Event Log</h3>
-                <p
-                    v-for="log in logs"
-                    :key="log.text"
-                    :style="{ color: log.color }"
-                >
-                    {{ log.text }} <br />
-                </p>
-            </section>
-        </div>
+        </div><!-- #app -->
 
         <script src="js/vue.global.js"></script>
         <script type="text/javascript" src="js/index.js"></script>

@@ -1,6 +1,17 @@
 const websocketUrl = "ws://localhost:9001/";
 const backgroundCheckPeriodMs = 500;
 
+// Safe localStorage wrapper — file:// in some browsers throws SecurityError.
+const store = {
+    get: function(key, fallback) {
+        try { return localStorage.getItem(key) || (fallback !== undefined ? fallback : null); }
+        catch (e) { return fallback !== undefined ? fallback : null; }
+    },
+    set: function(key, value) {
+        try { localStorage.setItem(key, value); } catch (e) { /* ignore */ }
+    },
+};
+
 const { createApp } = Vue;
 
 const app = createApp({
@@ -14,35 +25,46 @@ const app = createApp({
                 status: "unknown",
                 statusColor: "black",
                 hasSuiteLocal: false,
+                runningVersion: null,
+                autoStart: store.get('userEnvBridgeAutoStart') === 'true',
             },
             tropic: {
                 outputToLogfile: true,
                 status: "unknown",
                 statusColor: "black",
+                runningVersion: null,
             },
+            selectedEmulatorModel: store.get('userEnvSelectedModel', 'T3W1'),
             emulators: {
                 versions: {
                     T1B1: {
                         header: "Trezor One",
+                        inputType: "Buttons",
                         versions: [],
                     },
                     T2T1: {
                         header: "Trezor T",
+                        inputType: "Touch",
                         versions: [],
                     },
                     T3B1: {
                         header: "Trezor Safe 3",
+                        inputType: "Buttons",
                         versions: [],
                     },
                     T3T1: {
                         header: "Trezor Safe 5",
+                        inputType: "Touch",
                         versions: [],
                     },
                     T3W1: {
                         header: "Trezor Safe 7",
+                        inputType: "Touch",
                         versions: [],
                     },
                 },
+                runningModel: null,
+                runningVersion: null,
                 wipeDevice: false,
                 screenshotMode: false,
                 animations: false,
@@ -61,6 +83,9 @@ const app = createApp({
                 btcOnly: false,
             },
             emulatorDownloadMessage: "",
+            customFirmwareSource: "url",
+            customFirmwareOpen: false,
+            suiteMountOpen: false,
             emulatorCommands: {
                 seed: "",
                 shamirShares: 3,
@@ -89,27 +114,109 @@ const app = createApp({
                 header: "Notification",
                 isError: false,
             },
+            openFly: null,
+            theme: store.get('userEnvTheme', 'dark'),
+            copyFlash: null,
+            vncCacheBuster: Date.now(),
+            logFilter: 'all',
+            unseenLogs: 0,
+            wsReconnecting: false,
+            wsRetries: 0,
+            wsRetryTimer: null,
+            WS_MAX_RETRIES: 4,
         };
     },
     created() {
+        // Guard against stale / hand-edited localStorage values that would
+        // blow up templates like emulators.versions[selectedEmulatorModel].
+        if (!Object.prototype.hasOwnProperty.call(this.emulators.versions, this.selectedEmulatorModel)) {
+            this.selectedEmulatorModel = 'T3W1';
+        }
         this.setupWebSocket();
         setInterval(this.getBackgroundStatus, backgroundCheckPeriodMs);
     },
     mounted() {
+        document.documentElement.setAttribute('data-theme', this.theme);
         this.$nextTick(() => {
             document.getElementById("app").style.display = "block";
         });
-        // listen for Esc key and close the notification
+        // Esc: close popup first, then any open flyout.
         window.addEventListener("keydown", (event) => {
-            if (this.notifications.showPopup && event.key === "Escape") {
+            if (event.key !== "Escape") return;
+            if (this.notifications.showPopup) {
                 this.notifications.showPopup = false;
+            } else if (this.openFly) {
+                this.openFly = null;
             }
         });
+    },
+    computed: {
+        bridgeStatusClass() {
+            if (this.bridges.statusColor === 'green') return 'status-pill--ok';
+            if (this.bridges.statusColor === 'red') return 'status-pill--error';
+            return 'status-pill--unknown';
+        },
+        emulatorStatusClass() {
+            if (this.emulators.statusColor === 'green') return 'status-pill--ok';
+            if (this.emulators.statusColor === 'red') return 'status-pill--error';
+            return 'status-pill--unknown';
+        },
+        tropicStatusClass() {
+            if (this.tropic.statusColor === 'green') return 'status-pill--ok';
+            if (this.tropic.statusColor === 'red') return 'status-pill--error';
+            return 'status-pill--unknown';
+        },
+        regtestStatusClass() {
+            if (this.regtest.statusColor === 'green') return 'status-pill--ok';
+            if (this.regtest.statusColor === 'red') return 'status-pill--error';
+            return 'status-pill--unknown';
+        },
+        vncUrl() {
+            const bg = this.theme === 'dark' ? '#14171a' : '#f4f5f7';
+            return `http://localhost:6080/vnc_embed.html?background=${encodeURIComponent(bg)}&t=${this.vncCacheBuster}`;
+        },
+        showTropicSection() {
+            // Section §5: shown when T3W1 is selected or currently running.
+            return this.selectedEmulatorModel === 'T3W1' ||
+                   this.emulators.runningModel === 'T3W1';
+        },
+        emulatorHasButtons() {
+            const model = this.emulators.runningModel || this.selectedEmulatorModel;
+            return this.emulators.versions[model]?.inputType === 'Buttons';
+        },
+        modernBridgeVersions() {
+            // Spec §3: node-bridge (modern) group — anything not starting with "2."
+            return this.bridges.versions.filter(v => !v.startsWith('2.'));
+        },
+        legacyBridgeVersions() {
+            // Spec §3: legacy 2.x group.
+            return this.bridges.versions.filter(v => v.startsWith('2.'));
+        },
+        filteredLogs() {
+            if (this.logFilter === 'all') return this.logs;
+            return this.logs.filter(l => l.kind === this.logFilter);
+        },
+        logFilterOptions() {
+            return [
+                { k: 'all', label: 'All' },
+                { k: 'out', label: '→ Out' },
+                { k: 'ok',  label: '← Ok' },
+                { k: 'err', label: '✗ Err' },
+                { k: 'raw', label: '{ } Raw' },
+                { k: 'sys', label: 'System' },
+            ];
+        },
     },
     watch: {
         'emulatorUrl.url': function (newUrl) {
             this.updateModelFromUrl(newUrl);
-        }
+        },
+        selectedEmulatorModel(v) {
+            if (v) store.set('userEnvSelectedModel', v);
+        },
+        'bridges.autoStart'(v) {
+            store.set('userEnvBridgeAutoStart', v ? 'true' : 'false');
+        },
     },
     methods: {
         updateModelFromUrl(url) {
@@ -120,6 +227,12 @@ const app = createApp({
             });
         },
         setupWebSocket() {
+            // Clear any pending auto-retry that might fire while we're already connecting.
+            if (this.wsRetryTimer) {
+                clearTimeout(this.wsRetryTimer);
+                this.wsRetryTimer = null;
+            }
+
             this.ws = new WebSocket(websocketUrl);
 
             this.ws.onmessage = this.handleMessage;
@@ -129,9 +242,10 @@ const app = createApp({
                     `WebSocket connection Error. Event: ${JSON.stringify(
                         event
                     )}`,
-                    "red"
+                    "var(--red)"
                 );
-                this.showNotification("WebSocket error", true);
+                // Deliberately no blocking notification here — auto-retry will handle it
+                // and the user already sees the log entry + sidebar reconnect button.
             };
 
             this.ws.onclose = (event) => {
@@ -139,13 +253,28 @@ const app = createApp({
                     `WebSocket connection closed. Event: ${JSON.stringify(
                         event
                     )}`,
-                    "red"
+                    "var(--red)"
                 );
                 this.ws = null;
+                // Exponential backoff auto-retry, up to WS_MAX_RETRIES.
+                if (this.wsRetries < this.WS_MAX_RETRIES) {
+                    const delayMs = [1000, 2000, 5000, 10000][this.wsRetries] || 10000;
+                    this.wsRetries++;
+                    this.wsReconnecting = true;
+                    this.logEvent(
+                        `Reconnecting in ${Math.round(delayMs/1000)}s (attempt ${this.wsRetries}/${this.WS_MAX_RETRIES})…`,
+                        "var(--amber)"
+                    );
+                    this.wsRetryTimer = setTimeout(() => this.setupWebSocket(), delayMs);
+                } else {
+                    this.wsReconnecting = false;
+                }
             };
 
             this.ws.onopen = () => {
-                this.logEvent("WebSocket connection opened", "green");
+                this.logEvent("WebSocket connection opened", "var(--primary)");
+                this.wsRetries = 0;
+                this.wsReconnecting = false;
             };
         },
         handleMessage(event) {
@@ -154,7 +283,7 @@ const app = createApp({
             } catch (err) {
                 this.logEvent(
                     `Response received is not a valid JSON: ${event.data}`,
-                    "red"
+                    "var(--red)"
                 );
                 return;
             }
@@ -174,9 +303,9 @@ const app = createApp({
             let color;
             if ("success" in dataObject) {
                 if (dataObject.success) {
-                    color = "green";
+                    color = "var(--primary)";
                 } else {
-                    color = "red";
+                    color = "var(--red)";
                     this.showNotification(
                         "Some error happened, please look into Log below.",
                         true
@@ -219,11 +348,15 @@ const app = createApp({
                 this.bridges.hasSuiteLocal = dataObject.bridges.includes(
                     "local-suite-node-bridge"
                 );
+
+                // Wait one background-check tick so `bridges.statusColor`
+                // reflects the live state; then decide whether to auto-start.
+                setTimeout(() => this.maybeAutoStartBridge(), backgroundCheckPeriodMs + 100);
             }
         },
         sendMessage(msg) {
             if (this.isWaitingForResponse) {
-                this.logEvent("Waiting for response, please wait...", "red");
+                this.logEvent("Waiting for response, please wait...", "var(--red)");
                 return;
             }
 
@@ -231,18 +364,17 @@ const app = createApp({
                 this.showNotification("Please enter a message", true);
                 return;
             }
-            if (!this.ws) {
-                this.logEvent("WebSocket not connected", "red");
+            if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
+                this.logEvent("WebSocket not connected", "var(--red)");
                 this.showNotification(
-                    "WebSocket not connected - trying to connect...",
+                    "WebSocket not connected – trying to connect…",
                     true
                 );
-                this.setupWebSocket();
-                this.sendMessage(msg);
+                if (!this.ws) this.setupWebSocket();
                 return;
             }
 
-            this.logEvent(`Request sent: ${JSON.stringify(msg)}`, "blue");
+            this.logEvent(`Request sent: ${JSON.stringify(msg)}`, "var(--blue)");
 
             const requestToSend = JSON.stringify(
                 Object.assign(msg, {
@@ -255,7 +387,9 @@ const app = createApp({
             this.isWaitingForResponse = true;
         },
         sendMessageOnBackground(json) {
-            if (!this.ws) {
+            // Skip if the socket isn't OPEN — sending on CONNECTING or CLOSING
+            // throws InvalidStateError and would drop the background-check.
+            if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
                 return;
             }
             this.ws.send(JSON.stringify(json));
@@ -265,13 +399,18 @@ const app = createApp({
                 type: "background-check",
             });
         },
-        showNotification(text, isError = false) {
+        showNotification(text, isError = true) {
+            // The error modal is only used for backend failures / validation blockers.
+            // `isError` is kept in the signature for backwards compatibility.
             this.notifications.text = text;
             this.notifications.showPopup = true;
             this.notifications.isError = isError;
-            this.notifications.header = isError ? "Error" : "Notification";
+            this.notifications.header = "Error";
         },
         bridgeStart() {
+            // Remember the version so the dashboard can auto-start it on the
+            // next load when the user has opted in (see `userEnvBridgeAutoStart`).
+            store.set('userEnvLastBridge', this.bridges.selected);
             this.sendMessage({
                 type: "bridge-start",
                 version: this.bridges.selected,
@@ -279,9 +418,24 @@ const app = createApp({
             });
         },
         bridgeStop() {
+            // Explicit stop clears the remembered version so a subsequent
+            // load doesn't bring back what the user just shut down.
+            store.set('userEnvLastBridge', '');
             this.sendMessage({
                 type: "bridge-stop",
             });
+        },
+        maybeAutoStartBridge() {
+            // Only fire once, after the `client` message delivers the live
+            // version list AND background-check has told us the bridge is
+            // not already running.
+            if (!this.bridges.autoStart) return;
+            const last = store.get('userEnvLastBridge');
+            if (!last) return;
+            if (!this.bridges.versions.includes(last)) return;
+            if (this.bridges.statusColor === 'green') return;
+            this.bridges.selected = last;
+            this.bridgeStart();
         },
         tropicStart() {
             this.sendMessage({
@@ -314,6 +468,8 @@ const app = createApp({
                 save_screenshots: this.emulators.screenshotMode,
                 show_animations: this.emulators.animations,
             });
+            // If the flyout is open, close it so the user sees the device stage come to life.
+            if (this.openFly === 'flyEmu') this.closeFlyouts();
         },
         emulatorStartFromUrl() {
             const url = this.emulatorUrl.url;
@@ -340,6 +496,8 @@ const app = createApp({
 
             this.emulatorDownloadMessage =
                 "Emulator started downloading, it may take a while...";
+            // Close the flyout so the user can see the download progress + device stage.
+            this.closeFlyouts();
         },
         emulatorStartFromBranch() {
             let branch = this.emulatorBranch.branch;
@@ -367,6 +525,7 @@ const app = createApp({
 
             this.emulatorDownloadMessage =
                 "Emulator started downloading, it may take a while...";
+            this.closeFlyouts();
         },
         reflectBackgroundSituationInGUI(dataObject) {
             if ("bridge_status" in dataObject) {
@@ -393,16 +552,23 @@ const app = createApp({
                     );
                 }
                 this.writeBridgeStatus(`Running - ${status.version}`, "green");
+                this.bridges.runningVersion = status.version || null;
             } else {
                 this.writeBridgeStatus("Stopped", "red");
+                this.bridges.runningVersion = null;
             }
         },
         reflectEmulatorSituation(status) {
             if (status.is_running) {
                 this.writeEmulatorStatus(
                     `Running - ${status.version}`,
-                    "green"
+                    "green"  // statusColor — used for CSS class, not inline style
                 );
+                const match = status.version && status.version.match(/\((\w+)\)$/);
+                this.emulators.runningModel = match ? match[1] : null;
+                this.emulators.runningVersion = status.version
+                    ? status.version.replace(/\s*\(\w+\)$/, "")
+                    : null;
                 if (!this.emulators.vncActive) {
                     this.emulators.vncActive = true;
                     this.$nextTick(() => this.reloadVnc());
@@ -410,13 +576,17 @@ const app = createApp({
             } else {
                 this.writeEmulatorStatus("Stopped", "red");
                 this.emulators.vncActive = false;
+                this.emulators.runningModel = null;
+                this.emulators.runningVersion = null;
             }
         },
         reflectTropicSituation(status) {
             if (status.is_running) {
                 this.writeTropicStatus(`Running - ${status.version}`, "green");
+                this.tropic.runningVersion = status.version || null;
             } else {
                 this.writeTropicStatus("Stopped", "red");
+                this.tropic.runningVersion = null;
             }
         },
         reflectRegtestSituation(is_running) {
@@ -452,7 +622,7 @@ const app = createApp({
                 return;
             }
 
-            this.logEvent(`Sent manually: ${command}`, "magenta");
+            this.logEvent(`Sent manually: ${command}`, "var(--amber)");
             this.sendMessage(JSON.parse(command));
             this.$nextTick(() => {
                 document.getElementById("server-input").focus();
@@ -523,19 +693,20 @@ const app = createApp({
             });
         },
         reloadVnc() {
-            const iframe = document.getElementById("vnc-iframe");
-            if (iframe) {
-                iframe.src = iframe.src;
-            }
+            this.vncCacheBuster = Date.now();
         },
         openVncPopup() {
             const w = 350;
             const h = 666;
-            const left = (screen.width - w) / 2;
-            const top = (screen.height - h) / 2;
+            const availW = (window.screen && window.screen.availWidth)  || window.innerWidth;
+            const availH = (window.screen && window.screen.availHeight) || window.innerHeight;
+            const left = Math.max(0, (availW - w) / 2);
+            const top  = Math.max(0, (availH - h) / 2);
             const popup = window.open("about:blank", "novnc-viewer", `popup=yes,width=${w},height=${h},left=${left},top=${top}`);
             if (popup) {
-                popup.location.href = "http://localhost:6080/vnc_embed.html";
+                popup.location.href = this.vncUrl;
+            } else {
+                this.showNotification("Popup blocked. Allow popups for this site to open the emulator in a separate window.", true);
             }
         },
         emulatorStop() {
@@ -561,25 +732,6 @@ const app = createApp({
                 type: "emulator-set-for-backup",
             });
         },
-        emulatorGetFeatures() {
-            this.sendMessage({
-                type: "emulator-get-features",
-            });
-        },
-        regtestMine() {
-            this.sendMessage({
-                type: "regtest-mine-blocks",
-                block_amount: this.regtest.mineBlocks,
-                address: this.regtest.mineAddress,
-            });
-        },
-        regtestSend() {
-            this.sendMessage({
-                type: "regtest-send-to-address",
-                btc_amount: this.regtest.sendAmount,
-                address: this.regtest.sendAddress,
-            });
-        },
         n4w1Tap() {
             this.sendMessage({
                 type: "emulator-n4w1-tap",
@@ -592,12 +744,137 @@ const app = createApp({
                 tag_id: this.emulatorCommands.n4w1TagId.toString(),
             });
         },
+        emulatorGetFeatures() {
+            this.sendMessage({
+                type: "emulator-get-features",
+            });
+        },
+        regtestMine() {
+            const blocks = Number(this.regtest.mineBlocks);
+            if (!blocks || blocks < 1 || blocks > 10000) {
+                this.showNotification("Block count must be between 1 and 10 000.", true);
+                return;
+            }
+            // Address is optional — the backend falls back to getnewaddress()
+            // when it's omitted. Only trim + send if the user provided one.
+            const payload = { type: "regtest-mine-blocks", block_amount: blocks };
+            const addr = (this.regtest.mineAddress || "").trim();
+            if (addr) payload.address = addr;
+            this.sendMessage(payload);
+        },
+        regtestSend() {
+            const amount = Number(this.regtest.sendAmount);
+            if (!amount || amount <= 0) {
+                this.showNotification("BTC amount must be greater than 0.", true);
+                return;
+            }
+            if (!this.regtest.sendAddress || !this.regtest.sendAddress.trim()) {
+                this.showNotification("Enter a destination address.", true);
+                return;
+            }
+            this.sendMessage({
+                type: "regtest-send-to-address",
+                btc_amount: amount,
+                address: this.regtest.sendAddress.trim(),
+            });
+        },
+        logKind(text, color) {
+            if (text.indexOf('Request sent') === 0) return 'out';
+            if (text.indexOf('Sent manually') === 0) return 'raw';
+            if (text.indexOf('Response received') === 0) {
+                if (color && color.indexOf('--red') !== -1) return 'err';
+                return 'ok';
+            }
+            if (text.indexOf('connection opened') !== -1) return 'ok';
+            if (color && color.indexOf('--red') !== -1) return 'err';
+            return 'sys';
+        },
         logEvent(text, color) {
+            const kind = this.logKind(text, color);
             const newLog = {
+                id: this.req_id + '_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
                 text: `${currentTime()} - ${text}`,
                 color,
+                kind,
             };
+            // Track whether the user was already near the top before we prepend.
+            const el = this.$refs.logContainer;
+            const nearTop = !el || el.scrollTop < 60;
             this.logs.unshift(newLog);
+            // Cap log length so the DOM stays light for long sessions.
+            if (this.logs.length > 500) this.logs.length = 500;
+            // Auto-scroll only if the user was already near the top.
+            if (nearTop) {
+                this.$nextTick(() => { if (el) el.scrollTop = 0; });
+            } else {
+                this.unseenLogs = (this.unseenLogs || 0) + 1;
+            }
+        },
+        clearUnseen() {
+            this.unseenLogs = 0;
+            const el = this.$refs.logContainer;
+            if (el) el.scrollTop = 0;
+        },
+        onLogScroll() {
+            const el = this.$refs.logContainer;
+            if (el && el.scrollTop < 30) this.unseenLogs = 0;
+        },
+        openFlyout(id) {
+            // When switching directly from one flyout to another, suppress the
+            // slide transition so panels don't re-animate across the viewport —
+            // feels like an in-place content swap. First-open and final-close
+            // keep their slide.
+            if (this.openFly && this.openFly !== id) {
+                const root = document.documentElement;
+                root.classList.add('no-fly-transition');
+                this.openFly = id;
+                this.$nextTick(() => {
+                    // Force a reflow so the position change commits without a
+                    // transition, then re-enable transitions on the next frame.
+                    void root.offsetHeight;
+                    requestAnimationFrame(() => {
+                        root.classList.remove('no-fly-transition');
+                    });
+                });
+            } else {
+                this.openFly = id;
+            }
+        },
+        closeFlyouts() {
+            this.openFly = null;
+        },
+        toggleTheme() {
+            this.theme = this.theme === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', this.theme);
+            store.set('userEnvTheme', this.theme);
+        },
+        copyToClipboard(text) {
+            const done = () => {
+                this.copyFlash = text;
+                setTimeout(() => {
+                    if (this.copyFlash === text) this.copyFlash = null;
+                }, 2500);
+            };
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(done).catch(() => {
+                    this.showNotification("Clipboard access denied.", true);
+                });
+            } else {
+                // Fallback for older browsers / insecure contexts.
+                const ta = document.createElement("textarea");
+                ta.value = text;
+                ta.style.position = "fixed";
+                ta.style.top = "-1000px";
+                document.body.appendChild(ta);
+                ta.select();
+                try {
+                    document.execCommand("copy");
+                    done();
+                } catch (e) {
+                    this.showNotification("Copy not supported.", true);
+                }
+                document.body.removeChild(ta);
+            }
         },
     },
 });
