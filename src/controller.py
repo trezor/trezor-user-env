@@ -281,7 +281,14 @@ class ResponseGetter:
                 response_text += " and wiped to be empty"
             return {"response": response_text, "emulator_started": True}
         elif self.command == "emulator-stop":
+            # emulator.stop() clears MODEL_RUNNING, so read it first. If the
+            # T3W1 emulator auto-started the Tropic model server on launch
+            # (see emulator-start handler above), tear it down here too so
+            # stopping the emulator cleans up everything it spawned.
+            was_t3w1 = emulator.MODEL_RUNNING == "T3W1"
             emulator.stop()
+            if was_t3w1 and tropic_model.is_running():
+                tropic_model.stop()
             return {"response": "Emulator stopped"}
         elif self.command == "emulator-setup":
             emulator.setup_device(

@@ -348,7 +348,7 @@ def start(
     # Verifying if the emulator is really running
     time.sleep(0.5)
 
-    vnc.start_capture()
+    vnc.start_capture(model=model)
     assert EMULATOR.process is not None
     if EMULATOR.process.poll() is not None:
         EMULATOR = None

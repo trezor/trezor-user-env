@@ -27,6 +27,18 @@
         const host = readQueryVariable('host', window.location.hostname);
         const port = readQueryVariable('port', window.location.port);
         const path = readQueryVariable('path', 'websockify');
+        const rawBg = readQueryVariable('background', '#808080');
+        // Only accept valid CSS hex literals: #RGB, #RGBA, #RRGGBB, #RRGGBBAA.
+        // Rejects arbitrary CSS values (e.g., url(...)) and malformed hex
+        // lengths like #12345 / #1234567 that the browser would silently drop.
+        const background = /^#(?:[0-9a-fA-F]{3,4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/.test(rawBg) ? rawBg : '#808080';
+
+        // Apply background to body and #screen so the canvas padding area
+        // matches the parent dashboard theme.
+        document.documentElement.style.background = background;
+        document.body.style.background = background;
+        const screenEl = document.getElementById('screen');
+        if (screenEl) screenEl.style.background = background;
 
         const proto = window.location.protocol === 'https:' ? 'wss' : 'ws';
         let url = proto + '://' + host;
@@ -37,7 +49,7 @@
             const rfb = new RFB(document.getElementById('screen'), url);
             rfb.scaleViewport = true;
             rfb.resizeSession = false;
-            rfb.background = "gray";
+            rfb.background = background;
 
             // once connected, resize the popup to match the remote desktop
             rfb.addEventListener('connect', () => {

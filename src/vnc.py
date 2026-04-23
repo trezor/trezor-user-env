@@ -20,6 +20,14 @@ import helpers
 DISPLAY = ":42"
 NOVNC_URL = "http://localhost:6080/vnc_embed.html"
 
+# Optional per-model clip rectangle inside the emulator SDL window.
+# Format is x11vnc's -clip "WxH+X+Y", relative to the window when combined
+# with -id. No per-model clip rectangles are currently defined, so every
+# model uses a full-window capture. Populating an entry here would crop
+# the stream to that model's device shell, letting the iframe's
+# theme-coloured background replace the emulator's grey SDL padding.
+MODEL_CLIP: dict[str, str] = {}
+
 # Directory containing noVNC web files (index.html, vnc_embed.html, etc.)
 _NOVNC_SEARCH_PATHS = [
     "/usr/share/novnc",  # Debian/Docker
@@ -123,7 +131,7 @@ def start_display() -> None:
     time.sleep(0.5)
 
 
-def start_capture() -> None:
+def start_capture(model: str | None = None) -> None:
     """Start x11vnc, streaming only the emulator window by its ID."""
     global _x11vnc_process
 
@@ -138,6 +146,11 @@ def start_capture() -> None:
         cmd += ["-id", window_id]
     else:
         _log("Could not detect emulator window, serving full display")
+
+    clip = MODEL_CLIP.get(model) if model else None
+    if clip:
+        cmd += ["-clip", clip]
+        _log(f"Clipping stream to device shell: {clip}")
 
     _x11vnc_process = Popen(cmd, stdout=DEVNULL, stderr=DEVNULL)
     time.sleep(0.5)
