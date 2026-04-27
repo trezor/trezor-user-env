@@ -152,7 +152,11 @@ def start_capture(model: str | None = None) -> None:
         cmd += ["-clip", clip]
         _log(f"Clipping stream to device shell: {clip}")
 
-    _x11vnc_process = Popen(cmd, stdout=DEVNULL, stderr=DEVNULL)
+    # x11vnc refuses to start when WAYLAND_DISPLAY is set, even when targeting
+    # an Xvfb display. Strip it so x11vnc connects to DISPLAY instead.
+    env = os.environ.copy()
+    env.pop("WAYLAND_DISPLAY", None)
+    _x11vnc_process = Popen(cmd, stdout=DEVNULL, stderr=DEVNULL, env=env)
     time.sleep(0.5)
     _log(f"noVNC viewer available at {NOVNC_URL}")
 
