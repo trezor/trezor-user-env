@@ -196,7 +196,10 @@
 
                 <!-- ========== MAIN ========== -->
                 <!-- Canvas -->
-                    <div class="canvas">
+                    <div :class="['canvas', { 'canvas--log-side': logSide }]">
+
+                        <!-- Drag handle for log side panel resize (only active in side mode) -->
+                        <div v-if="logSide" class="log-side-handle" @mousedown="startLogResize"></div>
 
                         <!-- §8 Device display (VNC live view) -->
                         <section class="card device-card">
@@ -414,21 +417,60 @@
                             </div>
                         </section>
 
+                        <!-- Drag handle for log bottom resize (only active in default/bottom mode) -->
+                        <div v-if="!logSide" class="log-bottom-handle" @mousedown="startLogBottomResize"></div>
+
                         <!-- §10 Event log -->
-                        <section class="card log-card">
+                        <section :class="['card', 'log-card', { 'log-card--expanded': logExpanded, 'log-card--side': logSide }]">
                             <div class="card-head">
                                 <h3>
                                     Event log
                                     <span class="card-head-tag">{{ logs.length }} events</span>
                                 </h3>
-                                <div class="card-head-right log-filters">
+                                <div class="card-head-right log-toolbar">
+                                    <div class="log-filter-dropdown">
+                                        <button
+                                            class="log-filter-toggle"
+                                            :class="{ 'log-filter-toggle--active': logFiltersActive }"
+                                            @click.stop="logFilterOpen = !logFilterOpen"
+                                            data-tooltip="Filter log entries"
+                                        >Filters<span v-if="logFiltersActive" class="log-filter-dot"></span></button>
+                                        <div v-if="logFilterOpen" class="log-filter-menu" @click.stop>
+                                            <button
+                                                v-for="f in logFilterOptions"
+                                                :key="f.k"
+                                                :class="['log-filter-option', { 'log-filter-option--on': logFilters.has(f.k) }]"
+                                                :data-tooltip="f.tip"
+                                                data-tooltip-pos="bottom"
+                                                @click="toggleFilter(f.k)"
+                                            >
+                                                <span class="log-filter-check">
+                                                    <svg v-if="logFilters.has(f.k)" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                                                </span>
+                                                {{ f.label }}
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <span class="log-toolbar-sep"></span>
+                                    <button class="log-tools-clear" @click="logs = []; unseenLogs = 0" data-tooltip="Clear all log entries">Clear</button>
                                     <button
-                                        v-for="f in logFilterOptions"
-                                        :key="f.k"
-                                        :class="['log-filter', { 'log-filter--on': logFilter === f.k }]"
-                                        @click="logFilter = f.k"
-                                    >{{ f.label }}</button>
-                                    <button class="log-tools-clear" @click="logs = []; unseenLogs = 0">Clear</button>
+                                        class="log-tools-expand"
+                                        @click="logExpanded = !logExpanded"
+                                        :aria-label="logExpanded ? 'Collapse log panel' : 'Expand log panel'"
+                                        :data-tooltip="logExpanded ? 'Collapse' : 'Expand to fullscreen'"
+                                    >
+                                        <svg v-if="!logExpanded" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+                                        <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 14 10 14 10 20"/><polyline points="20 10 14 10 14 4"/><line x1="10" y1="14" x2="3" y2="21"/><line x1="21" y1="3" x2="14" y2="10"/></svg>
+                                    </button>
+                                    <button
+                                        class="log-tools-side"
+                                        @click="logSide = !logSide"
+                                        :aria-label="logSide ? 'Detach log from side' : 'Dock log to side'"
+                                        :data-tooltip="logSide ? 'Return to default layout' : 'Dock log panel to left side'"
+                                    >
+                                        <svg v-if="!logSide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+                                        <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="15" x2="21" y2="15"/></svg>
+                                    </button>
                                 </div>
                             </div>
                             <button
@@ -443,7 +485,7 @@
                                     :style="{ color: log.color }"
                                 >{{ log.text }}</p>
                                 <div v-if="!filteredLogs.length" class="log-empty">
-                                    <span v-if="logFilter !== 'all' && logs.length">No {{ logFilter }} events yet.</span>
+                                    <span v-if="logFiltersActive && logs.length">No matching events for the current filter selection.</span>
                                     <span v-else>No events yet. Start the bridge or emulator to see outbound requests and backend responses.</span>
                                 </div>
                             </div>
