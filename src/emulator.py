@@ -121,7 +121,13 @@ def wait_for_udp_device() -> Transport:
 def get_device() -> Transport:
     # Node bridges need UDP
     if bridge.is_running() and not bridge.is_node_bridge_running():
-        return wait_for_bridge_device()
+        try:
+            return wait_for_bridge_device()
+        except RuntimeError:
+            log(
+                "Bridge is running but device not found via bridge, falling back to UDP",
+                "yellow",
+            )
 
     return wait_for_udp_device()
 
