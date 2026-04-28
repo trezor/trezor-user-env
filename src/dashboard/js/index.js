@@ -1,5 +1,6 @@
 const websocketUrl = "ws://localhost:9001/";
 const backgroundCheckPeriodMs = 500;
+const WS_MAX_RETRIES = 4;
 
 // Safe localStorage wrapper — file:// in some browsers throws SecurityError.
 const store = {
@@ -115,15 +116,21 @@ const app = createApp({
                 isError: false,
             },
             openFly: null,
+            logExpanded: false,
+            logSide: store.get('userEnvLogSide') === 'true',
+            logSideWidth: parseInt(store.get('userEnvLogSideWidth', '420'), 10),
+            logBottomHeight: parseInt(store.get('userEnvLogBottomHeight', '240'), 10),
+            logFilters: new Set(
+                (store.get('userEnvLogFilters', 'out,ok,err,raw,sys')).split(',').filter(Boolean)
+            ),
+            logFilterOpen: false,
             theme: store.get('userEnvTheme', 'dark'),
             copyFlash: null,
             vncCacheBuster: Date.now(),
-            logFilter: 'all',
             unseenLogs: 0,
             wsReconnecting: false,
             wsRetries: 0,
             wsRetryTimer: null,
-            WS_MAX_RETRIES: 4,
         };
     },
     created() {
@@ -139,6 +146,12 @@ const app = createApp({
         document.documentElement.setAttribute('data-theme', this.theme);
         this.$nextTick(() => {
             document.getElementById("app").style.display = "block";
+        });
+        document.documentElement.style.setProperty('--log-side-width', this.logSideWidth + 'px');
+        document.documentElement.style.setProperty('--log-bottom-height', this.logBottomHeight + 'px');
+        // Close filter dropdown on outside click.
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.log-filter-dropdown')) this.logFilterOpen = false;
         });
         // Esc: close popup first, then any open flyout.
         window.addEventListener("keydown", (event) => {
@@ -193,17 +206,18 @@ const app = createApp({
             return this.bridges.versions.filter(v => v.startsWith('2.'));
         },
         filteredLogs() {
-            if (this.logFilter === 'all') return this.logs;
-            return this.logs.filter(l => l.kind === this.logFilter);
+            return this.logs.filter(l => this.logFilters.has(l.kind));
+        },
+        logFiltersActive() {
+            return this.logFilters.size < 5;
         },
         logFilterOptions() {
             return [
-                { k: 'all', label: 'All' },
-                { k: 'out', label: '→ Out' },
-                { k: 'ok',  label: '← Ok' },
-                { k: 'err', label: '✗ Err' },
-                { k: 'raw', label: '{ } Raw' },
-                { k: 'sys', label: 'System' },
+                { k: 'out', label: 'Out',    tip: 'Outbound requests sent to the backend' },
+                { k: 'ok',  label: 'Ok',     tip: 'Successful responses from the backend' },
+                { k: 'err', label: 'Err',    tip: 'Error responses and failures' },
+                { k: 'raw', label: 'Raw',    tip: 'Raw WebSocket messages (sent manually)' },
+                { k: 'sys', label: 'System', tip: 'Internal events: connect, disconnect, retry' },
             ];
         },
     },
@@ -216,6 +230,9 @@ const app = createApp({
         },
         'bridges.autoStart'(v) {
             store.set('userEnvBridgeAutoStart', v ? 'true' : 'false');
+        },
+        logSide(v) {
+            store.set('userEnvLogSide', v ? 'true' : 'false');
         },
     },
     methods: {
@@ -257,12 +274,12 @@ const app = createApp({
                 );
                 this.ws = null;
                 // Exponential backoff auto-retry, up to WS_MAX_RETRIES.
-                if (this.wsRetries < this.WS_MAX_RETRIES) {
+                if (this.wsRetries < WS_MAX_RETRIES) {
                     const delayMs = [1000, 2000, 5000, 10000][this.wsRetries] || 10000;
                     this.wsRetries++;
                     this.wsReconnecting = true;
                     this.logEvent(
-                        `Reconnecting in ${Math.round(delayMs/1000)}s (attempt ${this.wsRetries}/${this.WS_MAX_RETRIES})…`,
+                        `Reconnecting in ${Math.round(delayMs/1000)}s (attempt ${this.wsRetries}/${WS_MAX_RETRIES})…`,
                         "var(--amber)"
                     );
                     this.wsRetryTimer = setTimeout(() => this.setupWebSocket(), delayMs);
@@ -809,6 +826,64 @@ const app = createApp({
             } else {
                 this.unseenLogs = (this.unseenLogs || 0) + 1;
             }
+        },
+        startLogBottomResize(e) {
+            e.preventDefault();
+            const handle = e.currentTarget;
+            const startY = e.clientY;
+            const startHeight = this.logBottomHeight;
+            handle.classList.add('dragging');
+            document.body.style.cursor = 'row-resize';
+            document.body.style.pointerEvents = 'none';
+            handle.style.pointerEvents = 'auto';
+            const onMove = (ev) => {
+                const h = Math.max(100, Math.min(startHeight - (ev.clientY - startY), window.innerHeight - 300));
+                this.logBottomHeight = h;
+                document.documentElement.style.setProperty('--log-bottom-height', h + 'px');
+            };
+            const onUp = () => {
+                handle.classList.remove('dragging');
+                document.body.style.cursor = '';
+                document.body.style.pointerEvents = '';
+                handle.style.pointerEvents = '';
+                store.set('userEnvLogBottomHeight', String(this.logBottomHeight));
+                document.removeEventListener('mousemove', onMove);
+                document.removeEventListener('mouseup', onUp);
+            };
+            document.addEventListener('mousemove', onMove);
+            document.addEventListener('mouseup', onUp);
+        },
+        startLogResize(e) {
+            e.preventDefault();
+            const handle = e.currentTarget;
+            const startX = e.clientX;
+            const startWidth = this.logSideWidth;
+            handle.classList.add('dragging');
+            document.body.style.cursor = 'col-resize';
+            document.body.style.pointerEvents = 'none';
+            handle.style.pointerEvents = 'auto';
+            const onMove = (ev) => {
+                const w = Math.max(390, Math.min(startWidth + ev.clientX - startX, 1150));
+                this.logSideWidth = w;
+                document.documentElement.style.setProperty('--log-side-width', w + 'px');
+            };
+            const onUp = () => {
+                handle.classList.remove('dragging');
+                document.body.style.cursor = '';
+                document.body.style.pointerEvents = '';
+                handle.style.pointerEvents = '';
+                store.set('userEnvLogSideWidth', String(this.logSideWidth));
+                document.removeEventListener('mousemove', onMove);
+                document.removeEventListener('mouseup', onUp);
+            };
+            document.addEventListener('mousemove', onMove);
+            document.addEventListener('mouseup', onUp);
+        },
+        toggleFilter(k) {
+            const f = new Set(this.logFilters);
+            if (f.has(k)) { f.delete(k); } else { f.add(k); }
+            this.logFilters = f;
+            store.set('userEnvLogFilters', [...f].join(','));
         },
         clearUnseen() {
             this.unseenLogs = 0;
