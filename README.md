@@ -39,9 +39,9 @@ cd trezor-user-env
 Trezor Suite normally relies on it's own bundled Bridge. To use the Bridge from `trezor-user-env` instead, you need to disable the bundled Bridge in Suite's debug settings.
 
 1. To enable debug settings, open Trezor Suite -> Settings and 5x click on the "Settings" title at the top of the page.
-2. Go to the "Debug" tab, scroll down to "Transport backends" and disable "Bridge server".
-3. Also disable "Run on startup" if you want to remember this setting for next launches of Suite.
-4. If you want to use a real device again, make sure to re-enable the "Bridge server" option.
+2. Go to the "Debug" tab, scroll down to "Transport clients" and enable "Bridge Transport".
+3. If you want to use a real device again, make sure to re-enable the "Bridge Transport" option.
+4. Don't forget to reload the app
 
 ## Basic terminology
 
