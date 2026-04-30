@@ -912,7 +912,7 @@ const app = createApp({
                     });
                 });
             } else {
-                this.openFly = id;
+                this.openFly = this.openFly === id ? null : id;
             }
         },
         closeFlyouts() {
