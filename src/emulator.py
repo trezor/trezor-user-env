@@ -127,6 +127,15 @@ def get_device() -> Transport:
 
 
 def is_running() -> bool:
+    # Prefer the tracked process handle — it works regardless of the binary
+    # name, which matters for custom firmware downloads whose file names may
+    # not contain the "trezor-emu" substring.
+    if EMULATOR is not None and EMULATOR.process is not None:
+        if EMULATOR.process.poll() is None:
+            return True
+
+    # Fallback: scan the process table for any emulator instance that we
+    # did not spawn ourselves (e.g. started before the controller).
     # Need to use special flags, as just `ps -ef` truncates the lines to 80 chars
     check_cmd = "ps -eo pid,ppid,args"
     process = Popen(check_cmd, shell=True, stdout=PIPE, stderr=PIPE)
