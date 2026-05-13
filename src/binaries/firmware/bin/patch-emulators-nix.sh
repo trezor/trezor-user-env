@@ -44,14 +44,22 @@ SDL2=$(dirname "$SDL2_LIB" 2>/dev/null || echo "")
 SDL2_IMG_LIB=$(ls /nix/store/*SDL2*image*/lib/libSDL2_image-2.0.so.0 2>/dev/null | head -1)
 SDL2_IMG=$(dirname "$SDL2_IMG_LIB" 2>/dev/null || echo "")
 
+SDL3_LIB=$(ls /nix/store/*sdl3-*/lib/libSDL3.so.0 2>/dev/null | head -1)
+SDL3=$(dirname "$SDL3_LIB" 2>/dev/null || echo "")
+
+SDL3_IMG_LIB=$(ls /nix/store/*sdl3-*/lib/libSDL3_image.so.0 2>/dev/null | head -1)
+SDL3_IMG=$(dirname "$SDL3_IMG_LIB" 2>/dev/null || echo "")
+
 INTERPRETER=$(patchelf --print-interpreter $(which python) 2>/dev/null || echo "")
 GLIBC=$(dirname "$INTERPRETER" 2>/dev/null || echo "")
 
-if [ -z "$LIBJPEG" ] || [ -z "$SDL2" ] || [ -z "$SDL2_IMG" ] || [ -z "$GLIBC" ] || [ -z "$INTERPRETER" ]; then
+if [[ -z "$LIBJPEG" || -z "$SDL2" || -z "$SDL2_IMG" || -z "$SDL3" || -z "$SDL3_IMG" || -z "$GLIBC" || -z "$INTERPRETER" ]]; then
     echo "ERROR: Could not find required libraries in Nix store"
     echo "LIBJPEG: $LIBJPEG"
     echo "SDL2: $SDL2"
     echo "SDL2_IMG: $SDL2_IMG"
+    echo "SDL3: $SDL3"
+    echo "SDL3_IMG: $SDL3_IMG"
     echo "GLIBC: $GLIBC"
     echo "INTERPRETER: $INTERPRETER"
     exit 1
@@ -60,12 +68,14 @@ fi
 echo "  ✓ libjpeg:     $LIBJPEG"
 echo "  ✓ SDL2:        $SDL2"
 echo "  ✓ SDL2_image:  $SDL2_IMG"
+echo "  ✓ SDL3:        $SDL3"
+echo "  ✓ SDL3_image:  $SDL3_IMG"
 echo "  ✓ glibc:       $GLIBC"
 echo "  ✓ interpreter: $INTERPRETER"
 echo ""
 
 # Step 2: Build new rpath
-NEW_RPATH="$LIBJPEG:$SDL2:$SDL2_IMG:$GLIBC"
+NEW_RPATH="$LIBJPEG:$SDL2:$SDL2_IMG:$SDL3:$SDL3_IMG:$GLIBC"
 
 # Step 3: Patch all emulator binaries
 echo "Step 2: Patching emulator binaries..."
