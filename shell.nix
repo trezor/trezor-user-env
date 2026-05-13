@@ -25,6 +25,8 @@ stdenv.mkDerivation {
     autoPatchelfHook
     python311
     uv
+    sdl3
+    sdl3-image
     SDL2
     SDL2_image
     xorg.xhost
