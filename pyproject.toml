@@ -37,3 +37,6 @@ packages = ["src"]
 
 [tool.mypy]
 exclude = "^trezor-suite/"
+
+[tool.uv]
+exclude-newer = "30 days"

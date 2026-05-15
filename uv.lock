@@ -6,6 +6,10 @@ resolution-markers = [
     "python_full_version < '3.13'",
 ]
 
+[options]
+exclude-newer = "2026-04-15T14:04:42.102685295Z"
+exclude-newer-span = "P30D"
+
 [[package]]
 name = "atomicwrites"
 version = "1.4.1"
