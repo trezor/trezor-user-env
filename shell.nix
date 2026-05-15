@@ -1,7 +1,7 @@
 let
-  # the last commit from master as of 2025-09-23
-  nixpkgsCommit = "7ea43b194fff615fe75741cf258988d6571623e0";
-  nixpkgsSha256 = "09nbk2q4w3v8x3v4r2y2s7v3nk8n4wqzxgykkp7na9bhijry2zla";
+  # the last commit from master as of 2026-03-15
+  nixpkgsCommit = "a07d4ce6bee67d7c838a8a5796e75dff9caa21ef";
+  nixpkgsSha256 = "0f6zni3jn6ji5icwbidbpmcgxdal2qnjszp7ragdcy0857hvq3c5";
 
   nixpkgsUrl = "https://github.com/NixOS/nixpkgs/archive/${nixpkgsCommit}.tar.gz";
 
@@ -23,17 +23,17 @@ stdenv.mkDerivation {
   name = "trezor-user-env-controller";
   buildInputs = [
     autoPatchelfHook
-    python311
+    python312
     uv
     sdl3
     sdl3-image
     SDL2
     SDL2_image
-    xorg.xhost
-    xorg.xorgserver # Xvfb
+    xhost
+    xorg-server # Xvfb
     x11vnc
     xdotool
-    python311Packages.websockify
+    python312Packages.websockify
     wget
     git
     curl
