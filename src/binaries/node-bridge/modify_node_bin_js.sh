@@ -11,7 +11,7 @@ if [ ! -f "$1" ]; then
 fi
 
 # Getting rid of USB import, which is not needed when we will spawn in with UDP argument
-string_to_comment='^var import_usb ='
+string_to_comment='^var import_usb[0-9]* ='
 if grep -q "$string_to_comment" "$1"; then
   sed -i "/$string_to_comment/ s/^/\/\//" "$1"
   echo "Success: line matching '$string_to_comment' was commented out."
