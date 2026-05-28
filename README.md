@@ -4,7 +4,7 @@ This environment is meant to support Trezor development - both Firmware and Suit
 
 - Provide an easy websocket server that is capable of:
   - Launching/stopping different versions of the firmware emulator.
-  - Launching/stopping trezord-go (Bridge).
+  - Launching/stopping node-bridge.
   - Send simple debug commands to the emulator.
 - Enable full integration testing of Suite, firmware emulator and Bridge using the websocket server.
 - Provide a HTML page that communicates with the server. This allows the developers to perform the actions above.
