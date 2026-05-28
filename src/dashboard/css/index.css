@@ -1685,6 +1685,28 @@ label[data-tooltip]:hover::before {
 }
 .vlist-divider::after { content: ""; flex: 1; height: 1px; background: var(--border); }
 
+.bridge-legacy-warning {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 8px 10px;
+    margin: 4px 0 6px;
+    border: 1px solid var(--amber);
+    border-radius: 8px;
+    background: var(--amber-soft);
+    color: var(--amber);
+    font-size: 11.5px;
+    line-height: 1.45;
+}
+.bridge-legacy-warning svg { width: 14px; height: 14px; flex-shrink: 0; margin-top: 1px; }
+.bridge-legacy-warning b { font-weight: 600; }
+.bridge-legacy-warning code {
+    font-size: 11px;
+    padding: 1px 4px;
+    border-radius: 4px;
+    background: rgba(0, 0, 0, .08);
+}
+
 .vgroup { margin-top: 10px; }
 .vgroup:first-child { margin-top: 0; }
 .vgroup-head {
