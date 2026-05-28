@@ -37,7 +37,7 @@ Once connected, the tools will be available to Claude Code automatically.
 ### Bridge management
 
 - **bridge_start** - Start the Trezor bridge
-  - `version`: `str` (default: `"node-bridge"`) - options: `"node-bridge"`, `"local-suite-node-bridge"`, `"2.0.33"`, `"2.0.32"`
+  - `version`: `str` (default: `"node-bridge"`) - options: `"node-bridge"`, `"local-suite-node-bridge"`
 - **bridge_stop** - Stop the Trezor bridge
 
 ### Emulator lifecycle

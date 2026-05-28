@@ -4,7 +4,6 @@ from __future__ import annotations
 import shutil
 import socket
 import time
-from shlex import split
 from typing import TYPE_CHECKING
 
 from psutil import Popen
@@ -37,12 +36,6 @@ def is_running() -> bool:
     return is_port_in_use(BRIDGE_PORT)
 
 
-def is_node_bridge_running() -> bool:
-    if VERSION_RUNNING is None:
-        return False
-    return "node" in VERSION_RUNNING
-
-
 def get_status() -> "StatusResponse":
     if helpers.physical_trezor():
         return {
@@ -69,16 +62,6 @@ def start(version: str, output_to_logfile: bool = True) -> None:
     global BRIDGE
     global VERSION_RUNNING
 
-    # When we are on ARM, include appropriate suffix for the version if not there
-    # Not doing this for node bridge
-    if (
-        binaries.IS_ARM
-        and not version.endswith(binaries.ARM_IDENTIFIER)
-        and "node" not in version
-    ):
-        log("ARM detected, adding suffix to bridge version", "yellow")
-        version += binaries.ARM_IDENTIFIER
-
     # In case the bridge was killed outside of the stop() function
     #   (for example manually by the user), we need to reflect the situation
     #   not to still think the bridge is running
@@ -91,7 +74,6 @@ def start(version: str, output_to_logfile: bool = True) -> None:
         return
 
     def get_command_list() -> list[str]:
-        # Special handling of node-js bridge (experimental)
         if version == binaries.NODE_BRIDGE_ID:
             path = binaries.NODE_BRIDGE_BIN_JS
             log(f"Using local bridge from {path}")
@@ -120,21 +102,7 @@ def start(version: str, output_to_logfile: bool = True) -> None:
                 )
             return ["node", str(transformed_path), "udp"]
         else:
-            bridge_location = binaries.BRIDGE_BIN_DIR / f"trezord-go-v{version}"
-            if not bridge_location.exists():
-                raise RuntimeError(
-                    f"Bridge does not exist for version {version} under {bridge_location}"
-                )
-
-            # In case user wants to use a physical device, not adding any arguments
-            # to the bridge. These arguments make the bridge optimized for emulators.
-            command = (
-                str(bridge_location)
-                if helpers.physical_trezor()
-                else f"{bridge_location} -ed 21324:21325 -u=false"
-            )
-            # Conditionally redirecting the output to a logfile instead of terminal/stdout
-            return split(command)
+            raise RuntimeError(f"Unknown bridge version: {version}")
 
     command_list = get_command_list()
 

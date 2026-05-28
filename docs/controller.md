@@ -153,7 +153,7 @@
 - **bridge-start**
   - **action**: start the specified version of bridge (only if it is not already running)
   - **arguments**:
-    - **version**: `str` (2.0.27, 2.0.31, etc.) - defaults to the latest available one
+    - **version**: `str` (`node-bridge`, `local-suite-node-bridge`) - defaults to `node-bridge`
     - **output_to_logfile**: `bool` (default=True) whether the debug output should go to a logfile, otherwise it goes to stdout
 
 - **bridge-stop**

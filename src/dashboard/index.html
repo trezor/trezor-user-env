@@ -649,9 +649,9 @@
             <aside :class="['flyout', { 'flyout--open': openFly === 'flyBrg' }]">
                 <div class="flyout-head">
                     <div class="flyout-head-title">
-                        <h2>Bridge <span class="mono">· trezord</span></h2>
+                        <h2>Bridge <span class="mono">· node-bridge</span></h2>
                         <div class="flyout-head-desc">
-                            The <code>trezord</code> service that lets host applications talk to the device / emulator.
+                            The <code>node-bridge</code> service that lets host applications talk to the device / emulator.
                             Pick a version while stopped, then start.
                         </div>
                     </div>
@@ -667,19 +667,7 @@
                     </div>
                     <div class="vlist">
                         <button
-                            v-for="v in modernBridgeVersions"
-                            :key="v"
-                            type="button"
-                            :class="['vitem', { 'vitem--selected': bridges.selected === v }]"
-                            :disabled="bridges.statusColor === 'green'"
-                            @click="bridges.selected = v"
-                        >
-                            <span class="vitem-name">{{ v }}</span>
-                            <span v-if="bridges.statusColor === 'green' && bridges.selected === v" class="vitem-badge">running</span>
-                        </button>
-                        <div v-if="modernBridgeVersions.length && legacyBridgeVersions.length" class="vlist-divider">legacy</div>
-                        <button
-                            v-for="v in legacyBridgeVersions"
+                            v-for="v in bridges.versions"
                             :key="v"
                             type="button"
                             :class="['vitem', { 'vitem--selected': bridges.selected === v }]"
