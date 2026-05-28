@@ -15,7 +15,7 @@ PORT = 9001
 HOST = "localhost"
 URL = f"ws://{HOST}:{PORT}"
 
-BRIDGE_TO_TEST = "2.0.33"
+BRIDGE_TO_TEST = "node-bridge"
 EMU_TO_TEST_TT = "2-main"
 EMU_TO_TEST_T1 = "1-main"
 EMU_TO_TEST_TR = "2-main"
@@ -82,7 +82,7 @@ commands_failure = [
     },  # unexisting emulator
     {
         "type": "bridge-start",
-        "version": "2.0.unexisting",
+        "version": "unexisting-bridge",
     },  # unexisting bridge
     {"type": "emulator-press-yes"},  # no running emulator
 ]

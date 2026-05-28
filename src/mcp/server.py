@@ -57,7 +57,7 @@ async def bridge_start(version: str = "node-bridge") -> str:
     Start the Trezor bridge.
 
     Args:
-        version: Bridge version to start. Options: "node-bridge" (default), "local-suite-node-bridge", "2.0.33", "2.0.32".
+        version: Bridge version to start. Options: "node-bridge" (default), "local-suite-node-bridge".
     """
     result = await _send_command({"type": "bridge-start", "version": version})
     if result.get("success"):

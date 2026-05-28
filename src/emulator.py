@@ -119,10 +119,7 @@ def wait_for_udp_device() -> Transport:
 
 
 def get_device() -> Transport:
-    # Node bridges need UDP
-    if bridge.is_running() and not bridge.is_node_bridge_running():
-        return wait_for_bridge_device()
-
+    # Node bridge always uses UDP
     return wait_for_udp_device()
 
 
