@@ -470,6 +470,9 @@ def connect_to_debuglink(
         client = DebugLink(get_device().find_debug())
 
     client.open()
+    if client.model is None:
+        client.model = models.by_internal_name(MODEL_RUNNING)
+
     time.sleep(SLEEP)
 
     try:
