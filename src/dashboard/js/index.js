@@ -737,6 +737,11 @@ const app = createApp({
                 type: "emulator-read-and-confirm-mnemonic",
             });
         },
+        readAndConfirmSingleShamirMnemonic() {
+            this.sendMessage({
+                type: "emulator-read-and-confirm-single-shamir-mnemonic",
+            });
+        },
         readAndConfirmMnemonicShamir() {
             this.sendMessage({
                 type: "emulator-read-and-confirm-shamir-mnemonic",
