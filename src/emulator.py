@@ -735,6 +735,25 @@ def read_and_confirm_mnemonic_t3t1() -> None:
 def read_and_confirm_mnemonic_t3b1() -> None:
     raise NotImplementedError("T3B1 mnemonic confirmation not implemented yet.")
 
+def read_and_confirm_single_shamir_mnemonic() -> None:
+    """Dispatcher for Single-share Shamir backup walkthrough.
+
+    Detects the running model and calls the appropriate implementation.
+    """
+    if not VERSION_RUNNING:
+        raise RuntimeError("No emulator running.")
+
+    if models.T3W1.internal_name in VERSION_RUNNING:
+        read_and_confirm_single_shamir_mnemonic_t3w1()
+    elif models.T3T1.internal_name in VERSION_RUNNING:
+        # If implemented for T3T1 in the future:
+        # read_and_confirm_single_shamir_mnemonic_t3t1()
+        raise RuntimeError("Single-share Shamir not yet implemented for T3T1.")
+    else:
+        # Fallback for models that don't support or haven't implemented this yet
+        raise RuntimeError(
+            f"Model {VERSION_RUNNING} not supported for Single-share Shamir."
+        )
 
 def read_and_confirm_shamir_mnemonic(shares: int, threshold: int) -> None:
     if not VERSION_RUNNING:
@@ -1106,11 +1125,16 @@ def read_and_confirm_shamir_mnemonic_t3w1(shares: int, threshold: int) -> None:
             # Scrolling through all the 20 words on next 5 pages
             # While doing so, saving all the words on the screen for the "quiz" later
             mnemonic: list[str] = []
-            for _ in range(20):
-                layout = debug.read_layout()
-                mnemonic.extend(layout.seed_words())
-                debug.swipe_up()
-                time.sleep(SLEEP)
+            for i in range(20):
+                words = debug.read_layout().seed_words()
+                if len(words) != 1:
+                    raise RuntimeError(
+                        f"Expected 1 seed word on screen {i + 1}, got {len(words)}: {words}"
+                    )
+                mnemonic.append(words[0])
+                if i < 19:
+                    debug.swipe_up()
+                    time.sleep(SLEEP)
 
             assert len(mnemonic) == 20
 
@@ -1161,6 +1185,98 @@ def read_and_confirm_shamir_mnemonic_t3w1(shares: int, threshold: int) -> None:
         debug.click(BOTTOM_BUTTON_COORDS)
         time.sleep(SLEEP)
 
+def read_and_confirm_single_shamir_mnemonic_t3w1() -> None:
+    """Performs a walkthrough of the Single-share Shamir backup on T3W1.
+
+    This handles the SLIP-39 Single-share flow (Backup Type 3) which skips
+    share/threshold pickers and starts directly with the 20-word backup.
+    """
+
+    # T3W1 specific coordinates
+    BOTTOM_BUTTON_COORDS = (200, 450)
+    RIGHT_BOTTOM_BUTTON_COORDS = (300, 450)
+    WORD_CHOICE_COORDS = [(200, 200), (200, 300), (200, 400)]
+
+    with connect_to_debuglink() as debug:
+        debug.watch_layout(True)
+
+        # 1. Backup Summary Screen
+        assert_text_on_screen(debug, "20 words")
+        debug.click(BOTTOM_BUTTON_COORDS)
+        time.sleep(SLEEP)
+
+        # 2. Safety Warning
+        assert_text_on_screen(debug, "anywhere digital")
+        debug.click(BOTTOM_BUTTON_COORDS)
+        time.sleep(SLEEP)
+
+        # 3. Instruction Screen
+        assert_text_on_screen(debug, "following 20 words in order")
+        debug.click(BOTTOM_BUTTON_COORDS)
+        time.sleep(SLEEP)
+
+        # 4. Read and store all 20 words
+        mnemonic: list[str] = []
+        for i in range(20):
+            words = debug.read_layout().seed_words()
+            if len(words) != 1:
+                raise RuntimeError(
+                    f"Expected 1 seed word on screen {i + 1}, got {len(words)}: {words}"
+                )
+            mnemonic.append(words[0])
+            # Swipe up to the next word (but not after the last one)
+            if i < 19:
+                debug.swipe_up()
+                time.sleep(SLEEP)
+        assert len(mnemonic) == 20, f"Expected 20 words, got {len(mnemonic)}"
+
+        # Exit word list
+        debug.click(RIGHT_BOTTOM_BUTTON_COORDS)
+        time.sleep(SLEEP)
+
+        # 5. Confirmation Screen
+        # "I wrote down all 20 words"
+        assert_text_on_screen(debug, "wrote down")
+        debug.click(RIGHT_BOTTOM_BUTTON_COORDS)
+        time.sleep(SLEEP)
+
+        # 6. Check wallet backup
+        assert_text_on_screen(debug, "quick check")
+        debug.click(BOTTOM_BUTTON_COORDS)
+        time.sleep(SLEEP)
+
+        # 7. Handle the 3-word check (Quiz)
+        for _ in range(3):
+            layout = debug.read_layout()
+            assert_text_on_screen(debug, "Select word")
+
+            # Find which position is requested (e.g., "Select word #12")
+            pattern = r"Select word #(\d+)"
+            screen_text = layout.text_content()
+            match = re.search(pattern, screen_text)
+            if match is None:
+                raise RuntimeError(f"Could not find word position in: {screen_text}")
+
+            word_pos = int(match.group(1))
+            wanted_word = mnemonic[word_pos - 1].lower()
+
+            # Find which of the 3 displayed options matches the mnemonic
+            displayed_words = [w.lower() for w in screen_text.split()[-3:]]
+            if wanted_word not in displayed_words:
+                raise RuntimeError(
+                    f"Word '{wanted_word}' not found in options {displayed_words}"
+                )
+
+            # Click the matching coordinate
+            word_index = displayed_words.index(wanted_word)
+            debug.click(WORD_CHOICE_COORDS[word_index])
+            time.sleep(SLEEP)
+
+        # 8. Finalization
+        # "wallet backup completed"
+        assert_text_on_screen(debug, "completed")
+        debug.click(BOTTOM_BUTTON_COORDS)
+        time.sleep(SLEEP)
 
 def read_and_confirm_atomic_shamir_mnemonic(shares: int, threshold: int) -> None:
     """Handles atomic Shamir backup flow where device starts at number picker.
