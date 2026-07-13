@@ -302,6 +302,10 @@ class ResponseGetter:
             value = self.request_dict["value"]
             emulator.input(value)
             return {"response": f"Input into emulator: {value}"}
+        elif self.command == "emulator-input-pin":
+            pin = self.request_dict["pin"]
+            emulator.input_pin(pin)
+            return {"response": f"Entered PIN of length {len(pin)}"}
         elif self.command == "emulator-click":
             x = self.request_dict["x"]
             y = self.request_dict["y"]

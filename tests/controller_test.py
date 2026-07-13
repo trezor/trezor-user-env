@@ -50,6 +50,7 @@ commands_success = [
     {"type": "emulator-press-yes"},
     {"type": "emulator-press-no"},
     {"type": "emulator-input", "value": "all all all..."},
+    {"type": "emulator-input-pin", "pin": "1234"},
     {"type": "emulator-click", "x": 123, "y": 121},
     {"type": "emulator-allow-unsafe-paths"},
     {"type": "emulator-select-num-of-words", "num": 12},

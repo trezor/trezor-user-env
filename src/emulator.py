@@ -558,6 +558,62 @@ def input(value: str) -> None:
         debug.input(value)
 
 
+def input_pin(pin: str) -> None:
+    if not VERSION_RUNNING:
+        raise RuntimeError("No emulator running.")
+
+    if not isinstance(pin, str):
+        raise TypeError(f"PIN must be a string, got {type(pin).__name__}")
+
+    if models.T3B1.internal_name in VERSION_RUNNING:
+        input_pin_t3b1(pin)
+    else:
+        with connect_to_debuglink() as debug:
+            debug.input(pin)
+
+
+def input_pin_t3b1(pin: str) -> None:
+    """Enter PIN on the T3B1
+
+    The keypad is a 13-key circular carousel (0-9, DELETE, SHOW, ENTER) whose
+    cursor starts at a random key each entry, so we read the current key and
+    rotate the computed distance the short way, then press_middle to select.
+    """
+    _T3B1_PIN_KEYS = [str(d) for d in range(10)] + ["DELETE", "SHOW", "ENTER"]
+
+    with connect_to_debuglink() as debug:
+        debug.watch_layout(True)
+
+        title = debug.read_layout().title().lower()
+        if "pin settings" in title:  # set-PIN: info screen precedes the keypad
+            assert_text_on_screen(debug, "digits long")
+            debug.press_yes()
+            time.sleep(SLEEP)
+        elif "check pin" in title:  # confirm: one "re-enter" screen precedes it
+            assert_text_on_screen(debug, "re-enter pin to confirm")
+            debug.press_yes()
+            time.sleep(SLEEP)
+
+        layout = debug.read_layout()
+        if layout.button_contents()[1] != "Select":
+            raise RuntimeError(f"Expected PIN keypad, got: {layout.title()!r}")
+
+        keys = _T3B1_PIN_KEYS
+        n = len(keys)
+        for key in list(pin) + ["ENTER"]:
+            current = debug.read_layout().get_middle_choice()
+            steps = (keys.index(key) - keys.index(current)) % n
+            if steps <= n // 2:
+                presses, rotate = steps, debug.press_right
+            else:
+                presses, rotate = n - steps, debug.press_left
+            for _ in range(presses):
+                rotate()
+                time.sleep(SLEEP)
+            debug.press_middle()
+            time.sleep(SLEEP)
+
+
 def click(x: int, y: int) -> None:
     with connect_to_debuglink() as debug:
         debug.click((x, y))
@@ -763,6 +819,8 @@ def read_and_confirm_shamir_mnemonic(shares: int, threshold: int) -> None:
 
     if models.T2T1.internal_name in VERSION_RUNNING:
         read_and_confirm_shamir_mnemonic_t2t1(shares=shares, threshold=threshold)
+    elif models.T3B1.internal_name in VERSION_RUNNING:
+        read_and_confirm_shamir_mnemonic_t3b1(shares=shares, threshold=threshold)
     elif models.T3T1.internal_name in VERSION_RUNNING:
         read_and_confirm_shamir_mnemonic_t3t1(shares=shares, threshold=threshold)
     elif models.T3W1.internal_name in VERSION_RUNNING:
@@ -892,6 +950,158 @@ def read_and_confirm_shamir_mnemonic_t2t1(shares: int, threshold: int) -> None:
             time.sleep(SLEEP)
 
         # Click Continue to finish the backup
+        debug.press_yes()
+        time.sleep(SLEEP)
+
+
+def read_and_confirm_shamir_mnemonic_t3b1(shares: int, threshold: int) -> None:
+    """Performs a walkthrough of the whole Shamir backup on the T3B1 device.
+
+    The T3B1 (Trezor Safe 3) is a two-button device, so the interaction differs
+    from the touchscreen models. Instead of clicking coordinates we drive the UI
+    with the button API:
+      - press_yes()    -> right button   (Continue / Show words / Hold to confirm)
+      - press_no()     -> left button    (Cancel)
+      - press_middle() -> middle action  (Select / "Ok, I understand")
+      - number and word pickers move the cursor with press_left / press_right
+        and confirm the highlighted value with press_middle (Select).
+
+    NOTE: does not support Super Shamir.
+    """
+    MIN_SHARES = 1
+    MAX_SHARES = 16
+    if shares < MIN_SHARES or shares > MAX_SHARES:
+        raise RuntimeError(
+            f"Number of shares must be between {MIN_SHARES} and {MAX_SHARES}."
+        )
+    if threshold > shares:
+        raise RuntimeError("Threshold cannot be bigger than number of shares.")
+
+    def select_number(debug: DebugLink, default_value: int, target: int) -> None:
+        """On a number-picker screen, move from the picker's default value to
+        the target with the left/right buttons, then press middle to Select."""
+        needed_clicks = abs(target - default_value)
+        for _ in range(needed_clicks):
+            if target < default_value:
+                debug.press_left()
+            else:
+                debug.press_right()
+            time.sleep(SLEEP)
+        debug.press_middle()  # Select the highlighted value
+        time.sleep(SLEEP)
+
+    with connect_to_debuglink() as debug:
+        # So that we can wait for layout changes
+        debug.watch_layout(True)
+
+        # --- Number of shares ---
+        # Checklist (Number of shares step) -> Continue.
+        assert_text_on_screen(debug, "write down and check")
+        debug.press_yes()
+        time.sleep(SLEEP)
+        # "Number of shares" info screen -> Continue
+        assert_text_on_screen(debug, "total number of shares")
+        debug.press_yes()
+        time.sleep(SLEEP)
+        # Number picker starts at 5. Its text_content is not reliably readable
+        # (it is a NumberInput component), but the title is, so assert on that.
+        assert "number of shares" in debug.read_layout().title().lower()
+        DEFAULT_SHARES = 5
+        select_number(debug, DEFAULT_SHARES, shares)
+        # Checklist (Set threshold step) -> Continue
+        assert_text_on_screen(debug, "write down and check")
+        debug.press_yes()
+        time.sleep(SLEEP)
+
+        # --- Threshold ---
+        # "Threshold" info screen -> Continue
+        assert_text_on_screen(debug, "minimum number of shares")
+        debug.press_yes()
+        time.sleep(SLEEP)
+        # Threshold picker starts at the default (shares // 2 + 1)
+        assert "threshold" in debug.read_layout().title().lower()
+        default_threshold = shares // 2 + 1
+        select_number(debug, default_threshold, threshold)
+
+        # --- Write down and check ---
+        # Checklist (Write down and check step) -> Continue
+        assert_text_on_screen(debug, "write down and check")
+        debug.press_yes()
+        time.sleep(SLEEP)
+        # "Never put your backup anywhere digital" -> Ok, I understand (middle)
+        assert_text_on_screen(debug, "anywhere digital")
+        debug.press_middle()
+        time.sleep(SLEEP)
+
+        # Loop through all the shares, writing each one down and passing its quiz
+        for _ in range(shares):
+            # "Share #N" intro -> Show words (right button)
+            assert_text_on_screen(debug, "Write the following 20 words")
+            debug.press_yes()
+            time.sleep(SLEEP)
+
+            # Read all 20 words, paging down with the right button, saving them
+            # for the "quiz" that follows. The final page is the "I wrote down
+            # all 20 words" confirmation, which carries no seed words.
+            mnemonic: list[str] = []
+            layout = debug.read_layout()
+            while True:
+                mnemonic.extend(layout.seed_words())
+                if layout.active_page() >= layout.page_count() - 1:
+                    break
+                debug.press_right()
+                time.sleep(SLEEP)
+                layout = debug.read_layout()
+            assert len(mnemonic) == 20, f"Expected 20 words, got {len(mnemonic)}"
+
+            # "I wrote down all 20 words in order." -> Hold to confirm (right)
+            assert_text_on_screen(debug, "wrote down all")
+            debug.press_yes()
+            time.sleep(SLEEP)
+            # "Check Share #N - Select the correct word..." -> Continue (right)
+            assert_text_on_screen(debug, "Select the correct word")
+            debug.press_yes()
+            time.sleep(SLEEP)
+
+            # Answer the 3 questions, each asking for a specific word. The screen
+            # is a carousel of 3 candidate words; rotate it until the wanted word
+            # is the middle (highlighted) choice, then Select it.
+            for _ in range(3):
+                layout = debug.read_layout()
+                # "Select word 3 of 20:"
+                match = re.search(r"Select word (\d+)", layout.title())
+                if match is None:
+                    raise RuntimeError(
+                        f"Could not find word position in: {layout.title()}"
+                    )
+                word_pos = int(match.group(1))
+                wanted_word = mnemonic[word_pos - 1].lower()
+
+                guard = 0
+                while layout.get_middle_choice().lower() != wanted_word:
+                    debug.press_right()
+                    time.sleep(SLEEP)
+                    layout = debug.read_layout()
+                    guard += 1
+                    if guard > 3:
+                        raise RuntimeError(
+                            f"Could not find '{wanted_word}' among word choices."
+                        )
+                debug.press_middle()  # Select
+                time.sleep(SLEEP)
+
+            # "Share #N checked successfully" (or the final "Success" screen on
+            # the last share, "You have finished verifying...") -> Continue.
+            success_text = debug.read_layout().text_content().lower()
+            assert (
+                "checked successfully" in success_text
+                or "finished verifying" in success_text
+            ), f"Unexpected share-check result screen: {success_text!r}"
+            debug.press_yes()
+            time.sleep(SLEEP)
+
+        # "Backup is done. Keep it safe!" -> Continue
+        assert_text_on_screen(debug, "Keep it safe")
         debug.press_yes()
         time.sleep(SLEEP)
 
@@ -1288,10 +1498,12 @@ def read_and_confirm_atomic_shamir_mnemonic(shares: int, threshold: int) -> None
     if models.T2T1.internal_name in VERSION_RUNNING:
         _select_shares_and_threshold_t2t1(shares, threshold)
         _confirm_shamir_backup_words_t2t1(shares)
+    elif models.T3B1.internal_name in VERSION_RUNNING:
+        read_and_confirm_shamir_mnemonic_t3b1(shares, threshold)
     elif models.T3T1.internal_name in VERSION_RUNNING:
-        read_and_confirm_shamir_mnemonic_t3t1(shares=shares, threshold=threshold)
+        read_and_confirm_shamir_mnemonic_t3t1(shares, threshold)
     elif models.T3W1.internal_name in VERSION_RUNNING:
-        read_and_confirm_shamir_mnemonic_t3w1(shares=shares, threshold=threshold)
+        read_and_confirm_shamir_mnemonic_t3w1(shares, threshold)
     else:
         raise RuntimeError(
             f"Model {VERSION_RUNNING} not supported for atomic Shamir flow."
