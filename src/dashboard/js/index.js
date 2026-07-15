@@ -663,6 +663,11 @@ const app = createApp({
                 type: "emulator-wipe",
             });
         },
+        emulatorRebootToBootloader() {
+            this.sendMessage({
+                type: "emulator-reboot-to-bootloader",
+            });
+        },
         emulatorResetDevice() {
             this.sendMessage({
                 type: "emulator-reset-device",
