@@ -86,6 +86,10 @@ const app = createApp({
             emulatorDownloadMessage: "",
             customFirmwareSource: "url",
             customFirmwareOpen: false,
+            bootloaderMockOpen: false,
+            bootloaderMock: {
+                model: "T3W1",
+            },
             suiteMountOpen: false,
             emulatorCommands: {
                 seed: "",
@@ -731,6 +735,20 @@ const app = createApp({
             this.sendMessage({
                 type: "emulator-stop",
             });
+        },
+        emulatorStartBootloaderMock() {
+            const model = this.bootloaderMock.model;
+            if (!model) {
+                this.showNotification("Pick a model for the bootloader mock!", true);
+                return;
+            }
+            // The mock has no display; hide the VNC viewer if it was showing.
+            this.emulators.vncActive = false;
+            this.sendMessage({
+                type: "emulator-start-bootloader",
+                model,
+            });
+            this.closeFlyouts();
         },
         readAndConfirmMnemonic() {
             this.sendMessage({

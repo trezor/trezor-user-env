@@ -12,6 +12,7 @@ from websockets.exceptions import ConnectionClosedError, ConnectionClosedOK
 from websockets.server import serve
 
 import binaries
+import bootloader_mock
 import bridge
 import emulator
 import helpers
@@ -280,7 +281,30 @@ class ResponseGetter:
             if wipe:
                 response_text += " and wiped to be empty"
             return {"response": response_text, "emulator_started": True}
+        elif self.command == "emulator-start-bootloader":
+            # There is no real emulator bootloader (the emulator has no boot
+            # chain), so we serve a mock device that presents as being in
+            # bootloader mode. It occupies the emulator UDP port, so stop any
+            # running emulator first.
+            model = self.request_dict.get("model")
+            if not model:
+                return {
+                    "success": False,
+                    "error": "Model must be supplied to start the bootloader mock",
+                }
+            if model not in ("T2T1", "T3W1"):
+                return {
+                    "success": False,
+                    "error": f"Bootloader mock supports only T2T1 and T3W1, got {model}",
+                }
+            emulator.stop()
+            bootloader_mock.start(model)
+            return {
+                "response": f"Bootloader mock ({model}) started",
+                "emulator_started": True,
+            }
         elif self.command == "emulator-stop":
+            bootloader_mock.stop()
             emulator.stop()
             return {"response": "Emulator stopped"}
         elif self.command == "emulator-setup":
