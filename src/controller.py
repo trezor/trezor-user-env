@@ -299,10 +299,9 @@ class ResponseGetter:
                 }
             emulator.stop()
             bootloader_mock.start(model)
-            return {
-                "response": f"Bootloader mock ({model}) started",
-                "emulator_started": True,
-            }
+            # NOTE: intentionally no "emulator_started" flag - the mock has no
+            # display, so the dashboard must not try to show the VNC viewer.
+            return {"response": f"Bootloader mock ({model}) started"}
         elif self.command == "emulator-stop":
             bootloader_mock.stop()
             emulator.stop()
