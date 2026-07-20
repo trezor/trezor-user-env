@@ -48,6 +48,7 @@ REGTEST_RPC = BTCJsonRPC(
     passwd="rpc",
 )
 PREV_RUNNING_MODEL: binaries.Model | None = None
+PREV_RUNNING_VERSION: str | None = None
 
 
 def is_regtest_active() -> bool:
@@ -161,9 +162,45 @@ class ResponseGetter:
 
     def run_tropic_command(self) -> "ResponseType":
         if self.command == "tropic-start":
+            version = self.request_dict.get(
+                "version", binaries.get_main_version("T3W1")
+            )
             output_to_logfile = self.request_dict.get("output_to_logfile", True)
-            tropic_model.start(output_to_logfile=output_to_logfile)
-            return {"response": "Tropic Square model server started"}
+            tropic_status = tropic_model.get_status()
+            restarted = False
+            if tropic_status[
+                "is_running"
+            ] and tropic_model.needs_restart_for_version_change(
+                tropic_status["version"], version
+            ):
+                log(
+                    "Tropic model already running with a different config bucket, restarting "
+                    f"({tropic_status['version']} -> {version})"
+                )
+                tropic_model.stop()
+                restarted = True
+
+            start_outcome = tropic_model.start(
+                version=version, output_to_logfile=output_to_logfile
+            )
+            if restarted:
+                return {
+                    "response": (
+                        f"Tropic Square model server restarted for version {version}"
+                    )
+                }
+            if start_outcome == "started":
+                return {
+                    "response": (
+                        f"Tropic Square model server started for version {version}"
+                    )
+                }
+            return {
+                "response": (
+                    "Tropic Square model server is already running; "
+                    f"using requested version context {version}"
+                )
+            }
         elif self.command == "tropic-stop":
             tropic_model.stop()
             return {"response": "Tropic Square model server stopped"}
@@ -175,6 +212,7 @@ class ResponseGetter:
 
     def run_emulator_command(self) -> "ResponseType":
         global PREV_RUNNING_MODEL
+        global PREV_RUNNING_VERSION
 
         if self.command == "emulator-start":
             model: binaries.Model | None = self.request_dict.get("model")
@@ -202,12 +240,52 @@ class ResponseGetter:
             show_animations = self.request_dict.get("show_animations", False)
             if model != PREV_RUNNING_MODEL:
                 wipe = True
+
+            # Firmware storage can be incompatible across versions, so force a
+            # clean storage whenever the version changes for the same model.
+            if model == PREV_RUNNING_MODEL and PREV_RUNNING_VERSION != version:
+                wipe = True
+                log(
+                    "Emulator version changed, forcing wipe "
+                    f"({PREV_RUNNING_VERSION} -> {version})"
+                )
+
             PREV_RUNNING_MODEL = model
+            PREV_RUNNING_VERSION = version
 
             # Auto-start Tropic Square model server for T3W1 emulator
-            if model == "T3W1" and not tropic_model.is_running():
-                log("T3W1 requires Tropic model server, starting automatically...")
-                tropic_model.start(output_to_logfile=output_to_logfile)
+            if model == "T3W1":
+                tropic_status = tropic_model.get_status()
+                needs_tropic_restart = tropic_status[
+                    "is_running"
+                ] and tropic_model.needs_restart_for_version_change(
+                    tropic_status["version"], version
+                )
+
+                # If Tropic config needs to change, stop the currently running
+                # emulator first. This avoids running an emulator against a
+                # Tropic server that is being restarted underneath it.
+                if needs_tropic_restart and emulator.is_running():
+                    log(
+                        "T3W1 version changed, stopping current emulator before "
+                        "restarting Tropic model server"
+                    )
+                    emulator.stop()
+
+                if not tropic_status["is_running"]:
+                    log("T3W1 requires Tropic model server, starting automatically...")
+                    tropic_model.start(
+                        version=version, output_to_logfile=output_to_logfile
+                    )
+                elif needs_tropic_restart:
+                    log(
+                        "T3W1 config bucket changed, restarting Tropic model server "
+                        f"({tropic_status['version']} -> {version})"
+                    )
+                    tropic_model.stop()
+                    tropic_model.start(
+                        version=version, output_to_logfile=output_to_logfile
+                    )
 
             emulator.start(
                 version=version,
@@ -238,6 +316,7 @@ class ResponseGetter:
             if model != PREV_RUNNING_MODEL:
                 wipe = True
             PREV_RUNNING_MODEL = model
+            PREV_RUNNING_VERSION = None
             emulator.start_from_url(
                 url=url,
                 model=model,
@@ -267,6 +346,7 @@ class ResponseGetter:
             if model != PREV_RUNNING_MODEL:
                 wipe = True
             PREV_RUNNING_MODEL = model
+            PREV_RUNNING_VERSION = None
             emulator.start_from_branch(
                 branch=branch,
                 model=model,
