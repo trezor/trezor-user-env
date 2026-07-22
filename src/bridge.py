@@ -21,6 +21,7 @@ if TYPE_CHECKING:
 
 
 BRIDGE_PORT = 21325
+BRIDGE_STATUS_PORT = 21328
 
 # TODO: consider creating a class from this module to avoid these globals
 BRIDGE: Popen | None = None
@@ -34,7 +35,8 @@ def log(text: str, color: str = LOG_COLOR) -> None:
 
 
 def is_running() -> bool:
-    return is_port_in_use(BRIDGE_PORT)
+    # New bridge builds listen on 21328, legacy on 21325.
+    return is_port_in_use(BRIDGE_PORT) or is_port_in_use(BRIDGE_STATUS_PORT)
 
 
 def is_node_bridge_running() -> bool:
@@ -56,12 +58,16 @@ def get_status() -> "StatusResponse":
 def is_port_in_use(port: int) -> bool:
     """Checks if a certain port is listening on localhost"""
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        return s.connect_ex(("0.0.0.0", port)) == 0
+        return s.connect_ex(("127.0.0.1", port)) == 0
 
 
 def check_bridge_status() -> None:
     """Reporting the status of bridge, for debugging purposes"""
-    log(f"Is bridge running - {is_port_in_use(BRIDGE_PORT)}")
+    log(
+        "Is bridge running - "
+        f"port {BRIDGE_PORT}: {is_port_in_use(BRIDGE_PORT)}, "
+        f"port {BRIDGE_STATUS_PORT}: {is_port_in_use(BRIDGE_STATUS_PORT)}"
+    )
 
 
 def start(version: str, output_to_logfile: bool = True) -> None:

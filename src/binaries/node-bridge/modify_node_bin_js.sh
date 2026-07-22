@@ -30,8 +30,10 @@ else
 fi
 
 
-# replace all occurrences of 127.0.0.1 with 0.0.0.0
-# TL;DR: macOS Docker's extra VM layer requires explicit binding to all interfaces (0.0.0.0) to be reachable from the host.
+# Replace bridge bind host from 127.0.0.1 to 0.0.0.0.
+# This is a server-side bind choice so Docker/macOS host traffic can reach it.
+# Client-side checks must still connect to a concrete host (127.0.0.1 or service DNS),
+# not to 0.0.0.0.
 if grep -q 'var ADDRESS = new import_url.URL("http://127.0.0.1")' "$1"; then
   sed -i 's|var ADDRESS = new import_url.URL("http://127.0.0.1")|var ADDRESS = new import_url.URL("http://0.0.0.0")|g' "$1"
   echo "Success: replaced 'var ADDRESS = new import_url.URL("http://127.0.0.1")' with 'var ADDRESS = new import_url.URL("http://0.0.0.0")'."

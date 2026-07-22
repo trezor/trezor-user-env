@@ -140,12 +140,15 @@ def start(
     if output_to_logfile:
         log_file = open(helpers.TROPIC_MODEL_LOG, "a")
         log(f"All tropic model output redirected to {helpers.TROPIC_MODEL_LOG}")
-        TROPIC_SERVER = Popen(
-            command_list,
-            stdout=log_file,
-            stderr=log_file,
-            start_new_session=True,
-        )
+        try:
+            TROPIC_SERVER = Popen(
+                command_list,
+                stdout=log_file,
+                stderr=log_file,
+                start_new_session=True,
+            )
+        finally:
+            log_file.close()
     else:
         TROPIC_SERVER = Popen(command_list, start_new_session=True)
 
