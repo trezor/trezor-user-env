@@ -173,4 +173,7 @@ def setup_env() -> None:
     """Set environment variables for VNC display mode."""
     os.environ["DISPLAY"] = DISPLAY
     os.environ["SDL_VIDEO_WINDOW_POS"] = "0,0"
+    # Force X11 — with WAYLAND_DISPLAY set, SDL would open the emulator window on the host desktop instead of the Xvfb display.
+    os.environ.pop("WAYLAND_DISPLAY", None)
+    os.environ["SDL_VIDEODRIVER"] = "x11"
     _log(f"Using VNC display {DISPLAY}")

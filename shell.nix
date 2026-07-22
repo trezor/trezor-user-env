@@ -29,7 +29,6 @@ stdenv.mkDerivation {
     sdl3-image
     SDL2
     SDL2_image
-    xhost
     xorg-server # Xvfb
     x11vnc
     xdotool
