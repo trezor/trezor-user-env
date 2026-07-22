@@ -64,6 +64,14 @@ def log(text: str, color: str = LOG_COLOR) -> None:
     helpers.log(f"CONTROLLER: {text}", color)
 
 
+def _normalize_emulator_version(version: str) -> str:
+    """Normalize emulator version aliases used across platforms."""
+    normalized = version.strip()
+    if normalized.endswith("-arm"):
+        normalized = normalized[: -len("-arm")]
+    return normalized
+
+
 class ResponseGetter:
     """Takes request from websocket, satisfies it and generates a response.
 
@@ -243,7 +251,16 @@ class ResponseGetter:
 
             # Firmware storage can be incompatible across versions, so force a
             # clean storage whenever the version changes for the same model.
-            if model == PREV_RUNNING_MODEL and PREV_RUNNING_VERSION != version:
+            normalized_version = _normalize_emulator_version(version)
+            prev_normalized_version = (
+                _normalize_emulator_version(PREV_RUNNING_VERSION)
+                if PREV_RUNNING_VERSION is not None
+                else None
+            )
+            if (
+                model == PREV_RUNNING_MODEL
+                and prev_normalized_version != normalized_version
+            ):
                 wipe = True
                 log(
                     "Emulator version changed, forcing wipe "
@@ -251,7 +268,7 @@ class ResponseGetter:
                 )
 
             PREV_RUNNING_MODEL = model
-            PREV_RUNNING_VERSION = version
+            PREV_RUNNING_VERSION = normalized_version
 
             # Auto-start Tropic Square model server for T3W1 emulator
             if model == "T3W1":

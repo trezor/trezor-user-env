@@ -724,13 +724,13 @@
                     </label>
                     <a
                         class="btn btn--full"
-                        :href="bridges.statusColor === 'green' ? 'http://0.0.0.0:21328/status/' : '#'"
+                        :href="bridges.statusColor === 'green' ? 'http://127.0.0.1:21328/status/' : '#'"
                         :style="{ pointerEvents: bridges.statusColor === 'green' ? 'auto' : 'none', opacity: bridges.statusColor === 'green' ? 1 : .5 }"
                         target="_blank"
                         rel="noopener"
                     >
                         <svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-                        Open 0.0.0.0:21328/status/
+                        Open 127.0.0.1:21328/status/
                     </a>
 
                     <!-- Local Trezor Suite detection (advanced — collapsed by default) -->

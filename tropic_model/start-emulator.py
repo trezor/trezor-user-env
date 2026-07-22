@@ -24,7 +24,7 @@ def run() -> int:
     print()
 
     if not config_file.exists():
-        print(f"ERROR: Config file not found: {config_file}")
+        print(f"ERROR: Config file not found: {config_file}", file=sys.stderr)
         return 1
 
     sys.argv = ["model_server", "tcp", "-c", str(config_file)]
