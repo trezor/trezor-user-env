@@ -39,9 +39,18 @@ LIBJPEG_LIB=$(ls /nix/store/*libjpeg*/lib/libjpeg.so.62 2>/dev/null | head -1)
 LIBJPEG=$(dirname "$LIBJPEG_LIB" 2>/dev/null || echo "")
 
 SDL2_LIB=$(ls /nix/store/*SDL2-*/lib/libSDL2-2.0.so.0 2>/dev/null | head -1)
+if [[ -z "$SDL2_LIB" ]]; then
+    SDL2_LIB=$(ls /nix/store/*/lib/libSDL2-2.0.so.0 2>/dev/null | grep -v "sdl2-compat" | head -1)
+fi
+if [[ -z "$SDL2_LIB" ]]; then
+    SDL2_LIB=$(ls /nix/store/*sdl2-compat*/lib/libSDL2-2.0.so.0 2>/dev/null | head -1)
+fi
 SDL2=$(dirname "$SDL2_LIB" 2>/dev/null || echo "")
 
 SDL2_IMG_LIB=$(ls /nix/store/*SDL2*image*/lib/libSDL2_image-2.0.so.0 2>/dev/null | head -1)
+if [[ -z "$SDL2_IMG_LIB" ]]; then
+    SDL2_IMG_LIB=$(ls /nix/store/*-SDL2_image-*/lib/libSDL2_image-2.0.so.0 2>/dev/null | head -1)
+fi
 SDL2_IMG=$(dirname "$SDL2_IMG_LIB" 2>/dev/null || echo "")
 
 SDL3_LIB=$(ls /nix/store/*sdl3-*/lib/libSDL3.so.0 2>/dev/null | head -1)
@@ -50,10 +59,19 @@ SDL3=$(dirname "$SDL3_LIB" 2>/dev/null || echo "")
 SDL3_IMG_LIB=$(ls /nix/store/*sdl3-*/lib/libSDL3_image.so.0 2>/dev/null | head -1)
 SDL3_IMG=$(dirname "$SDL3_IMG_LIB" 2>/dev/null || echo "")
 
-INTERPRETER=$(patchelf --print-interpreter $(which python) 2>/dev/null || echo "")
+# Prefer the canonical linker path from the active Nix C toolchain.
+if [ -n "${NIX_CC:-}" ] && [ -f "$NIX_CC/nix-support/dynamic-linker" ]; then
+    INTERPRETER=$(cat "$NIX_CC/nix-support/dynamic-linker")
+else
+    INTERPRETER=$(patchelf --print-interpreter "$(which python)" 2>/dev/null || echo "")
+fi
 GLIBC=$(dirname "$INTERPRETER" 2>/dev/null || echo "")
 
-if [[ -z "$LIBJPEG" || -z "$SDL2" || -z "$SDL2_IMG" || -z "$SDL3" || -z "$SDL3_IMG" || -z "$GLIBC" || -z "$INTERPRETER" ]]; then
+# C++ runtime is needed by some emulator binaries.
+LIBSTDCPP_LIB=$(ls /nix/store/*gcc-*-lib*/lib/libstdc++.so.6 2>/dev/null | head -1)
+GCCLIB=$(dirname "$LIBSTDCPP_LIB" 2>/dev/null || echo "")
+
+if [[ -z "$LIBJPEG" || -z "$SDL2" || -z "$SDL2_IMG" || -z "$SDL3" || -z "$SDL3_IMG" || -z "$GLIBC" || -z "$GCCLIB" || -z "$INTERPRETER" ]]; then
     echo "ERROR: Could not find required libraries in Nix store"
     echo "LIBJPEG: $LIBJPEG"
     echo "SDL2: $SDL2"
@@ -61,6 +79,7 @@ if [[ -z "$LIBJPEG" || -z "$SDL2" || -z "$SDL2_IMG" || -z "$SDL3" || -z "$SDL3_I
     echo "SDL3: $SDL3"
     echo "SDL3_IMG: $SDL3_IMG"
     echo "GLIBC: $GLIBC"
+    echo "GCCLIB: $GCCLIB"
     echo "INTERPRETER: $INTERPRETER"
     exit 1
 fi
@@ -71,11 +90,13 @@ echo "  ✓ SDL2_image:  $SDL2_IMG"
 echo "  ✓ SDL3:        $SDL3"
 echo "  ✓ SDL3_image:  $SDL3_IMG"
 echo "  ✓ glibc:       $GLIBC"
+echo "  ✓ gcc runtime: $GCCLIB"
 echo "  ✓ interpreter: $INTERPRETER"
 echo ""
 
 # Step 2: Build new rpath
-NEW_RPATH="$LIBJPEG:$SDL2:$SDL2_IMG:$SDL3:$SDL3_IMG:$GLIBC"
+NEW_RPATH="$LIBJPEG:$SDL2:$SDL2_IMG:$SDL3:$SDL3_IMG:$GLIBC:$GCCLIB"
+PATCH_INTERPRETER="${PATCH_INTERPRETER:-1}"
 
 # Step 3: Patch all emulator binaries
 echo "Step 2: Patching emulator binaries..."
@@ -98,11 +119,14 @@ for binary in "$BIN_DIR"/trezor-emu-*; do
         continue
     fi
 
-    # Patch interpreter
-    if ! patchelf --set-interpreter "$INTERPRETER" "$binary" 2>/dev/null; then
-        echo "  ✗ Failed to patch interpreter for $BINARY_NAME"
-        FAILED=$((FAILED + 1))
-        continue
+    # Patch interpreter only when explicitly enabled. Rewriting PT_INTERP on
+    # stripped ET_EXEC binaries can be fragile with some patchelf versions.
+    if [[ "$PATCH_INTERPRETER" == "1" ]]; then
+        if ! patchelf --set-interpreter "$INTERPRETER" "$binary" 2>/dev/null; then
+            echo "  ✗ Failed to patch interpreter for $BINARY_NAME"
+            FAILED=$((FAILED + 1))
+            continue
+        fi
     fi
 
     # Patch rpath
@@ -124,6 +148,11 @@ echo ""
 echo "========================================="
 echo "Summary:"
 echo "  ✓ Successfully patched: $COUNT binaries"
+if [[ "$PATCH_INTERPRETER" == "1" ]]; then
+    echo "  • Interpreter patch: enabled"
+else
+    echo "  • Interpreter patch: disabled (set PATCH_INTERPRETER=1 to enable)"
+fi
 if [ $FAILED -gt 0 ]; then
     echo "  ✗ Failed: $FAILED binaries"
 fi
@@ -137,6 +166,13 @@ if [ -f "$SAMPLE_BINARY" ]; then
     echo ""
     echo "Libraries for $(basename $SAMPLE_BINARY):"
     ldd "$SAMPLE_BINARY" 2>&1 | grep -E "(libjpeg|SDL2)" || true
+    echo ""
+    if ldd "$SAMPLE_BINARY" 2>&1 | grep -q "not found"; then
+        echo "  ✗ Missing shared libraries detected:"
+        ldd "$SAMPLE_BINARY" 2>&1 | grep "not found" || true
+    else
+        echo "  ✓ No unresolved shared libraries"
+    fi
     echo ""
     echo "Testing if binary runs..."
     if "$SAMPLE_BINARY" --help &>/dev/null; then
