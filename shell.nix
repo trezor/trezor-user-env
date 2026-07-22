@@ -23,7 +23,7 @@ stdenv.mkDerivation {
   name = "trezor-user-env-controller";
   buildInputs = [
     autoPatchelfHook
-    python312
+    python313
     uv
     sdl3
     sdl3-image
@@ -32,7 +32,7 @@ stdenv.mkDerivation {
     xorg-server # Xvfb
     x11vnc
     xdotool
-    python312Packages.websockify
+    python313Packages.websockify
     wget
     git
     curl
