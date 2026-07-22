@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #
 # Patch emulator binaries for Nix environment
 # This script fixes both the interpreter path and rpath for all emulator binaries
