@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 SYSTEM_ARCH=$(uname -m)
 echo "System architecture: $SYSTEM_ARCH"
@@ -8,7 +8,17 @@ BINARY_DIR="${1:-./}"
 
 # ./src/binaries/firmware/bin/patch-bin.sh ./src/binaries/firmware/bin/
 if [ -n "$IN_NIX_SHELL" ]; then
-    nix-shell --run "autoPatchelf ${BINARY_DIR}trezor-emu-*"
+    mapfile -t EMULATORS < <(find "$BINARY_DIR" -type f -name 'trezor-emu-*' -executable | sort)
+    if [ "${#EMULATORS[@]}" -eq 0 ]; then
+        echo "No emulator binaries found under $BINARY_DIR"
+        exit 0
+    fi
+    if [ -n "${TREZOR_USER_ENV_AUTO_PATCHELF_LIBS:-}" ]; then
+        IFS=: read -r -a NIX_LIB_DIRS <<< "$TREZOR_USER_ENV_AUTO_PATCHELF_LIBS"
+    else
+        mapfile -t NIX_LIB_DIRS < <(find /nix/store -maxdepth 2 -type d -name lib 2>/dev/null | sort)
+    fi
+    auto-patchelf --ignore-missing --paths "${EMULATORS[@]}" --libs "${NIX_LIB_DIRS[@]}"
     exit
 fi
 

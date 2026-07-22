@@ -17,12 +17,23 @@ let
     rev = "v1.5.0";
     sha256 = "sha256-3Q87bYsC824/8A85Kxdqlm+InuuR/D/HjVrYTJZfE9Y=";
   };
+
+  emulatorRuntimeLibs = with pkgs; [
+    stdenv.cc.cc
+    zlib
+    libjpeg
+    sdl3
+    sdl3-image
+    SDL2
+    SDL2_image
+  ];
 in
 with pkgs;
 stdenv.mkDerivation {
   name = "trezor-user-env-controller";
   buildInputs = [
     autoPatchelfHook
+    bash
     python312
     uv
     sdl3
@@ -40,6 +51,8 @@ stdenv.mkDerivation {
     procps
   ];
   shellHook = ''
+    export TREZOR_USER_ENV_AUTO_PATCHELF_LIBS="${lib.makeLibraryPath emulatorRuntimeLibs}"
+
     # Build a writable noVNC web root with our custom viewer
     NOVNC_LOCAL="$PWD/.novnc"
     if [ ! -d "$NOVNC_LOCAL/core" ]; then
