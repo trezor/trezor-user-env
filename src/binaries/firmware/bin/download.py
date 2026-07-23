@@ -6,10 +6,19 @@ import platform
 import shutil
 import stat
 import subprocess
+import sys
 import tempfile
 import urllib.error
 import urllib.request
 from pathlib import Path
+
+# When executed directly, python only adds this nested bin/ directory to
+# sys.path, so prepend the src/ root to import nightly_versions.py shared helper
+ROOT_DIR = Path(__file__).resolve().parents[3]
+if str(ROOT_DIR) not in sys.path:
+    sys.path.insert(0, str(ROOT_DIR))
+
+from nightly_versions import write_nightly_versions_metadata
 
 BASE_EMU_URL = "https://data.trezor.io/dev/firmware/releases/emulators-new"
 NIGHTLY_BASE_URL = "https://data.trezor.io/dev/firmware/emu-nightly"
@@ -161,6 +170,8 @@ def download_nightly(bin_dir: Path, nightly_files: list[tuple[str, str]]) -> Non
             downloaded_path = tmp_dir_path / source_name
             download_file(source_url, downloaded_path, required=True)
             shutil.move(downloaded_path, bin_dir / destination_name)
+
+    write_nightly_versions_metadata(bin_dir)
 
 
 def postprocess(bin_dir: Path) -> None:
