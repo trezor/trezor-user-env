@@ -524,6 +524,23 @@ def wipe_device() -> None:
         device.wipe(client.get_seedless_session())
 
 
+def reboot_to_bootloader() -> None:
+    """Reboot a running (firmware) emulator into bootloader mode.
+
+    Requires a running emulator and only works for core models
+    (T2T1/T3B1/T3T1/T3W1); the legacy T1B1 emulator is not supported. The
+    emulator re-execs on reboot, so the debug/transport connection is expected
+    to drop right after the command is accepted - that is not a failure.
+    """
+    if not VERSION_RUNNING:
+        raise RuntimeError("No emulator running.")
+    if MODEL_RUNNING == "T1B1":
+        raise RuntimeError("Reboot to bootloader is not supported on T1B1.")
+
+    with connect_to_client() as client:
+        device.reboot_to_bootloader(client.get_seedless_session())
+
+
 def reset_device(
     backup_type: messages.BackupType, strength: int, use_shamir: bool = False
 ) -> None:

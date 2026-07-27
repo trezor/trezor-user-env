@@ -340,6 +340,7 @@
                                         <button class="cmd-btn" @click="emulatorResetDevice()" data-tooltip="Initializes a new wallet on the emulator (standard single-seed setup)">Reset</button>
                                         <button class="cmd-btn" @click="emulatorResetDeviceShamir()" data-tooltip="Initializes a new wallet using Shamir Secret Sharing backup" data-tooltip-pos="right">Reset w/ Shamir</button>
                                     </div>
+                                    <button class="cmd-btn" style="width:100%;margin-top:6px" @click="emulatorRebootToBootloader()" data-tooltip="Reboots a running emulator into bootloader mode (core models only)">Reboot to bootloader</button>
                                 </div>
 
                                 <!-- §9.3 Verify & debug -->
