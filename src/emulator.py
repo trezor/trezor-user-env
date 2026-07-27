@@ -1364,7 +1364,7 @@ def read_and_confirm_shamir_mnemonic_t3w1(shares: int, threshold: int) -> None:
             for _ in range(3):
                 layout = debug.read_layout()
                 assert_text_on_screen(debug, "Select word")
-                pattern = r"Select word #(\d+) from"
+                pattern = r"Select word #?(\d+)"
                 screen_text = layout.text_content()
                 match = re.search(pattern, screen_text)
                 if match is None:
@@ -1456,8 +1456,8 @@ def read_and_confirm_single_shamir_mnemonic_t3w1() -> None:
             layout = debug.read_layout()
             assert_text_on_screen(debug, "Select word")
 
-            # Find which position is requested (e.g., "Select word #12")
-            pattern = r"Select word #(\d+)"
+            # Find which position is requested (e.g., "Select word #12" or "Select word 12")
+            pattern = r"Select word #?(\d+)"
             screen_text = layout.text_content()
             match = re.search(pattern, screen_text)
             if match is None:
