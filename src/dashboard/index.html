@@ -582,7 +582,7 @@
                     >
                         <svg class="disclosure-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 6 15 12 9 18"/></svg>
                         <span>Custom firmware</span>
-                        <span class="disclosure-note">URL or branch build (overrides model &amp; firmware above)</span>
+                        <span class="disclosure-note">URL, branch or file build (overrides model &amp; firmware above)</span>
                     </button>
 
                     <div v-if="customFirmwareOpen" class="disclosure-body">
@@ -599,6 +599,12 @@
                                 :class="{ 'segmented-on': customFirmwareSource === 'branch' }"
                                 @click="customFirmwareSource = 'branch'"
                             >From branch</button>
+                            <button
+                                type="button"
+                                role="tab"
+                                :class="{ 'segmented-on': customFirmwareSource === 'file' }"
+                                @click="customFirmwareSource = 'file'"
+                            >From file</button>
                         </div>
 
                         <div v-if="customFirmwareSource === 'url'" class="custom-src">
@@ -614,7 +620,7 @@
                             </button>
                         </div>
 
-                        <div v-else class="custom-src">
+                        <div v-else-if="customFirmwareSource === 'branch'" class="custom-src">
                             <input class="input" type="text" placeholder="e.g. feature/new-ui" v-model="emulatorBranch.branch" />
                             <select class="select" v-model="emulatorBranch.model">
                                 <option value="" disabled>Model…</option>
@@ -628,6 +634,20 @@
                             </label>
                             <button class="btn btn--full" @click="emulatorStartFromBranch()">
                                 Launch from branch
+                            </button>
+                        </div>
+
+                        <div v-else class="custom-src">
+                            <input class="input" type="file" @change="onFirmwareFileSelected" />
+                            <span class="disclosure-note">Upload an emulator build (e.g. trezor-emu-core-&lt;MODEL&gt;-universal), not a flashable firmware .bin</span>
+                            <select class="select" v-model="emulatorFile.model">
+                                <option value="" disabled>Model…</option>
+                                <option v-for="(details, model) in emulators.versions" :key="model" :value="model">
+                                    {{ details.header }} ({{ model }})
+                                </option>
+                            </select>
+                            <button class="btn btn--full" @click="emulatorStartFromFile()">
+                                Launch from file
                             </button>
                         </div>
                     </div>

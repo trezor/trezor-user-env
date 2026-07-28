@@ -160,6 +160,33 @@ def get_url_identifier(url: str) -> str:
     return url.replace("/", "-").replace(":", "-")
 
 
+def detect_file_kind(file_bytes: bytes) -> str:
+    """Best-effort identification of an uploaded file from its magic bytes,
+    so validation errors can tell the user what they actually uploaded."""
+    head = file_bytes[:8]
+    signatures = [
+        (b"\x7fELF", "ELF executable"),
+        (b"TRZV", "Trezor device firmware image (.bin)"),
+        (b"\x1f\x8b", "gzip archive (.gz)"),
+        (b"PK\x03\x04", "zip archive (.zip)"),
+        (b"\xfd7zXZ\x00", "xz archive (.xz)"),
+        (b"BZh", "bzip2 archive (.bz2)"),
+        (b"MZ", "Windows executable (.exe/PE)"),
+        (b"\xcf\xfa\xed\xfe", "macOS executable (Mach-O)"),
+        (b"\xca\xfe\xba\xbe", "macOS executable (Mach-O fat)"),
+        (b"%PDF", "PDF document"),
+    ]
+    for magic, name in signatures:
+        if head.startswith(magic):
+            return name
+    stripped = head.lstrip().lower()
+    if stripped.startswith((b"<!do", b"<htm", b"<?xml")):
+        return "HTML/XML text (likely an error page)"
+    if not file_bytes:
+        return "empty file"
+    return f"unknown (first bytes: {file_bytes[:8].hex(' ')})"
+
+
 def start_from_url(
     url: str,
     model: binaries.Model,
@@ -267,6 +294,67 @@ def start_from_branch(
         save_screenshots=save_screenshots,
         force_update=True,
         force_name=force_name,
+        show_animations=show_animations,
+    )
+
+
+def start_from_file(
+    file_bytes: bytes,
+    filename: str,
+    model: binaries.Model,
+    wipe: bool,
+    output_to_logfile: bool = True,
+    save_screenshots: bool = False,
+    show_animations: bool = False,
+) -> None:
+    binaries.check_model(model)
+
+    # The emulator is a native Linux executable (an "emu build", ELF), not a
+    # flashable device firmware image nor an archive. Reject the wrong artifact
+    # early with a clear message (naming the detected format) instead of a
+    # cryptic "Exec format error" at launch time.
+    if file_bytes[:4] != b"\x7fELF":
+        detected = detect_file_kind(file_bytes)
+        raise RuntimeError(
+            f"Uploaded file is not a Linux executable (missing ELF header); "
+            f"detected: {detected}. The emulator must be a native emu build, "
+            f"e.g. trezor-emu-core-<MODEL>-universal from "
+            f"data.trezor.io/dev/firmware/ - not a flashable firmware .bin, "
+            f"an archive, or an HTML/error page. If it is compressed "
+            f"(.gz/.zip/.xz), decompress it first, then upload the raw binary."
+        )
+
+    # Deriving a stable emulator name from the uploaded file name, so it can be
+    # reused (and shows up nicely in the registry). Uploads always overwrite.
+    safe_name = re.sub(r"[^A-Za-z0-9._-]", "-", filename).strip("-") or "uploaded"
+    emu_name = f"{model}-file-{safe_name}"
+    if binaries.IS_ARM and not emu_name.endswith(binaries.ARM_IDENTIFIER):
+        emu_name = f"{emu_name}{binaries.ARM_IDENTIFIER}"
+
+    # Deciding the location to save depending on the model
+    # (to be compatible with already existing emulators)
+    model_identifier = binaries.MODEL_IDENTIFIERS.get(model)
+    if not model_identifier:
+        raise RuntimeError(f"Unknown model {model}")
+    emu_path = binaries.USER_DOWNLOADED_DIR / f"{model_identifier}{emu_name}"
+
+    log(f"Uploaded emulator ({len(file_bytes)} bytes) will be saved under {emu_path}")
+    emu_path.write_bytes(file_bytes)
+
+    # Running chmod +x on the newly saved emulator and patching it so it can
+    # run in Nix (patching fail will not cause any python error, so there will
+    # be no problems even for machines without Nix)
+    emu_path.chmod(emu_path.stat().st_mode | stat.S_IEXEC)
+    binaries.patch_emulators_for_nix(str(binaries.USER_DOWNLOADED_DIR))
+    # Registering the new emulator so we know its location
+    binaries.register_new_firmware(model, emu_name, str(emu_path))
+
+    return start(
+        version=emu_name,
+        model=model,
+        wipe=wipe,
+        output_to_logfile=output_to_logfile,
+        save_screenshots=save_screenshots,
         show_animations=show_animations,
     )
 

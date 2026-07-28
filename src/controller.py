@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import asyncio
+import base64
+import binascii
 import json
 import os
 import traceback
@@ -42,6 +44,10 @@ if TYPE_CHECKING:
 IP = "0.0.0.0"
 PORT = 9001
 LOG_COLOR = "blue"
+# Max size of an incoming WebSocket message (bytes). The default is 1 MiB,
+# which is too small for uploaded firmware binaries; 256 MiB gives plenty of
+# headroom for the base64-encoded payload.
+MAX_WS_MESSAGE_SIZE = 256 * 1024 * 1024
 REGTEST_RPC = BTCJsonRPC(
     url=os.getenv("REGTEST_RPC_URL") or "http://0.0.0.0:18021",
     user="rpc",
@@ -102,7 +108,13 @@ class ResponseGetter:
         self.request_id = self.request_dict.get("id", "unknown")
 
         if self.command != "background-check":
-            log(f"Request: {self.request_dict}")
+            # Avoid dumping large binary uploads (base64 firmware) into the log.
+            if "file" in self.request_dict:
+                loggable = dict(self.request_dict)
+                loggable["file"] = f"<{len(self.request_dict['file'])} base64 chars>"
+                log(f"Request: {loggable}")
+            else:
+                log(f"Request: {self.request_dict}")
 
         try:
             command_response = self.run_command_and_get_its_response()
@@ -377,6 +389,49 @@ class ResponseGetter:
             if wipe:
                 response_text += " and wiped to be empty"
             return {"response": response_text, "emulator_started": True}
+        elif self.command == "emulator-start-from-file":
+            model = self.request_dict["model"]
+            if not model:
+                return {
+                    "success": False,
+                    "error": "Model must be supplied for the emulator to start",
+                }
+            # NOTE: model is validated inside emulator.start_from_file().
+            file_b64 = self.request_dict.get("file")
+            if not file_b64:
+                return {
+                    "success": False,
+                    "error": "File content must be supplied for the emulator to start",
+                }
+            try:
+                file_bytes = base64.b64decode(file_b64, validate=True)
+            except (binascii.Error, ValueError) as e:
+                return {
+                    "success": False,
+                    "error": f"Invalid file content, expected base64: {repr(e)}",
+                }
+            filename = self.request_dict.get("filename") or "uploaded"
+            output_to_logfile = self.request_dict.get("output_to_logfile", True)
+            save_screenshots = self.request_dict.get("save_screenshots", False)
+            show_animations = self.request_dict.get("show_animations", False)
+            # An uploaded binary reusing an existing name silently overwrites the
+            # old one, so a stale profile could otherwise be run against a
+            # different build. Always start a file upload from a clean profile.
+            wipe = True
+            PREV_RUNNING_MODEL = model
+            emulator.start_from_file(
+                file_bytes=file_bytes,
+                filename=filename,
+                model=model,
+                wipe=wipe,
+                output_to_logfile=output_to_logfile,
+                save_screenshots=save_screenshots,
+                show_animations=show_animations,
+            )
+            response_text = f"Emulator loaded from uploaded file {filename} and started"
+            if wipe:
+                response_text += " and wiped to be empty"
+            return {"response": response_text, "emulator_started": True}
         elif self.command == "emulator-stop":
             emulator.stop()
             return {"response": "Emulator stopped"}
@@ -587,7 +642,9 @@ async def handler(websocket, path) -> None:
 def start() -> None:
     log(f"Starting websocket server (controller.py) at {IP}:{PORT}")
 
-    server = serve(handler, IP, PORT)
+    # Allow large messages so custom firmware binaries can be uploaded over
+    # the WebSocket (base64-encoded, so ~33% larger than the raw file).
+    server = serve(handler, IP, PORT, max_size=MAX_WS_MESSAGE_SIZE)
 
     asyncio.get_event_loop().run_until_complete(server)
     asyncio.get_event_loop().run_forever()
