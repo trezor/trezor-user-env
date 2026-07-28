@@ -107,7 +107,7 @@
                         <svg class="sb-item-icon" viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="3"/><line x1="10" y1="18" x2="14" y2="18"/></svg>
                         <span class="sb-item-text">
                             <span class="sb-item-label">Emulator</span>
-                            <span v-if="emulators.runningVersion" class="sb-item-version">{{ emulators.runningVersion }}</span>
+                            <span v-if="emulators.runningVersion" class="sb-item-version">{{ formatFirmwareLabel(emulators.runningModel, emulators.runningVersion) }}</span>
                         </span>
                         <span
                             :class="[
@@ -549,7 +549,7 @@
                             v-for="option in emulators.versions[selectedEmulatorModel].versions"
                             :key="option"
                             :value="option"
-                        >{{ option }}</option>
+                        >{{ formatFirmwareLabel(selectedEmulatorModel, option) }}</option>
                     </select>
 
                     <label class="field-label">
