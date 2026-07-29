@@ -242,7 +242,7 @@ def start_from_branch(
 ) -> None:
     emu_name = "trezor-emu-core"
     if binaries.IS_ARM:
-        emu_name += binaries.ARM_IDENTIFIER
+        emu_name = f"trezor-emu-{binaries.ARM_IDENTIFIER}-core"
     emu_name += f"-{model}"
     if btc_only:
         emu_name += "-btconly"
