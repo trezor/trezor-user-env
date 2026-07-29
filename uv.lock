@@ -7,7 +7,7 @@ resolution-markers = [
 ]
 
 [options]
-exclude-newer = "2026-06-20T11:10:26.925457038Z"
+exclude-newer = "2026-06-29T12:59:42.639409633Z"
 exclude-newer-span = "P30D"
 
 [[package]]
@@ -1162,7 +1162,7 @@ requires-dist = [
     { name = "psutil", specifier = ">=5.8.0,<6" },
     { name = "termcolor", specifier = ">=1.1.0,<2" },
     { name = "trezor", git = "https://github.com/trezor/trezor-firmware.git?subdirectory=python&rev=9687d464fdecaca9bdeb7d725c6113af1889193c" },
-    { name = "tvl", url = "https://github.com/tropicsquare/ts-tvl/releases/download/2.4/tvl-2.4-py3-none-any.whl" },
+    { name = "tvl", url = "https://github.com/tropicsquare/ts-tvl/releases/download/2.5/tvl-2.5-py3-none-any.whl" },
     { name = "websockets", specifier = ">=12.0" },
 ]
 
@@ -1180,8 +1180,8 @@ dev = [
 
 [[package]]
 name = "tvl"
-version = "2.4"
-source = { url = "https://github.com/tropicsquare/ts-tvl/releases/download/2.4/tvl-2.4-py3-none-any.whl" }
+version = "2.5"
+source = { url = "https://github.com/tropicsquare/ts-tvl/releases/download/2.5/tvl-2.5-py3-none-any.whl" }
 dependencies = [
     { name = "cffi" },
     { name = "crcmod" },
@@ -1197,7 +1197,7 @@ dependencies = [
     { name = "typing-extensions" },
 ]
 wheels = [
-    { url = "https://github.com/tropicsquare/ts-tvl/releases/download/2.4/tvl-2.4-py3-none-any.whl", hash = "sha256:aaceecc3cdf408b94784ae6b5229bedda974d74530267ad25e0e0a61ad2e526c" },
+    { url = "https://github.com/tropicsquare/ts-tvl/releases/download/2.5/tvl-2.5-py3-none-any.whl", hash = "sha256:c51c5dd35a6e075d9dd71c17abba53f4669d54cb4b96500295ee279a9c192ed2" },
 ]
 
 [package.metadata]
