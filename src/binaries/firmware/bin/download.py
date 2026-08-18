@@ -70,7 +70,7 @@ def build_release_paths(
     releases_json: dict, suffix: str, minor_limit: int
 ) -> list[str]:
     firmware_releases = releases_json.get("firmware", {})
-    latest_patch_per_series: dict[tuple[str, int, int], int] = {}
+    patches_per_series: dict[tuple[str, int, int], list[int]] = {}
 
     for version, models in firmware_releases.items():
         try:
@@ -82,9 +82,7 @@ def build_release_paths(
             if model not in SUPPORTED_MODELS:
                 continue
             key = (model, major, minor)
-            latest_patch_per_series[key] = max(
-                latest_patch_per_series.get(key, -1), patch
-            )
+            patches_per_series.setdefault(key, []).append(patch)
 
     download_paths = []
     for model in SUPPORTED_MODELS:
@@ -99,15 +97,31 @@ def build_release_paths(
                 f"{model}/trezor-emu-{family}-{model}-v{pinned_version}{suffix}"
             )
 
-        series = [
-            (major, minor, patch)
-            for (series_model, major, minor), patch in latest_patch_per_series.items()
+        # Determine the newest minor series for this model.
+        model_series = [
+            (major, minor)
+            for (series_model, major, minor) in patches_per_series
             if series_model == model
         ]
-        series.sort(reverse=True)
+        newest_series = max(model_series) if model_series else None
+
+        # For the newest series include the two latest patches,
+        # for older series only the latest patch.
+        series_versions: list[tuple[int, int, int]] = []
+        for (series_model, major, minor), patches in patches_per_series.items():
+            if series_model != model:
+                continue
+            sorted_patches = sorted(patches, reverse=True)
+            if (major, minor) == newest_series:
+                for p in sorted_patches[:2]:
+                    series_versions.append((major, minor, p))
+            else:
+                series_versions.append((major, minor, sorted_patches[0]))
+
+        series_versions.sort(reverse=True)
 
         selected_count = 0
-        for major, minor, patch in series:
+        for major, minor, patch in series_versions:
             version = f"{major}.{minor}.{patch}"
             if version == pinned_version:
                 continue
