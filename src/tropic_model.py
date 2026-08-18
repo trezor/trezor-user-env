@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import os
 import signal
+import socket
 import time
 from pathlib import Path
 from typing import TYPE_CHECKING, Literal
@@ -31,6 +32,8 @@ MODEL_STATE_FILES = [
     TROPIC_MODEL_DIR / "model_config_save.yaml",
 ]
 DEFAULT_TROPIC_VERSION = "2-main"
+TROPIC_MODEL_PORT = 28992
+TROPIC_MODEL_WAIT_TIME = 10
 CONFIG_NEW = TROPIC_MODEL_DIR / "config.yml"
 CONFIG_OLD = TROPIC_MODEL_DIR / "config_old.yml"
 OLD_CONFIG_UNTIL_VERSION = (2, 12, 1)
@@ -95,6 +98,31 @@ def needs_restart_for_version_change(
     )
 
 
+def _wait_until_ready(timeout: float = TROPIC_MODEL_WAIT_TIME) -> None:
+    """Wait for the Tropic model server to accept TCP connections."""
+    assert TROPIC_SERVER is not None, "Tropic model not started"
+    log(f"Waiting for Tropic model to come up on port {TROPIC_MODEL_PORT}...")
+    start = time.monotonic()
+    while True:
+        try:
+            with socket.create_connection(("127.0.0.1", TROPIC_MODEL_PORT), timeout=1):
+                # Even if the model is listening for connections it sometimes
+                # needs up to 2 seconds more before it correctly processes
+                # requests.
+                # TODO: https://github.com/trezor/trezor-firmware/pull/6128
+                time.sleep(2)
+                break
+        except OSError:
+            pass
+        if TROPIC_SERVER.poll() is not None:
+            raise RuntimeError("Tropic model process died")
+        elapsed = time.monotonic() - start
+        if elapsed >= timeout:
+            raise TimeoutError("Can't connect to Tropic model")
+        time.sleep(0.1)
+    log(f"Tropic model ready after {time.monotonic() - start:.3f} seconds")
+
+
 def start(
     version: str = DEFAULT_TROPIC_VERSION, output_to_logfile: bool = True
 ) -> StartOutcome:
@@ -154,11 +182,16 @@ def start(
 
     log(f"Tropic server spawned: {TROPIC_SERVER}. CMD: {TROPIC_SERVER.cmdline()}")
 
-    # Verifying if the server is really running
-    time.sleep(1.0)
-    if not TROPIC_SERVER.is_running():
+    try:
+        _wait_until_ready()
+    except TimeoutError:
+        log(
+            f"Tropic model did not come up after {TROPIC_MODEL_WAIT_TIME} seconds",
+            "red",
+        )
+        TROPIC_SERVER.kill()
         TROPIC_SERVER = None
-        raise RuntimeError("Tropic model server is unable to run!")
+        raise RuntimeError("Can't connect to Tropic model")
 
     VERSION_RUNNING = version
     log("Tropic model server started successfully")
