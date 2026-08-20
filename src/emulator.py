@@ -240,9 +240,15 @@ def start_from_branch(
     save_screenshots: bool = False,
     show_animations: bool = False,
 ) -> None:
-    emu_name = "trezor-emu-core"
-    if binaries.IS_ARM:
-        emu_name = f"trezor-emu-{binaries.ARM_IDENTIFIER}-core"
+    # The nightly and per-branch pipelines name their ARM builds differently:
+    # nightly uses "trezor-emu-arm-core-*", branches use "trezor-emu-core-arm-*".
+    is_nightly = branch == "main"
+    if binaries.IS_ARM and is_nightly:
+        emu_name = f"trezor-emu{binaries.ARM_IDENTIFIER}-core"
+    elif binaries.IS_ARM:
+        emu_name = f"trezor-emu-core{binaries.ARM_IDENTIFIER}"
+    else:
+        emu_name = "trezor-emu-core"
     emu_name += f"-{model}"
     if btc_only:
         emu_name += "-btconly"
@@ -250,7 +256,7 @@ def start_from_branch(
         emu_name += "-universal"
 
     # Main has just a nightly pipeline
-    if branch == "main":
+    if is_nightly:
         url = f"https://data.trezor.io/dev/firmware/emu-nightly/{emu_name}"
     else:
         url = f"https://data.trezor.io/dev/firmware/emu-branches/{branch}/{emu_name}"
