@@ -128,6 +128,7 @@
     - **display_rotation**: `int`
     - **passphrase_always_on_device**: `bool`
     - **safety_checks**: `int`
+    - **experimental_features**: `bool`
 
 - **emulator-reset-device**
   - **action**: reset the device

@@ -709,6 +709,12 @@ const app = createApp({
                 type: "emulator-allow-unsafe-paths",
             });
         },
+        emulatorExperimentalFeatures() {
+            this.sendMessage({
+                type: "emulator-apply-settings",
+                experimental_features: true,
+            });
+        },
         reloadVnc() {
             this.vncCacheBuster = Date.now();
         },

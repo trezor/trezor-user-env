@@ -395,9 +395,14 @@
                                         </button>
                                     </div>
 
-                                    <button class="cmd-btn cmd-btn--warn" style="margin-top: 7px" @click="emulatorAllowUnsafe()" data-tooltip="Allows the emulator to derive keys from unusual paths — use only for specific test flows.">
-                                        <span>Safety checks off</span>
-                                    </button>
+                                    <div class="row2" style="margin-top: 7px">
+                                        <button class="cmd-btn cmd-btn--warn" @click="emulatorAllowUnsafe()" data-tooltip="Allows the emulator to derive keys from unusual paths — use only for specific test flows.">
+                                            <span>Safety checks off</span>
+                                        </button>
+                                        <button class="cmd-btn cmd-btn--info" @click="emulatorExperimentalFeatures()" data-tooltip="Enables experimental features on the emulator — use only for specific test flows." data-tooltip-pos="right">
+                                            <span>Experimental features</span>
+                                        </button>
+                                    </div>
                                 </div>
 
                                 <!-- §9.4 N4W1 NFC — T3W1 only -->
