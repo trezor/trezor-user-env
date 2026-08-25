@@ -83,6 +83,7 @@
     --amber:        #f0b14a;
     --amber-soft:   #f0b14a14;
     --blue:         #7db3ff;
+    --blue-soft:    #7db3ff14;
 
     --status-ok-bg:     #00b75714;
     --status-ok-fg:     #00b757;
@@ -116,6 +117,7 @@
     --amber:        #9c6a00;
     --amber-soft:   #9c6a0012;
     --blue:         #1d5cd8;
+    --blue-soft:    #1d5cd812;
 
     --status-ok-bg:     #00854d12;
     --status-ok-fg:     #00854d;
@@ -723,6 +725,8 @@ code { font-family: "JetBrains Mono", ui-monospace, monospace; font-size: .92em;
 .cmd-btn--warn { color: var(--amber); }
 .cmd-btn--warn:hover { background: var(--amber-soft); border-color: var(--amber); color: var(--amber); }
 .cmd-btn--warn .info-tip { color: var(--amber); }
+.cmd-btn--info { color: var(--blue); }
+.cmd-btn--info:hover { background: var(--blue-soft); border-color: var(--blue); color: var(--blue); }
 .cmd-btn--ghost {
     background: transparent;
     border-color: transparent;
