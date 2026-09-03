@@ -19,7 +19,7 @@ DEFAULT_RELEASES_JSON_URL = (
 SUPPORTED_MODELS = ["T1B1", "T2T1", "T3B1", "T3T1", "T3W1"]
 
 # supports one pinned release per model in addition to the 6 latest releases
-PINNED_RELEASES: dict[str, str] = {"T2T1": "2.3.0"}
+PINNED_RELEASES: dict[str, str] = {"T2T1": "2.5.3"}
 
 
 def get_arch_config() -> tuple[str, list[tuple[str, str]]]:
