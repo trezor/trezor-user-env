@@ -643,6 +643,32 @@
                         <div><b>Downloading firmware…</b> {{ emulatorDownloadMessage }}</div>
                     </div>
 
+                    <button
+                        type="button"
+                        :class="['disclosure', { 'disclosure-on': bootloaderMockOpen }]"
+                        @click="bootloaderMockOpen = !bootloaderMockOpen"
+                    >
+                        <svg class="disclosure-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 6 15 12 9 18"/></svg>
+                        <span>Bootloader mode (mock)</span>
+                        <span class="disclosure-note">Fake device in bootloader mode for Suite firmware-update flows</span>
+                    </button>
+
+                    <div v-if="bootloaderMockOpen" class="disclosure-body">
+                        <div class="custom-src">
+                            <p class="disclosure-note">
+                                The emulator has no real bootloader, so this serves a mock device that reports
+                                <code>bootloader_mode = true</code>. Replaces the running emulator (no VNC display). T2T1 / T3W1 only.
+                            </p>
+                            <select class="select" v-model="bootloaderMock.model">
+                                <option value="T3W1">Trezor Safe 7 (T3W1)</option>
+                                <option value="T2T1">Trezor Model T (T2T1)</option>
+                            </select>
+                            <button class="btn btn--full" @click="emulatorStartBootloaderMock()">
+                                Start bootloader mock
+                            </button>
+                        </div>
+                    </div>
+
                     <div class="flyout-actions">
                         <button class="btn btn--primary" @click="emulatorStart(selectedEmulatorModel)">
                             Start emulator
