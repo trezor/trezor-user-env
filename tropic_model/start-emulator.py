@@ -13,7 +13,9 @@ from tvl.server.server import main
 def run() -> int:
     script_dir = Path(__file__).resolve().parent
     os.chdir(script_dir)
-    config_file = Path(sys.argv[1]) if len(sys.argv) > 1 else Path("config.yml")
+    config_file = (
+        Path(sys.argv[1]) if len(sys.argv) > 1 else Path("configs/current.yml")
+    )
 
     if not config_file.is_absolute():
         config_file = script_dir / config_file
