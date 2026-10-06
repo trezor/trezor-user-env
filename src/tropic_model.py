@@ -34,9 +34,8 @@ MODEL_STATE_FILES = [
 DEFAULT_TROPIC_VERSION = "2-main"
 TROPIC_MODEL_PORT = 28992
 TROPIC_MODEL_WAIT_TIME = 10
-CONFIG_NEW = TROPIC_MODEL_DIR / "config.yml"
-CONFIG_OLD = TROPIC_MODEL_DIR / "config_old.yml"
-OLD_CONFIG_UNTIL_VERSION = (2, 12, 1)
+CONFIGS_DIR = TROPIC_MODEL_DIR / "configs"
+CONFIG_CURRENT = CONFIGS_DIR / "current.yml"
 StartOutcome = Literal["started", "already_running"]
 
 
@@ -56,6 +55,22 @@ def get_status() -> "StatusResponse":
     return {"is_running": is_running(), "version": VERSION_RUNNING}
 
 
+def _parse_version(parts: list[str]) -> tuple[int, int, int] | None:
+    if len(parts) != 3 or not all(part.isdigit() for part in parts):
+        return None
+    return int(parts[0]), int(parts[1]), int(parts[2])
+
+
+def _get_versioned_configs() -> list[tuple[tuple[int, int, int], Path]]:
+    """Return configs named by version (e.g. 2_12_1.yml), sorted ascending."""
+    configs = []
+    for path in CONFIGS_DIR.glob("[0-9]*_[0-9]*_[0-9]*.yml"):
+        parsed = _parse_version(path.stem.split("_"))
+        if parsed is not None:
+            configs.append((parsed, path))
+    return sorted(configs)
+
+
 def _get_config_for_version(version: str) -> Path:
     normalized = version.strip()
 
@@ -63,24 +78,28 @@ def _get_config_for_version(version: str) -> Path:
     if normalized.endswith("-arm"):
         normalized = normalized[: -len("-arm")]
 
-    # "2-main" should always use the new config.
+    # "2-main" should always use the current config.
     if normalized == "2-main":
-        return CONFIG_NEW
+        return CONFIG_CURRENT
 
     # Tags may include a leading "v" (for example "v2.12.2").
     if normalized.startswith("v"):
         normalized = normalized[1:]
 
     parts = normalized.split(".")
-    if len(parts) != 3 or not all(part.isdigit() for part in parts):
+    parsed = _parse_version(parts)
+    if parsed is None:
         log(
-            f"Unknown Tropic version format '{version}', defaulting to old config",
+            f"Unknown Tropic version format '{version}', defaulting to current config",
             "yellow",
         )
-        return CONFIG_OLD
+        return CONFIG_CURRENT
 
-    parsed = tuple(int(part) for part in parts)
-    return CONFIG_OLD if parsed <= OLD_CONFIG_UNTIL_VERSION else CONFIG_NEW
+    versioned_configs = _get_versioned_configs()
+    for config_version, config_path in versioned_configs:
+        if config_version >= parsed:
+            return config_path
+    return CONFIG_CURRENT
 
 
 def needs_restart_for_version_change(
@@ -162,7 +181,7 @@ def start(
             log(f"Removed persisted model state: {state_file}")
 
     # Build command to run the Python launcher through uv.
-    command_list = ["uv", "run", "python", str(START_LAUNCHER), config_path.name]
+    command_list = ["uv", "run", "python", str(START_LAUNCHER), str(config_path)]
 
     # Spawn the process, optionally redirecting output to logfile
     if output_to_logfile:
