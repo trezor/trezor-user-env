@@ -16,8 +16,7 @@ if grep -q "$string_to_comment" "$1"; then
   sed -i "/$string_to_comment/ s/^/\/\//" "$1"
   echo "Success: line matching '$string_to_comment' was commented out."
 else
-  echo "Error: no line matching '$string_to_comment' found in '$1'."
-  exit 1
+  echo "Warning: no line matching '$string_to_comment' found in '$1'."
 fi
 
 # Replace if (isOriginAllowed) with if (true)
