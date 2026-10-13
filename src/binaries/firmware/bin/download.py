@@ -12,7 +12,7 @@ import urllib.request
 from pathlib import Path
 
 BASE_EMU_URL = "https://data.trezor.io/dev/firmware/releases/emulators-new"
-NIGHTLY_BASE_URL = "https://data.trezor.io/dev/firmware/emu-nightly"
+NIGHTLY_BASE_URL = "https://data.trezor.io/dev/firmware/emu-branches/mmilata/thp-riir-trezor"
 DEFAULT_RELEASES_JSON_URL = (
     "https://raw.githubusercontent.com/trezor/trezor-firmware/main/common/releases.json"
 )
@@ -27,7 +27,6 @@ def get_arch_config() -> tuple[str, list[tuple[str, str]]]:
 
     if system_arch.startswith("x86_64") or system_arch == "amd64":
         return "", [
-            ("trezor-emu-legacy-T1B1-universal", "trezor-emu-legacy-T1B1-v1-main"),
             ("trezor-emu-core-T2T1-universal", "trezor-emu-core-T2T1-v2-main"),
             ("trezor-emu-core-T3B1-universal", "trezor-emu-core-T3B1-v2-main"),
             ("trezor-emu-core-T3T1-universal", "trezor-emu-core-T3T1-v2-main"),
@@ -36,26 +35,6 @@ def get_arch_config() -> tuple[str, list[tuple[str, str]]]:
 
     if system_arch.startswith("aarch64") or system_arch == "arm64":
         return "-arm", [
-            (
-                "trezor-emu-arm-legacy-T1B1-universal",
-                "trezor-emu-legacy-T1B1-v1-main-arm",
-            ),
-            (
-                "trezor-emu-arm-core-T2T1-universal",
-                "trezor-emu-core-T2T1-v2-main-arm",
-            ),
-            (
-                "trezor-emu-arm-core-T3B1-universal",
-                "trezor-emu-core-T3B1-v2-main-arm",
-            ),
-            (
-                "trezor-emu-arm-core-T3T1-universal",
-                "trezor-emu-core-T3T1-v2-main-arm",
-            ),
-            (
-                "trezor-emu-arm-core-T3W1-universal",
-                "trezor-emu-core-T3W1-v2-main-arm",
-            ),
         ]
 
     raise RuntimeError(f"Not a supported arch - {system_arch}")
