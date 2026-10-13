@@ -52,8 +52,13 @@
     - **output_to_logfile**: `bool` (default=True) whether the debug output should go to a logfile - otherwise it goes to stdout
     - **save_screenshots**: `bool` (default=False) whether to save screenshots to enable calling **emulator-get-screenshot**
 
+- **emulator-start-bootloader**
+  - **action**: start a mock device that presents as being in bootloader mode (the real emulator has no bootloader), so Suite/host apps can test bootloader & firmware-update flows. Speaks Trezor wire protocol v1 over the emulator UDP port; replaces any running emulator (no VNC display).
+  - **arguments**:
+    - **model**: `str` - only `T2T1` and `T3W1` are supported
+
 - **emulator-stop**
-  - **action**: stop the emulator
+  - **action**: stop the emulator (and the bootloader mock, if running)
 
 - **emulator-setup**
   - **action**: perform the emulator setup
