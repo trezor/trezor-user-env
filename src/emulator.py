@@ -13,7 +13,7 @@ from contextlib import contextmanager
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
-from subprocess import PIPE
+from subprocess import PIPE, TimeoutExpired
 from typing import Any, Dict, Generator, Optional, TypedDict
 from urllib.error import HTTPError
 
@@ -68,6 +68,28 @@ LOG_COLOR = "magenta"
 
 def log(text: str, color: str = LOG_COLOR) -> None:
     helpers.log(f"EMULATOR: {text}", color)
+
+
+# Old core emulators (e.g. 2.5.3) can drop the SDL quit event that SIGTERM turns into.
+EMULATOR_TERMINATE_ATTEMPTS = 10
+EMULATOR_TERMINATE_INTERVAL = 0.5
+
+
+def _stop_emulator(emulator: CoreEmulator | LegacyEmulator) -> None:
+    process = emulator.process
+    assert process is not None
+    for _ in range(EMULATOR_TERMINATE_ATTEMPTS):
+        process.terminate()
+        try:
+            process.wait(EMULATOR_TERMINATE_INTERVAL)
+            break
+        except TimeoutExpired:
+            log("Emulator still running after SIGTERM, sending it again", "yellow")
+    else:
+        log("Emulator ignored SIGTERM, killing it", "red")
+        process.kill()
+    # trezorlib still closes the transport and removes the pid/port files
+    emulator.stop()
 
 
 # Hacking the bridge connection code to have a timeout
@@ -310,7 +332,7 @@ def start(
         # when VNC is immediately restarted.
         assert EMULATOR.process is not None
         emu_pid = EMULATOR.process.pid
-        EMULATOR.stop()
+        _stop_emulator(EMULATOR)
         log(f"Emulator killed. PID: {emu_pid}.")
         EMULATOR = None
         VERSION_RUNNING = None
@@ -406,7 +428,7 @@ def stop() -> None:
     else:
         assert EMULATOR.process is not None
         emu_pid = EMULATOR.process.pid
-        EMULATOR.stop()
+        _stop_emulator(EMULATOR)
         log(f"Emulator killed. PID: {emu_pid}.")
         EMULATOR = None
         VERSION_RUNNING = None
