@@ -1,0 +1,44 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Trezor User Env",
+  "version": "0.1.0",
+  "identifier": "com.trezor.user-env",
+  "build": {
+    "frontendDist": "../src",
+    "devUrl": "http://localhost:1420",
+    "beforeDevCommand": "npx serve src -l 1420 -s --no-clipboard"
+  },
+  "app": {
+    "withGlobalTauri": true,
+    "macOSPrivateApi": true,
+    "windows": [
+      {
+        "label": "main",
+        "title": "Trezor User Env",
+        "width": 420,
+        "height": 720,
+        "minWidth": 360,
+        "minHeight": 500,
+        "alwaysOnTop": true,
+        "transparent": true,
+        "decorations": true,
+        "titleBarStyle": "Overlay",
+        "hiddenTitle": true,
+        "theme": "Dark",
+        "resizable": true,
+        "shadow": true
+      }
+    ]
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["app"],
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.png"
+    ]
+  }
+}

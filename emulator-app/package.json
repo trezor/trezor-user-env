@@ -1,0 +1,18 @@
+{
+  "name": "trezor-emulator",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "tauri dev",
+    "build": "tauri build",
+    "tauri": "tauri"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2",
+    "serve": "^14"
+  },
+  "dependencies": {
+    "@novnc/novnc": "^1.7.0",
+    "@tauri-apps/api": "^2"
+  }
+}

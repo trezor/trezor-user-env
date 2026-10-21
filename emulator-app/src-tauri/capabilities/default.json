@@ -1,0 +1,19 @@
+{
+  "identifier": "default",
+  "description": "Default capabilities for the emulator app",
+  "windows": ["main"],
+  "permissions": [
+    "core:window:default",
+    "core:window:allow-start-dragging",
+    "core:window:allow-set-size",
+    "core:window:allow-set-always-on-top",
+    "core:window:allow-close",
+    "core:window:allow-minimize",
+    "core:window:allow-toggle-maximize",
+    "core:webview:default",
+    "core:event:default",
+    "core:app:default",
+    "core:app:allow-app-hide",
+    "core:app:allow-app-show"
+  ]
+}

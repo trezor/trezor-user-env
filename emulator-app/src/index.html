@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trezor User Env</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --label: rgba(255, 255, 255, 0.92);
+      --label-2: rgba(255, 255, 255, 0.55);
+      --label-3: rgba(255, 255, 255, 0.32);
+      --fill: rgba(255, 255, 255, 0.10);
+      --fill-hover: rgba(255, 255, 255, 0.15);
+      --fill-pressed: rgba(255, 255, 255, 0.20);
+      --track: rgba(255, 255, 255, 0.07);
+      --thumb: rgba(255, 255, 255, 0.24);
+      --hairline: rgba(255, 255, 255, 0.10);
+      --green: #30d158;
+      --red: #ff453a;
+      --yellow: #ffd60a;
+    }
+
+    html, body {
+      background: transparent;
+      color: var(--label);
+      font: 12px/1.3 -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif;
+      -webkit-font-smoothing: antialiased;
+      overflow: hidden;
+      height: 100%;
+      user-select: none;
+      -webkit-user-select: none;
+      cursor: default;
+    }
+
+    #app {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    button, select {
+      font: inherit;
+      color: inherit;
+      border: none;
+      outline: none;
+      background: none;
+    }
+
+    /* Titlebar */
+    .titlebar {
+      height: 30px;
+      min-height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      -webkit-app-region: drag;
+    }
+    .titlebar > * { pointer-events: none; }
+    .titlebar-title { font-size: 13px; font-weight: 600; }
+    .titlebar-subtitle { font-size: 11px; color: var(--label-2); }
+
+    /* Display */
+    .display-frame {
+      flex: 1;
+      margin: 2px 10px 0;
+      border-radius: 18px;
+      overflow: hidden;
+      position: relative;
+      min-height: 120px;
+      background: var(--track);
+    }
+    .display-frame.live { background: transparent; }
+    #vnc-target {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+    }
+    .display-placeholder {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      height: 100%;
+      color: var(--label-3);
+      font-size: 11px;
+    }
+    [hidden] { display: none !important; }
+    #placeholder-text { color: var(--label-2); font-size: 12px; }
+    #btn-start-tenv { margin-top: 6px; }
+    .placeholder-hint {
+      max-width: 240px;
+      text-align: center;
+      line-height: 1.4;
+      overflow-wrap: anywhere;
+      user-select: text;
+      -webkit-user-select: text;
+      cursor: text;
+    }
+    .display-placeholder svg {
+      width: 28px;
+      height: 28px;
+      stroke: currentColor;
+      stroke-width: 1.5;
+      fill: none;
+    }
+
+    /* Controls */
+    .dock {
+      padding: 10px 10px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .models {
+      display: flex;
+      padding: 2px;
+      border-radius: 999px;
+      background: var(--track);
+    }
+    .model-btn {
+      flex: 1;
+      height: 24px;
+      border-radius: 999px;
+      color: var(--label-2);
+      font-size: 11px;
+      font-weight: 500;
+      transition: background-color 0.2s, color 0.2s;
+    }
+    .model-btn:hover { color: var(--label); }
+    .model-btn.active {
+      background: var(--thumb);
+      color: var(--label);
+    }
+    .model-btn .model-name { display: none; }
+
+    .control-row {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    select {
+      flex: 1;
+      min-width: 0;
+      height: 28px;
+      padding: 0 26px 0 12px;
+      border-radius: 999px;
+      appearance: none;
+      -webkit-appearance: none;
+      background: var(--fill) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='9' height='9' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.6)' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 11px center;
+      transition: background-color 0.2s;
+    }
+    select:hover { background-color: var(--fill-hover); }
+    option { background: #2c2c2e; }
+
+    .options-row {
+      grid-column: 1 / -1;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px 14px;
+      padding: 2px 4px 4px;
+    }
+    .opt-tile {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      color: var(--label-2);
+      white-space: nowrap;
+    }
+    .opt-tile input { accent-color: var(--green); width: 13px; height: 13px; margin: 0; }
+
+    .btn {
+      height: 28px;
+      min-width: 28px;
+      padding: 0 12px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      font-weight: 500;
+      white-space: nowrap;
+      background: var(--fill);
+      transition: background-color 0.2s, opacity 0.2s;
+    }
+    .btn:hover { background: var(--fill-hover); }
+    .btn:active { background: var(--fill-pressed); }
+    .btn svg { width: 10px; height: 10px; }
+    .btn-primary { background: var(--green); color: #fff; }
+    .btn-primary:hover { background: var(--green); opacity: 0.88; }
+    .btn-primary:active { opacity: 0.75; }
+    .btn-danger svg { color: var(--red); }
+    .native-buttons #btn-start,
+    .native-buttons #btn-stop {
+      visibility: hidden;
+      width: 76px;
+      height: 32px;
+    }
+
+    /* Drawer */
+    .drawer {
+      display: grid;
+      grid-template-rows: 0fr;
+      transition: grid-template-rows 0.3s ease;
+    }
+    .drawer.open { grid-template-rows: 1fr; }
+    .drawer-inner {
+      overflow: hidden;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+    }
+    .drawer.open .drawer-inner { padding-top: 2px; }
+    .seed-row { display: contents; }
+    .cmd-grid { display: contents; }
+
+    .seed-btn, .cmd-btn {
+      height: 28px;
+      border-radius: 999px;
+      background: var(--fill);
+      font-size: 11px;
+      transition: background-color 0.2s;
+    }
+    .seed-btn:hover, .cmd-btn:hover { background: var(--fill-hover); }
+    .seed-btn:active, .cmd-btn:active { background: var(--fill-pressed); }
+    .seed-tag { color: var(--label-2); margin-left: 3px; }
+    .cmd-btn--full { grid-column: 1 / -1; }
+
+    /* Status */
+    .status-bar {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px 10px;
+      font-size: 11px;
+      color: var(--label-2);
+    }
+    .status-bar .spacer { flex: 1; }
+    .drawer-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      height: 20px;
+      padding: 0 8px;
+      border-radius: 999px;
+      color: var(--label-2);
+      font-size: 11px;
+      transition: background-color 0.2s, color 0.2s;
+    }
+    .drawer-toggle:hover { background: var(--fill); color: var(--label); }
+    .drawer-toggle svg {
+      width: 8px;
+      height: 8px;
+      stroke: currentColor;
+      stroke-width: 3;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      fill: none;
+      transition: transform 0.3s ease;
+    }
+    .drawer-toggle.open svg { transform: rotate(180deg); }
+
+    .dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+    .dot--green { background: var(--green); }
+    .dot--red { background: var(--red); }
+    .dot--yellow { background: var(--yellow); }
+    .dot--off { background: var(--label-3); }
+    #btn-bridge { gap: 5px; }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      left: 50%;
+      top: 38px;
+      max-width: calc(100% - 32px);
+      transform: translateX(-50%);
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: rgba(40, 40, 42, 0.92);
+      font-size: 11px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      pointer-events: none;
+      z-index: 100;
+      transition: opacity 0.25s, transform 0.25s;
+    }
+    .toast.hidden { opacity: 0; transform: translate(-50%, -6px); }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <div class="titlebar" data-tauri-drag-region>
+      <span class="titlebar-title">Trezor User Env</span>
+      <span class="titlebar-subtitle" id="title-status"></span>
+    </div>
+
+    <div class="display-frame" id="vnc-container">
+      <div class="display-placeholder" id="vnc-placeholder">
+        <svg viewBox="0 0 24 24"><rect x="6" y="2" width="12" height="20" rx="3"/><line x1="10" y1="18" x2="14" y2="18"/></svg>
+        <span id="placeholder-text">Connecting to trezor-user-env…</span>
+        <button class="btn btn-primary" id="btn-start-tenv" hidden>Start trezor-user-env</button>
+        <span class="placeholder-hint" id="placeholder-hint" hidden></span>
+      </div>
+      <div id="vnc-target"></div>
+    </div>
+
+    <div class="dock">
+      <div class="models" id="model-grid"></div>
+      <div class="control-row">
+        <select id="version-select"></select>
+        <button class="btn btn-primary" id="btn-start">
+          <svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21" fill="currentColor"/></svg>
+          Start
+        </button>
+        <button class="btn btn-danger" id="btn-stop">
+          <svg viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="2" fill="currentColor"/></svg>
+          Stop
+        </button>
+      </div>
+
+      <div class="drawer" id="drawer">
+        <div class="drawer-inner">
+          <div class="options-row">
+            <label class="opt-tile">
+              <input type="checkbox" id="opt-wipe" checked>
+              <span>Wipe on start</span>
+            </label>
+            <label class="opt-tile">
+              <input type="checkbox" id="opt-seed" checked>
+              <span>Load “all” on start</span>
+            </label>
+            <label class="opt-tile">
+              <input type="checkbox" id="opt-ontop" checked>
+              <span>Always on top</span>
+            </label>
+          </div>
+          <div class="seed-row">
+            <button class="seed-btn" id="btn-seed-all">Load "all"<span class="seed-tag">12</span></button>
+            <button class="seed-btn" id="btn-seed-academic">Load "academic"<span class="seed-tag">20</span></button>
+          </div>
+          <div class="cmd-grid">
+            <button class="cmd-btn" id="btn-yes">Confirm</button>
+            <button class="cmd-btn" id="btn-no">Cancel</button>
+            <button class="cmd-btn" id="btn-wipe">Wipe device</button>
+            <button class="cmd-btn" id="btn-reset">Reset device</button>
+            <button class="cmd-btn" id="btn-features">Get features</button>
+            <button class="cmd-btn" id="btn-unsafe">Safety checks off</button>
+            <button class="cmd-btn cmd-btn--full" id="btn-confirm-mnemonic">Read &amp; confirm mnemonic</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="status-bar">
+      <span class="dot" id="status-dot"></span>
+      <span id="status-text">Connecting...</span>
+      <span class="spacer"></span>
+      <button class="drawer-toggle" id="btn-bridge" title="Start bridge">
+        <span class="dot dot--off" id="bridge-dot"></span>
+        Bridge
+      </button>
+      <button class="drawer-toggle" id="drawer-toggle">
+        Commands
+        <svg viewBox="0 0 24 24"><polyline points="6 15 12 9 18 15"/></svg>
+      </button>
+    </div>
+
+    <div class="toast hidden" id="toast"></div>
+  </div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
