@@ -7,6 +7,8 @@ jobs:
   build-tenv-test:
     runs-on: ubuntu-latest
     if: ${{ github.repository_owner == 'trezor' }}
+    outputs:
+      digest: ${{ steps.build.outputs.digest }}
     steps:
       - name: Checkout code
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -21,6 +23,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Build and push trezor-user-env
+        id: build
         uses: docker/build-push-action@bcafcacb16a39f128d818304e6c9c0c18556b85f # v7
         with:
           context: .
@@ -31,3 +34,34 @@ jobs:
           push: true
           tags: |
             ghcr.io/${{ github.repository_owner }}/trezor-user-env:${{ github.sha }}
+
+  # WSL rootfs of the amd64 image for Windows runners (see README)
+  export-rootfs:
+    runs-on: ubuntu-latest
+    needs: build-tenv-test
+    steps:
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Set up ORAS
+        uses: oras-project/setup-oras@005458ad77f1c8facd38a094e4af2e69e5607ff4 # v2
+        with:
+          version: 1.3.4
+      - name: Export image filesystem
+        shell: bash
+        run: |
+          IMAGE=ghcr.io/${{ github.repository_owner }}/trezor-user-env@${{ needs.build-tenv-test.outputs.digest }}
+          docker pull --platform linux/amd64 "$IMAGE"
+          CID=$(docker create --platform linux/amd64 "$IMAGE")
+          docker export "$CID" | gzip -1 > tenv-rootfs.tar.gz
+          docker rm "$CID"
+          ls -lh tenv-rootfs.tar.gz
+      - name: Push rootfs
+        run: |
+          oras push \
+            --annotation "org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}" \
+            ghcr.io/${{ github.repository_owner }}/trezor-user-env-rootfs:${{ github.sha }} \
+            tenv-rootfs.tar.gz:application/vnd.oci.image.layer.v1.tar+gzip

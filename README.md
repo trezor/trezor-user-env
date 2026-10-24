@@ -34,6 +34,18 @@ cd trezor-user-env
 ./run.sh
 ```
 
+### WSL rootfs
+
+Every image build also publishes the filesystem of the `linux/amd64` image as a WSL rootfs tarball `tenv-rootfs.tar.gz`. It is an OCI artifact in GHCR, `ghcr.io/trezor/trezor-user-env-rootfs`, tagged like the image (commit SHA and `latest`). It is meant for Windows hosts that cannot run Linux containers, e.g. GitHub-hosted Windows runners in Trezor Suite desktop e2e tests, which run trezor-user-env inside WSL2 instead.
+
+```
+oras pull ghcr.io/trezor/trezor-user-env-rootfs:latest
+wsl --import trezor-user-env <install-dir> tenv-rootfs.tar.gz --version 2
+wsl -d trezor-user-env --cd /trezor-user-env -- uv run python src/main.py
+```
+
+The tarball is the plain image root including the uv venv. Environment variables from the Dockerfile `ENV` are not part of it.
+
 ### Connecting to Trezor Suite
 
 Trezor Suite normally relies on it's own bundled Bridge. To use the Bridge from `trezor-user-env` instead, you need to disable the bundled Bridge in Suite's debug settings.
