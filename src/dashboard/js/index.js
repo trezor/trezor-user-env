@@ -36,6 +36,7 @@ const app = createApp({
                 runningVersion: null,
             },
             selectedEmulatorModel: store.get('userEnvSelectedModel', 'T3W1'),
+            nightlyFirmwareVersions: {},
             emulators: {
                 versions: {
                     T1B1: {
@@ -349,6 +350,7 @@ const app = createApp({
 
             // Filling the possible options for the emulators/bridges
             if (dataObject.type === "client") {
+                this.nightlyFirmwareVersions = dataObject.nightly_versions || {};
                 for (const model in dataObject.firmwares) {
                     const options = dataObject.firmwares[model];
                     this.emulators.versions[model].versions = options;
@@ -487,6 +489,16 @@ const app = createApp({
             });
             // If the flyout is open, close it so the user sees the device stage come to life.
             if (this.openFly === 'flyEmu') this.closeFlyouts();
+        },
+        formatFirmwareLabel(model, version) {
+            if (typeof version !== 'string') return version;
+
+            let nightlyVersion;
+            if (version.match(/^([0-9]+)-main/)) {
+                nightlyVersion = this.nightlyFirmwareVersions[model];
+            }
+
+            return nightlyVersion ? `${version} (${nightlyVersion})` : version;
         },
         emulatorStartFromUrl() {
             const url = this.emulatorUrl.url;
