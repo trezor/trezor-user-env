@@ -197,14 +197,6 @@ const app = createApp({
             const model = this.emulators.runningModel || this.selectedEmulatorModel;
             return this.emulators.versions[model]?.inputType === 'Buttons';
         },
-        modernBridgeVersions() {
-            // Spec §3: node-bridge (modern) group — anything not starting with "2."
-            return this.bridges.versions.filter(v => !v.startsWith('2.'));
-        },
-        legacyBridgeVersions() {
-            // Spec §3: legacy 2.x group.
-            return this.bridges.versions.filter(v => v.startsWith('2.'));
-        },
         filteredLogs() {
             return this.logs.filter(l => this.logFilters.has(l.kind));
         },
@@ -354,12 +346,7 @@ const app = createApp({
                     this.emulators.versions[model].versions = options;
                     this.emulators.versions[model].selected = options[0];
                 }
-                const nodebridge = [];
-                const legacy = [];
-                dataObject.bridges.forEach((b) =>
-                    b.startsWith("2.") ? legacy.push(b) : nodebridge.push(b)
-                );
-                this.bridges.versions = nodebridge.concat(legacy);
+                this.bridges.versions = [...dataObject.bridges];
                 this.bridges.selected = this.bridges.versions[0];
 
                 this.bridges.hasSuiteLocal = dataObject.bridges.includes(
