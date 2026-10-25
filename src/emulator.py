@@ -1096,8 +1096,8 @@ def read_and_confirm_shamir_mnemonic_t3b1(shares: int, threshold: int) -> None:
             # is the middle (highlighted) choice, then Select it.
             for _ in range(3):
                 layout = debug.read_layout()
-                # "Select word 3 of 20:"
-                match = re.search(r"Select word (\d+)", layout.title())
+                # "Word 3 of 20" or "Select word 3 of 20:"
+                match = re.search(r"[Ww]ord (\d+) of", layout.title())
                 if match is None:
                     raise RuntimeError(
                         f"Could not find word position in: {layout.title()}"
@@ -1148,13 +1148,15 @@ def read_and_confirm_shamir_mnemonic_t3t1(shares: int, threshold: int) -> None:
     if threshold > shares:
         raise RuntimeError("Threshold cannot be bigger than number of shares.")
 
-    # For setting the right amount of shares/thresholds, we need location of buttons
-    MINUS_BUTTON_COORDS = (60, 180)
-    PLUS_BUTTON_COORDS = (180, 180)
-
     with connect_to_debuglink() as debug:
         # So that we can wait layout
         debug.watch_layout(True)
+
+        # For setting the right amount of shares/thresholds, we need location of buttons
+        MINUS_BUTTON_COORDS = debug.screen_buttons.number_input_minus()
+        PLUS_BUTTON_COORDS = debug.screen_buttons.number_input_plus()
+        # The number input ignores swipes, it is confirmed only by its OK button
+        CONFIRM_NUMBER_COORDS = debug.screen_buttons.ok()
 
         # Click Continue to begin Shamir setup process
         assert_text_on_screen(debug, "wallet backup contains multiple lists of words")
@@ -1179,7 +1181,7 @@ def read_and_confirm_shamir_mnemonic_t3t1(shares: int, threshold: int) -> None:
                 time.sleep(SLEEP)
 
         # Confirm
-        debug.swipe_up()
+        debug.click(CONFIRM_NUMBER_COORDS)
         time.sleep(SLEEP)
 
         # Summary
@@ -1204,7 +1206,7 @@ def read_and_confirm_shamir_mnemonic_t3t1(shares: int, threshold: int) -> None:
                     time.sleep(SLEEP)
 
         # Confirm
-        debug.swipe_up()
+        debug.click(CONFIRM_NUMBER_COORDS)
         time.sleep(SLEEP)
 
         # Summary
