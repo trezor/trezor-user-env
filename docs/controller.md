@@ -52,6 +52,17 @@
     - **output_to_logfile**: `bool` (default=True) whether the debug output should go to a logfile - otherwise it goes to stdout
     - **save_screenshots**: `bool` (default=False) whether to save screenshots to enable calling **emulator-get-screenshot**
 
+- **emulator-start-from-file**
+  - **action**: saves an uploaded emulator binary and runs it
+  - **note**: the profile is always wiped for an uploaded binary, since reusing a name overwrites the previous binary and a stale profile must not be run against a different build
+  - **arguments**:
+    - **file**: `str` base64-encoded contents of the emulator binary
+    - **filename**: `str` (default="uploaded") original file name, used to derive the stored emulator name
+    - **model**: `str` which emulator it is - `["T1B1", "T2T1", "T3B1", "T3T1", "T3W1"]`
+    - **output_to_logfile**: `bool` (default=True) whether the debug output should go to a logfile - otherwise it goes to stdout
+    - **save_screenshots**: `bool` (default=False) whether to save screenshots to enable calling **emulator-get-screenshot**
+    - **show_animations**: `bool` (default=False) whether to show device animations
+
 - **emulator-stop**
   - **action**: stop the emulator
 

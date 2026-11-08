@@ -83,6 +83,11 @@ const app = createApp({
                 model: "",
                 btcOnly: false,
             },
+            emulatorFile: {
+                fileName: "",
+                fileContent: "",
+                model: "",
+            },
             emulatorDownloadMessage: "",
             customFirmwareSource: "url",
             customFirmwareOpen: false,
@@ -334,7 +339,8 @@ const app = createApp({
             if (
                 "response" in dataObject &&
                 typeof dataObject.response === 'string' &&
-                dataObject.response.includes("Emulator downloaded")
+                (dataObject.response.includes("Emulator downloaded") ||
+                    dataObject.response.includes("Emulator loaded from uploaded file"))
             ) {
                 this.emulatorDownloadMessage = "";
             }
@@ -391,7 +397,11 @@ const app = createApp({
                 return;
             }
 
-            this.logEvent(`Request sent: ${JSON.stringify(msg)}`, "var(--blue)");
+            // Avoid dumping large binary uploads (base64 firmware) into the log.
+            const msgForLog = msg.file
+                ? Object.assign({}, msg, { file: `<${msg.file.length} base64 chars>` })
+                : msg;
+            this.logEvent(`Request sent: ${JSON.stringify(msgForLog)}`, "var(--blue)");
 
             const requestToSend = JSON.stringify(
                 Object.assign(msg, {
@@ -542,6 +552,56 @@ const app = createApp({
 
             this.emulatorDownloadMessage =
                 "Emulator started downloading, it may take a while...";
+            this.closeFlyouts();
+        },
+        onFirmwareFileSelected(event) {
+            const file = event.target.files && event.target.files[0];
+            if (!file) {
+                this.emulatorFile.fileName = "";
+                this.emulatorFile.fileContent = "";
+                return;
+            }
+            this.emulatorFile.fileName = file.name;
+            this.emulatorFile.fileContent = "";
+            const reader = new FileReader();
+            reader.onload = () => {
+                // reader.result is a data URL: "data:...;base64,<content>"
+                const result = reader.result;
+                const commaIndex = result.indexOf(",");
+                this.emulatorFile.fileContent =
+                    commaIndex >= 0 ? result.slice(commaIndex + 1) : result;
+            };
+            reader.onerror = () => {
+                this.showNotification("Failed to read the selected file!", true);
+            };
+            reader.readAsDataURL(file);
+        },
+        emulatorStartFromFile() {
+            const fileName = this.emulatorFile.fileName;
+            const fileContent = this.emulatorFile.fileContent;
+            if (!fileName || !fileContent) {
+                this.showNotification("No firmware file selected!", true);
+                return;
+            }
+
+            const model = this.emulatorFile.model;
+            if (!model) {
+                this.showNotification("Model is empty!", true);
+                return;
+            }
+
+            this.sendMessage({
+                type: "emulator-start-from-file",
+                filename: fileName,
+                file: fileContent,
+                model,
+                output_to_logfile: this.emulators.outputToLogfile,
+                save_screenshots: this.emulators.screenshotMode,
+                show_animations: this.emulators.animations,
+            });
+
+            this.emulatorDownloadMessage =
+                "Uploading firmware and starting emulator, it may take a while...";
             this.closeFlyouts();
         },
         reflectBackgroundSituationInGUI(dataObject) {
