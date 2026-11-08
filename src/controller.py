@@ -17,6 +17,7 @@ import emulator
 import helpers
 import tropic_model
 from bitcoin_regtest.rpc import BTCJsonRPC
+from nightly_versions import read_nightly_versions_metadata
 
 if TYPE_CHECKING:
     from typing_extensions import TypedDict
@@ -70,6 +71,10 @@ def _normalize_emulator_version(version: str) -> str:
     if normalized.endswith("-arm"):
         normalized = normalized[: -len("-arm")]
     return normalized
+
+
+def get_nightly_versions() -> dict[str, str]:
+    return read_nightly_versions_metadata(binaries.FIRMWARE_BIN_DIR)
 
 
 class ResponseGetter:
@@ -558,6 +563,7 @@ async def welcome(websocket) -> None:
         "type": "client",
         "id": "TODO",
         "firmwares": binaries.get_all_firmware_versions(),
+        "nightly_versions": get_nightly_versions(),
         "bridges": binaries.BRIDGES,
     }
     await websocket.send(json.dumps(intro))

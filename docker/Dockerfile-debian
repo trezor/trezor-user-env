@@ -56,6 +56,7 @@ RUN uv sync
 # Copy firmware downloader scripts separately so release emulator downloads can stay cached
 RUN mkdir -p /trezor-user-env/src/binaries/firmware/bin
 COPY ./src/binaries/firmware/bin/ /trezor-user-env/src/binaries/firmware/bin/
+COPY ./src/nightly_versions.py /trezor-user-env/src/nightly_versions.py
 RUN uv run python ./src/binaries/firmware/bin/download.py releases
 
 # Copy the rest of the files
