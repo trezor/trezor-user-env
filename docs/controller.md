@@ -116,6 +116,9 @@
 - **emulator-wipe**
   - **action**: wipe the emulator
 
+- **emulator-reboot-to-bootloader**
+  - **action**: reboot a running (firmware) emulator into bootloader mode (core models only - T2T1/T3B1/T3T1/T3W1; requires a running emulator)
+
 - **emulator-apply-settings**
   - **action**: apply settings on emulator
   - **arguments**:
