@@ -5,7 +5,14 @@ set -e
 cd /opt/coins/nodes/bitcoin_regtest
 
 echo "Starting bitcoin regtest backend service"
-bin/bitcoind -blockfilterindex -mempoolfullrbf=1 -datadir=/opt/coins/data/bitcoin_regtest/backend -conf=/opt/coins/nodes/bitcoin_regtest/bitcoin_regtest.conf &
+# Fee floors match Bitcoin Core 29.1+ defaults. The bundled 25.0 defaults to 1 sat/vB, which rejects
+# sub-1 sat/vB transactions and replacements with a smaller fee increase, such as Suite's RBF cancel.
+bin/bitcoind -blockfilterindex -mempoolfullrbf=1 \
+    -minrelaytxfee=0.000001 \
+    -incrementalrelayfee=0.000001 \
+    -blockmintxfee=0.00000001 \
+    -datadir=/opt/coins/data/bitcoin_regtest/backend \
+    -conf=/opt/coins/nodes/bitcoin_regtest/bitcoin_regtest.conf &
 
 sleep 5
 
