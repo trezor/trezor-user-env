@@ -15,7 +15,7 @@ jobs:
       - name: "Install dependencies with uv"
         run: nix-shell --run "uv sync"
       - name: "Download emulator binaries"
-        run: nix-shell --run "uv run python ./src/binaries/firmware/bin/download.py all"
+        run: nix-shell --run "PYTHONPATH=./src uv run python ./src/binaries/firmware/bin/download.py all"
       - name: "Download node bridge"
         run: nix-shell --run "./src/binaries/node-bridge/download.sh"
       - name: "Patch emulator binaries"
