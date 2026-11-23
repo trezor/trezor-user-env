@@ -446,6 +446,9 @@ class ResponseGetter:
         elif self.command == "emulator-wipe":
             emulator.wipe_device()
             return {"response": "Device wiped"}
+        elif self.command == "emulator-reboot-to-bootloader":
+            emulator.reboot_to_bootloader()
+            return {"response": "Emulator rebooted to bootloader"}
         elif self.command == "emulator-apply-settings":
             # Relaying all the relevant fields from the request, to make sure
             #   the client is notified when it sends an unknown field
